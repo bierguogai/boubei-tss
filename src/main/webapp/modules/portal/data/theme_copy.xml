@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+	<ThemeList>
+		<actionSet>
+            <treeNode id="r1" name="主题1_2" icon="images/theme.gif"/>
+		</actionSet>
+	</ThemeList>
+</Response>

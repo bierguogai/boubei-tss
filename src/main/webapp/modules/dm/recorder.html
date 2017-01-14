@@ -1,0 +1,644 @@
+<!DOCTYPE HTML>
+<HTML xmlns:WorkSpace xmlns:Tree xmlns:Grid>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>数据录入</title>
+
+<link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link href="../../css/css.css" rel="stylesheet">
+<link href="dm.css" rel="stylesheet">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssJS/tssJS.json2Form.js"></script>
+<script src="../../tools/tssUtils.js"></script>
+
+<script src="recorder_x.js"></script>
+
+<style type="text/css">
+    body { overflow-x: auto; }
+    .gridContainer { vertical-align: top; }
+
+    #ws {
+        width: 40%; max-width: 600px; min-width: 400px;
+        height: 100%;
+        position: fixed; right: 0; top: 0;
+    }
+
+    #page1Form { height: 85%; overflow: auto; }
+    #page1Form td[width="88"]>label { display: inline-block; width: 88px; }
+    #searchFormDiv { max-width: 600px; max-height: 500px; left: 50px; display:none; }
+    #searchFormDiv .content { max-height: 480px; }
+
+    #customizeBox { display: inline-block; }
+    #customizeBox button { margin: 2px; }
+    #attach  { width: 800px; display: none; z-index: 10000; }
+    #uploadForm  { background-color: #E0ECFF; padding: 5px 5px 5px 10px; margin-top: -3px; }
+    #attachGrid { height: 200px; background-color: #fff; }
+    #sourceFile { color: #fff; background-color: #323232; padding: 2px 0px 1px 0px; }
+
+</style>
+
+<SCRIPT type="text/javascript">
+<!-- 
+
+/* 后台响应数据节点名称 */
+XML_SOURCE_LIST = "RecordData";
+
+/* XMLHTTP请求地址汇总 */
+URL_SOURCE_LIST   = AUTH_PATH + "xdata/xml/";
+URL_SAVE_SOURCE   = AUTH_PATH + "xdata/";
+URL_BATCH_OPERATE = AUTH_PATH + "xdata/batch/";
+URL_DELETE_SOURCE = AUTH_PATH + "xdata/";
+URL_GET_DEFINES   = AUTH_PATH + "xdata/define/";
+URL_GET_USER_HAS  = AUTH_PATH + "user/has";
+
+// 数据录入定义信息
+var recordId = 1, recordName = "数据录入", recordDefine, customizeJS, customizeGrid, needFile;
+
+// 用户权限信息
+var _operation = ['1','2','3','4','5'], 
+    userCode, 
+    userName, 
+    userGroups = [], 
+    userRoles = [], 
+    userAssistGroups = [];
+
+// 监听器
+var preListener, // 在表单保存前触发，如不通过，则终止保存
+    afterListener, // 在表单保存后触发，可用作流程控制，发email等
+    checkFileOpt,  // 根据选中行的状态信息，确定是否可以继续上传或删除附件
+    disableSave,
+    attachListerner; // 在附件列表Grid生成后触发，常用于修改附件url
+
+/* -------- 示例参考 spirit/常用tip.sql & 操作手册 ----------------- */
+
+// 缓存查询条件，增加删除修改后刷新Grid可以继续使用
+var params = {};   
+
+$(function() {
+    
+    if( !IS_TEST ) {
+        var globalValiable = window.parent.globalValiable;
+        recordId   = globalValiable.id;
+        recordName = globalValiable.name;
+        _operation = (globalValiable._operation || '').split(',');
+
+        init();
+        return;
+    }
+
+    // just Test
+    URL_SOURCE_LIST   = "data/data_grid.xml?";
+    URL_SAVE_SOURCE   = "data/_success.xml?";
+    URL_BATCH_OPERATE = "data/_success.xml?";
+    URL_DELETE_SOURCE = "data/_success.xml?";
+    URL_GET_DEFINES   = "data/record_define.json?";
+    URL_GET_USER_HAS  = "data/user_has.json?";
+
+    init();
+});
+
+/* 页面初始化 */
+function init() {
+    initMenus();
+    initWorkSpace();
+
+    // 先取用户权限信息，Grid定制依赖具体权限
+    $.ajax({
+        url : URL_GET_USER_HAS,
+        method : "GET",
+        type : "json",
+        ondata: function() {
+            var result = this.getResponseJSON();
+            userGroups = result[0];
+            userRoles = result[1];
+            userCode = result[3];
+            userName = result[4];
+            userAssistGroups = result[5];
+
+            // 获取表单定义信息
+            $.ajax({
+                url : URL_GET_DEFINES + recordId,
+                type : "json",
+                ondata: function() {
+                    var result = this.getResponseJSON();
+                    recordDefine  = result[0];
+                    customizeJS   = result[1];
+                    customizeGrid = result[2];
+                    needFile      = result[3];
+
+                    recordDefine.each(function(i, field){
+                        field._defaultValue = field.defaultValue;
+                    });
+
+                    /* 添加tssGrid定制的script。
+                     * 注：customizeGrid可用作全局js，customizeJS只有在录入Form打开后才加载，查询Form需要的onchange对应方法可放在customizeGrid里。
+                     */
+                    if(customizeGrid) {
+                        $.createScript( customizeGrid );
+                    }
+                }
+            });
+        }
+    });
+
+    loadGridData(1); 
+    $("#rcTitle").html("【" + recordName + "】");
+
+    if( !_operation.contains("1") ) {
+        $("#btn_create").hide();
+    }
+    if( !_operation.contains("2") && !_operation.contains("4") && !_operation.contains("5") ) {
+        $("#btn_search").hide();
+    }
+    if( !_operation.contains("5") ) { // 只有维护数据权限的角色才能使用批量删除
+        $("#btn_batch_del").hide();
+    }
+}
+
+function initMenus() {
+    /* Grid菜单初始化  */
+    var item1 = {
+        label:"编辑",
+        callback:  function() { showDetail() },
+        icon: "images/icon_edit.gif",
+        visible:function() {return canEditRow();}
+    }
+    var item2 = {
+        label:"复制",
+        callback: function() { showDetail("_copy") },
+        icon: "images/icon_copy.gif",
+        visible:function() {return  _operation.contains("1");}
+    }
+    var item3 = {
+        label:"删除",
+        callback: remove,
+        icon: "images/icon_del.gif",
+        visible:function() {return canEditRow();}
+    }
+    var item4 = {
+        label:"管理附件",
+        callback: function() { manageAttach(null, "row"); },
+        visible:function() {return canEditRow() && needFile;}
+    }
+
+    var menu = new $.Menu();
+    menu.addItem(item1);
+    menu.addItem(item2);
+    menu.addItem(item3);
+    menu.addItem(item4);
+    $1("grid").contextmenu = menu;
+}
+
+function canEditRow(rowID) {
+    if(rowID === '_new') { // 新增
+        return _operation.contains("1");
+    }
+    else if( (rowID + '').indexOf('_copy') >= 0 ) { // 复制新增
+        return true;
+    }
+    else { // 编辑（本人及有维护数据权限的人能编辑）
+        var creator = $.G("grid").getColumnValue("creator");       
+        return (_operation.contains("1") && userCode == creator) || _operation.contains("5");
+    }
+}
+
+/* grid加载数据  */
+function loadGridData(page) {
+    $.showGrid(URL_SOURCE_LIST + recordId, XML_SOURCE_LIST, showDetail, "grid", page, params);
+}
+
+/* 显示资源详细信息 */
+function showDetail(rowID) {    
+    var version;
+    if(rowID) {
+        if(rowID == '_copy') {
+            rowID = $.G("grid").getColumnValue("id") + '_copy';
+        }
+    }
+    else {
+        rowID = $.G("grid").getColumnValue("id");
+        version = $.G("grid").getColumnValue("version");
+    }
+    var rowName = recordName + rowID;
+
+    var callback = {};
+    callback.onTabClose = function(eventObj){
+        if( ws.noTabOpend() ) {
+            $("#ws").hide();
+        }            
+        delete $.cache.XmlDatas[rowID];  // 清除缓存的数据，可能已经做了修改。关闭意味着放弃修改内容
+        detachReminder(rowID); // 解除提醒
+    };
+
+    callback.onTabChange = function() {
+        setTimeout(function() {
+            loadDetailData(rowID, version);
+
+        }, TIMEOUT_TAB_CHANGE);
+    };
+
+    var inf = {};
+    inf.label = rowName;
+    inf.SID = "viewRow_" + rowID;
+    inf.defaultPage = "page1";
+    inf.callback = callback;
+    var tab = ws.open(inf);   
+
+    $("#ws").show(true);    
+}
+
+function loadDetailData(rowID, version) {
+    var form, dataNode = $.cache.XmlDatas[rowID];
+
+    // 如果已经在打开的tab页里了
+    if(dataNode) {
+        var kvMap = {}
+        var nodes = dataNode.querySelectorAll("row *");
+        for(var i = 0; i < nodes.length; i++) {
+            var node = nodes[i];
+            kvMap[node.nodeName] = $.XML.getText(node);
+        }
+
+        recordDefine.each(function(i, field){
+            field.defaultValue = kvMap[field.code];
+        });
+    }
+    else {
+        if(rowID === '_new') {
+            recordDefine.each(function(i, field){
+                field.defaultValue = field._defaultValue;
+            });
+        }
+        else {
+            var grid = $.G("grid");
+            recordDefine.each(function(i, field){
+                field.defaultValue = grid.getColumnValue(field.code);
+            });
+        }
+    }
+
+    xform = $.json2Form("page1Form", recordDefine, null, customizeJS);
+    xform.template.dataNode.id = rowID;
+    $.cache.XmlDatas[rowID] = xform.template.dataNode;
+    attachReminder(rowID, xform); // 离开提醒
+
+    // 设置保存/关闭按钮操作
+    if( canEditRow(rowID) && (!disableSave || !disableSave())) {
+        $("#page1BtSave").show().click( function() { saveSource(rowID, version);  } );
+    } else {
+        $("#page1BtSave").hide();
+    }
+    $("#page1BtCancel").click( function() { 
+        ws.closeActiveTab(); 
+    } );
+
+    $('#btnViewAttach').remove();
+    if(needFile && rowID != '_new' && (rowID+"").indexOf('_copy') < 0) {
+        var newBtn = $.createElement('button', 'tssbutton small blue', 'btnViewAttach');
+        $(newBtn).html("管理附件").click( function() {      
+            manageAttach(rowID, "form");
+        } );  
+        $("WorkSpace\\:PageStep").appendChild(newBtn);
+    }  
+}
+
+function saveSource(rowID, version) {
+    var xform = $.F("page1Form");  
+    if( !xform.checkForm() ) return;
+
+    if( preListener && $.isFunction(preListener) ) {
+        var result = preListener();
+        if(!result) return;
+    }
+
+    var request = new $.HttpRequest();
+    request.url = URL_SAVE_SOURCE + recordId;
+
+    var dataNode = $.cache.XmlDatas[rowID];
+    request.setFormContent(dataNode);
+    version && request.addParam("_version", version);
+
+    if(rowID != '_new' && (rowID + "").indexOf('_copy') < 0 ) {
+       request.url += "/" + rowID;
+
+       // update操作，检查id是否和form里的一致，防止多个修改时发生串数据现象
+       if( rowID != dataNode.id ) {
+            $.tssTip("本次修改的数据有异常，请刷新页面后重新编辑后保存。");
+            return;
+       }
+    }
+
+    syncButton([$1("page1BtSave")], request); // 同步按钮状态
+    detachReminder(rowID); // 解除提醒
+
+    request.onsuccess = function() { 
+        if( afterListener && $.isFunction(afterListener) ) {
+            afterListener();
+        }
+        delete $.cache.XmlDatas[rowID];
+        ws.closeTab("viewRow_" + rowID);  
+
+        loadGridData( $1("GridPageList").value || 1 ); // 更新Grid       
+    }
+
+    request.send();
+}
+
+function remove()  { 
+    $.confirm("您确定要删除该行记录吗？", "删除确认", function(){
+        var grid = $.G("grid");
+        var rowID  = grid.getColumnValue("id");
+        if( rowID ) {
+            $.ajax({
+                url : URL_DELETE_SOURCE + recordId + "/" + rowID,
+                method : "DELETE",
+                onsuccess : function() { 
+                    grid.deleteSelectedRow();
+                }
+            }); 
+        }
+    });
+}
+
+function removeBatch() {
+    var grid = $.G("grid");
+    var ids  = grid.getCheckedRows();
+    if(!ids) {
+        return alert("你没有选中任何记录，请勾选后再进行批量删除。");
+    }
+    $.confirm("您确定要批量删除选中记录吗？", "批量删除确认", function(){
+        $.ajax({
+            url : URL_DELETE_SOURCE + "batch/" + recordId,
+            params: {"ids": ids},
+            method : "DELETE",
+            onsuccess : function() { 
+                loadGridData( $1("GridPageList").value || 1 ); // 更新Grid 
+            }
+        }); 
+    });
+}
+
+function clone (obj) {
+    var copy = {};
+    for (var name in obj) {
+        copy[name] = obj[name];
+    }
+    return copy;
+}
+
+function showQueryForm() {
+    if($.cache.XmlDatas["searchFormXML"]) {
+        $("#searchFormDiv").show(true);
+        return;
+    }
+
+    var $panel = $("#searchFormDiv").show(true);
+    var html = '<div id="searchForm"></div>';
+    $panel.html("").panel("查询【" + recordName + "】的录入数据", html);
+
+    var buttonBox = [];
+    buttonBox[buttonBox.length] = "<TR>";
+    buttonBox[buttonBox.length] = "  <TD colspan='2' height='46'><div class='buttonBox'>";
+    buttonBox[buttonBox.length] = "     <a href='#' class='tssbutton small blue' id='btSearch'>查询</a>";
+    buttonBox[buttonBox.length] = "  </div></TD>";
+    buttonBox[buttonBox.length] = "</TR>";
+
+    var paramsConfig = [], codes = [], names = [];
+    recordDefine.each(function(i, field){
+        codes.push(field.code);
+        names.push(field.label);
+        if(field.isparam === 'true') {
+            var copy = clone(field);
+            copy.name = "p_" + (copy.name || copy.code);
+
+            delete copy["nullable"];
+            delete copy["height"];
+            // delete copy["width"];
+            delete copy["defaultValue"];
+
+            if(field.type === 'date' || field.type === 'datetime' || field.type === 'number') {
+                var from = clone(copy), to = clone(copy);
+                from.name += "__1";
+                from.label += "从"; 
+                to.name += "__2";
+                to.label += "到";
+                paramsConfig.push(from);
+                paramsConfig.push(to);
+            } 
+            else {                
+                paramsConfig.push(copy);
+            }
+
+            if(copy.onchange) {
+                var temp = [], count = 1;
+                for(var i=0, length = copy.onchange.length; i < length; i++) {
+                    var ch = copy.onchange[i];
+                    if(ch === '^') {
+                        if(count++ % 2 == 1) {
+                            ch = '^p_';
+                        }
+                    }
+                    temp.push(ch);
+                }
+                copy.onchange = temp.join("");
+            }
+        }
+    });
+    paramsConfig.push({"label": "创建人", "name": "p_creator"});
+    paramsConfig.push({"label": "修改人", "name": "p_updator"});
+
+    // 添加排序字段
+    codes.push("createtime");
+    codes.push("updatetime");
+    names.push("创建时间");
+    names.push("更新时间");
+    var _sortObj = {"label":"按字段排序", "name":"sortField", "options": {"codes":codes.join("|"), "names":names.join("|")}};
+    _sortObj.defaultValue = "createtime";
+    paramsConfig.push(_sortObj);
+    var _sortType = {"label":"排序方式", "name":"sortType", "options": {"codes":"asc|desc|onlynull", "names": "升序|降序|只取为空"}};
+    _sortType.defaultValue = "desc";
+    paramsConfig.push(_sortType);
+
+    var searchForm = $.json2Form("searchForm", paramsConfig, buttonBox.join("")); 
+    $.cache.XmlDatas["searchFormXML"] = searchForm.template.sourceXML;
+    
+    $1("btSearch").onclick = function () {
+        if( searchForm.checkForm() ) {
+            $("#searchFormDiv").hide();
+            var searchFormXML = $.cache.XmlDatas["searchFormXML"];
+            var dataNode = searchFormXML.querySelector("data");
+        
+            params = {};
+            var nodes = dataNode.querySelectorAll("row *");
+            for(var i = 0; i < nodes.length; i++) {
+                var node = nodes[i];
+                var value = $.XML.getText(node);
+                if( $.isNullOrEmpty(value) ) {
+                    continue;
+                }
+
+                // 截去'p_' 和 '__1' '__2'
+                var key = node.nodeName.replace('p_', '').replace('__1', '').replace('__2', ''); 
+
+                if(params[key]) {
+                    params[key] = '[' + params[key] + ',' + value  + ']';
+                } else {
+                    params[key] = value;
+                }               
+            }
+
+            if(!params.sortField) params.sortField = "createtime";
+            if(!params.sortType) params.sortType = "desc";
+            loadGridData(1);
+        }
+    }
+}
+
+// ------------------------------------------------ 数据录入附件管理 -----------------------------------------------
+
+URL_ATTACH_LIST   = AUTH_PATH + "xdata/attach/xml/";
+URL_ATTACH_DELETE = AUTH_PATH + "xdata/attach/";
+
+if( IS_TEST ) {
+    URL_ATTACH_LIST   = "data/record_attach_list.xml?";
+    URL_ATTACH_DELETE = "data/_success.xml?";
+}
+
+var selectedLineId;
+
+// tag: "form": form里【管理附件】按钮; "row": 右键记录行，右键菜单【管理附件】; "ot" : 顶部自定义按钮【上传附件】
+function manageAttach(lineId, tag) {   
+    selectedLineId = lineId || $.G("grid").getColumnValue("id"); 
+    
+    selectedLineId && 
+    $.ajax({ 
+        url: URL_ATTACH_LIST + recordId + "/" + selectedLineId, 
+        method: "GET", 
+        onresult: function(){
+            var attachNode  = this.getNodeValue("RecordAttach");
+
+            $.showWaitingLayer();
+            $("#attach").show(true).center();
+
+            if( canEditRow(lineId) && (!checkFileOpt || checkFileOpt(tag)) ) {
+                $("#uploadForm span").show();               
+            }
+            else {
+                $("#uploadForm span").hide();  // 隐藏上传附件操作
+                $("column[name='delOpt']", attachNode).attr("display", "none");  // 隐藏删除附件操作
+            }
+            var grid = $.G("attachGrid", attachNode);
+            attachListerner && attachListerner(recordId, selectedLineId);
+        } 
+    });
+}
+
+function clostUpload() {
+    $("#attach").hide();
+    $.hideWaitingLayer();
+}
+
+function uploadAttach() {       
+    var fileValue = $("#sourceFile").value();
+    if( !fileValue ) {
+         return $("#sourceFile").notice("您还没有选择文件，请选择一个文件再点上传!");               
+    }
+
+    if( checkUploadFile(fileValue) ) {
+        return $.tssTip("当前后缀类型的文件已被禁止上传。");
+    }
+
+    var url = URL_UPLOAD_FILE + "?afterUploadClass=com.boubei.tss.dm.record.file.CreateAttach";
+    url += "&recordId=" + recordId;  
+    url += "&itemId=" + selectedLineId;
+    url += "&type=" + ($.radioValue("fileType") || 2);
+    
+    var form = $1("uploadForm");
+    form.action = url;
+    form.submit();
+}
+
+function addAttach(id, type, name, url, uploadUser) {
+    var newAttach = {
+        "id": id, 
+        "type": type, 
+        "name": name, 
+        "url": url, 
+        "_url": "<a href='" + url + "' target='_blank'>查看</a>", 
+        "delOpt": "<a href='javascript:void(0)' onclick='delAttach(" + id + ")'>删除</a>", 
+        "uploadUser": uploadUser,
+        "uploadDate": $.now(true),
+    };
+    $.G("attachGrid").insertRow(newAttach);
+}
+
+function delAttach() {
+    $.confirm("您确定要删除该附件吗？", "删除确认", function(){
+        var attachId = $.G("attachGrid").getColumnValue("id"); 
+        $.ajax({
+            url: URL_ATTACH_DELETE + attachId,
+            method: 'DELETE',
+            waiting: true,
+            onsuccess: function() {
+                $.G("attachGrid").deleteSelectedRow();
+            }
+        });
+    });
+}
+
+//-->
+</SCRIPT>
+
+</head>
+
+<body>
+
+    <table>
+        <tr>
+          <td id="gridTitle">
+            <span class="icon"></span><span id="rcTitle">资源列表</span>&nbsp;
+            <input type="button" class="tssbutton small blue" value="新 增" id="btn_create" onclick="showDetail('_new')"/>&nbsp;
+            <input type="button" class="tssbutton small orange" value="批量删除" id="btn_batch_del" onclick="removeBatch()"/>&nbsp;
+            <input type="button" class="tssbutton small blue" value="查 询" id="btn_search" onclick="showQueryForm()"/>&nbsp;
+            <span id="customizeBox"></span>
+            <span class="buttonBox" id="gridToolBar"></span>
+          </td>
+        </tr>
+        <tr>
+          <td class="gridContainer"><Grid id="grid"></Grid></td>
+        </tr>
+    </table>
+
+    <WorkSpace:Box id="ws" class="hiddenWS">
+        <WorkSpace:Page id="page1">
+            <div id="page1Form" editable="true"></div>
+            <WorkSpace:PageStep>
+                <input type="button" class="tssbutton small blue" value="保 存" id="page1BtSave"/>&nbsp;
+                <input type="button" class="tssbutton small blue" value="关 闭" id="page1BtCancel"/>&nbsp;
+            </WorkSpace:PageStep>
+        </WorkSpace:Page>
+    </WorkSpace:Box>
+
+    <div id="searchFormDiv"></div>
+
+    <div id="attach">
+        <Grid id="attachGrid"></Grid>
+        <form id="uploadForm" method="post" target='fileUpload' enctype="multipart/form-data">
+            <span>
+                <input type="file" name="file" id="sourceFile"/>
+                附件类型: 
+                <label><input name="fileType" type="radio" value="1"/> 图片 </label> 
+                <label><input name="fileType" type="radio" value="2" checked="checked"/> 文档 </label> 
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="button" class="tssbutton small blue" onclick="uploadAttach()" value="上传附件" />
+                <b>&nbsp;单个附件大小不宜超过2M</b>
+            </span>
+            <input type="button" class="tssbutton small blue" onclick="clostUpload()" value="关闭" style="margin-left:30px"/>
+        </form>
+        <iframe name='fileUpload' style='display:none;'></iframe>
+    </div>
+
+</body>
+</html>

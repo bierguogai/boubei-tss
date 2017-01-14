@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+<PageInfo>
+	<pagelist totalpages="4" totalrecords="100" currentpage="1" pagesize="25" firstpage="1" prepage="0" nextpage="0" lastpage="1" pagerecords="1"/>
+</PageInfo>
+<ArticleList>
+<grid version="2">
+	<declare sequence="true">
+		<column caption="图标" name="icon" mode="image"/>
+		<column caption="文章编号" name="id" mode="string" display="none"/>
+		<column caption="标题" name="title" mode="string"/>
+		<column caption="文章状态" name="status" mode="combo" values="1|2|3|4" texts="编辑中|待发布|已发布|已过期"/>
+		<column caption="作者" name="author" mode="string"/>
+		<column caption="创建日期" name="createTime" mode="string" />
+		<column caption="发布时间" name="issueDate" mode="string" />
+		<column caption="创建者" name="creatorName" mode="string" display="none"/>
+		<column caption="栏目" name="channel.id" mode="string" display="none"/>
+		<column caption="置顶" name="isTop" mode="combo" texts="是|否" values="1|0" editable="false"/>
+		<column caption="过期日期" name="overdueDate" mode="string" />
+		<column caption="点击次数" name="hitCount" mode="string"/>
+	</declare>
+	<data>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+		<row icon="images/article_0.gif" id="1" title="历史的轮回怪圈" status="1" author="Jon.King" createTime="2013-08-17" issueDate="" creatorName="Admin" channel.id="2" isTop="0" overdueDate="2013-09-03" hitCount="0" _depth="1"></row>
+	</data>
+</grid>
+</ArticleList>
+</Response>

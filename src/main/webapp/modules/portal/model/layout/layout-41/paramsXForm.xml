@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Response> 
+  <ConfigParams> 
+    <xform> 
+      <declare> 
+        <column name="column1Width" caption="第一列宽度" mode="string"/>  
+        <column name="column2Width" caption="第二列宽度" mode="string"/>  
+        <column name="column3Width" caption="第三列宽度" mode="string"/> 
+      </declare>  
+      <layout> 
+        <TR> 
+          <TD width="100">
+            <label binding="column1Width"/>
+          </TD>  
+          <TD>
+            <input binding="column1Width" type="text"/>
+          </TD> 
+        </TR>  
+        <TR> 
+          <TD width="100">
+            <label binding="column2Width"/>
+          </TD>  
+          <TD>
+            <input binding="column2Width" type="text"/>
+          </TD> 
+        </TR>  
+        <TR> 
+          <TD width="100">
+            <label binding="column3Width"/>
+          </TD>  
+          <TD>
+            <input binding="column3Width" type="text"/>
+          </TD> 
+        </TR> 
+      </layout>  
+      <data/> 
+    </xform> 
+  </ConfigParams> 
+</Response>

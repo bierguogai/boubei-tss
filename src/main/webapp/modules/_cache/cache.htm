@@ -1,0 +1,330 @@
+<!DOCTYPE HTML>
+<HTML xmlns:Tree xmlns:Grid>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>缓存管理</title>
+
+<link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link href="../../css/css.css" rel="stylesheet">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssUtils.js"></script>
+
+<style>
+
+#poolHitRate { left: 60px; top: 4px; font-weight: bold; }
+#poolHitRate:hover { cursor: pointer; }
+#poolsGrid td>b { color: blue; font-size: 16px; }
+#poolsGrid td[title="停用"] { color: red; font-weight: bold; }
+  
+</style>
+
+<script type="text/javascript">
+
+	/* 后台响应数据节点名称  */
+	XML_MAIN_TREE = "CacheTree";
+	XML_MAIN_GRID = "PoolGrid";
+	XML_HIT_RATE  = "HitRate";
+	XML_CACHE_ITEMS = "CacheItemList";
+	XML_CACHE_STRATEGY  = "CacheStrategy";
+
+	/* XMLHTTP请求地址汇总  */
+	URL_INIT_TREE    = NO_AUTH_PATH + "cache/list";
+	URL_INIT_GRID    = NO_AUTH_PATH + "cache/grid";
+	URL_CACHE_DETAIL = NO_AUTH_PATH + "cache/list/";
+	URL_CACHE_EDIT   = NO_AUTH_PATH + "cache";
+	URL_CACHE_CLEAR  = NO_AUTH_PATH + "cache/release";
+	URL_CACHE_INIT   = NO_AUTH_PATH + "cache/init/";
+	URL_VIEW_ITEM    = NO_AUTH_PATH + "cache/item";
+	
+	if(IS_TEST) {
+		URL_INIT_TREE    = "data/cache_tree.xml?";
+		URL_INIT_GRID    = "data/cache_grid.xml?";
+		URL_CACHE_DETAIL = "data/cache1.xml?";
+		URL_CACHE_EDIT   = "data/_success.xml?";
+		URL_CACHE_CLEAR  = "data/_success.xml?";
+		URL_CACHE_INIT   = "data/_success.xml?";
+		URL_VIEW_ITEM    = "data/item.xml?";
+	}	
+	 
+	/*页面初始化 */
+	function init() {
+		initMenus();
+		initEvents();
+		$(".refreshTreeBT").click(function() { 
+			loadInitData();
+			loadInitGrid();
+			$("#poolHitRate").html("");
+		});
+
+		var panel = $.createElement("div", "panel", "cacheStrategyDiv");
+    	document.body.appendChild(panel);   	
+    	$panel = $(panel);
+    	$panel.css("width", "580px").css("height", "350px").center().hide();
+	    $panel.panel("维护缓存策略", '<div id="cacheStrategy"></div><div class="bts"><button class="tssbutton blue medium" onclick="editCacheStrategy()">保存策略</button></div>', false);
+
+		loadInitData();
+		loadInitGrid();
+
+		window.setInterval(function() {
+			if( !$("#poolHitRate").html() ) {
+				loadInitGrid();
+			}
+		}, 1000 * 10);  // 每10秒刷新一次
+	}
+ 
+	/* 页面初始化加载数据(包括工具条、菜单树) */
+	function loadInitData() {
+		$.ajax({
+			url : URL_INIT_TREE, 
+			onresult : function() {					
+				var tree = $.T("tree", this.getNodeValue(XML_MAIN_TREE)); 
+				tree.onTreeNodeDoubleClick = function(ev) {
+					showCachePools();
+				}
+				tree.onTreeNodeRightClick = function(ev) {
+					onTreeNodeRightClick(ev);
+	            }
+			}
+		});
+	}
+
+	// 初始化右边Grid
+	function loadInitGrid() {
+		$.ajax({
+			url : URL_INIT_GRID, 
+			onresult : function() {
+				$.G("poolsGrid", this.getNodeValue(XML_MAIN_GRID)); 
+				$("#poolHitRate").html("");	
+			}
+		});
+	}
+
+	function initMenus() {
+		var item1 = {
+			label:"查看缓存池明细",
+			callback:showCachePools,
+			icon:"images/view.gif"
+		}
+		var item2 = {
+			label:"初始化缓存池",
+			callback:initCache,
+			icon:"images/init.gif",
+			visible:function() {return getTreeAttribute("released") == "1";}
+		}
+		var item3 = {
+			label:"清空缓存池",
+			callback:clearCache,
+			icon:"images/clear.gif"
+		}
+		var item4 = {
+			label:"维护缓存策略",
+			callback: function() { showCachePools(1, true); },
+			icon:"images/edit.gif"
+		}
+
+		var menu = new $.Menu();
+		menu.addItem(item1);
+		menu.addItem(item4);
+		menu.addItem(item2);
+		menu.addItem(item3);
+
+		$1("tree").contextmenu = menu;
+	}
+ 
+	/* 初始化缓存池  */
+	function initCache() {
+		hideStrategy();
+		
+		var treeNode = getActiveTreeNode();
+		if ( treeNode ) {
+			$.ajax({
+				url : URL_CACHE_INIT + treeNode.id,
+				onsuccess : function() {
+					treeNode.setAttribute("released", "0");
+					showCachePools();
+				}
+			});
+		}
+	}
+
+	/* 清空缓存池  */
+	function clearCache() {
+		hideStrategy();
+
+		var treeNode = getActiveTreeNode();
+		if ( treeNode ) {
+			$.ajax({
+				url : URL_CACHE_CLEAR + "/" + treeNode.id,
+				onsuccess : function() {
+					treeNode.setAttribute("released", "1");   
+					showCachePools();
+				}
+			});
+		}
+	}
+
+	/*
+	 *	缓存池详细信息 
+	 *	参数：	string: page                页码
+			boolean: isShowStrategy    false: 只刷新grid列表
+	 */
+	function showCachePools(page, isShowStrategy) {
+		var tree = $.T("tree");
+		var treeNode = tree.getActiveTreeNode();
+		$.ajax({ 
+			url: URL_CACHE_DETAIL + treeNode.id, 
+			onresult: function() {
+				var strategyXML = this.getNodeValue(XML_CACHE_STRATEGY);
+				if( strategyXML ) {
+					$.cache.XmlDatas["currentCacheInfo"] = strategyXML;
+					$.F("cacheStrategy", strategyXML);
+
+					isShowStrategy && showStrategy();
+				}
+
+				$.initGridToolBar($1("gridToolBar"), this.getNodeValue(XML_PAGE_INFO), function(page) {
+						showCachePools(page, false);
+					}
+				);
+
+				$.G("poolsGrid", this.getNodeValue(XML_CACHE_ITEMS));    
+				initGridMenuAndEvents();
+				
+				//设置点击率
+				var hitRateData = this.getNodeValue(XML_HIT_RATE);
+				var title = "『 " + treeNode.name + " -- 命中率：" + hitRateData + " 』";
+				$("#poolHitRate").html(title).click( showStrategy );
+			}
+		});
+	}
+
+	function showStrategy() {
+        var $panel = $("#cacheStrategyDiv");
+    	$panel.show();
+    	$panel.find(".tssForm").css("padding", "8px 10px");
+    	$panel.find(".bts").css("padding", "0px 240px");
+    	$panel.find(".max").hide();
+        $panel.find(".min").hide();
+   	}
+
+   	function hideStrategy() {
+   		$("#cacheStrategyDiv").hide();
+   	}
+ 
+	/* Grid菜单初始化 */
+	function initGridMenuAndEvents() {
+		var item1 = {
+			label:"查看缓存项信息",
+			callback:showItemInfo,
+			icon:"images/view.gif"
+		}
+		var item2 = {
+			label:"清除缓存项",
+			callback:removeCacheItem,
+			icon:"images/clear.gif"
+		}
+
+		var menu = new $.Menu();
+		menu.addItem(item1);
+		menu.addItem(item2);
+
+		var gridEl = $1("poolsGrid");
+		gridEl.contextmenu = menu;
+
+		gridEl.onRightClickRow = function() {
+			gridEl.contextmenu.show(event.clientX, event.clientY);
+		}
+	}
+
+	/* 查看缓存项信息  */
+	function showItemInfo() { 
+		var itemKey = $.G("poolsGrid").getColumnValue("key");
+		var poolCode = getTreeNodeId();
+
+		var url = URL_VIEW_ITEM + "/" + poolCode + "?key=" + itemKey;
+		window.open(url, "查看缓存项信息", "");
+	}
+
+	function removeCacheItem() {
+		var itemKey = $.G("poolsGrid").getColumnValue("key");
+		var poolCode = getTreeNodeId();
+		$.ajax({
+			url : URL_VIEW_ITEM + "/" + poolCode + "?key=" + itemKey,
+			method : "DELETE",
+			onsuccess : function() {
+				 $.G("poolsGrid").deleteSelectedRow();
+			}
+		});
+	}
+	
+	function editCacheStrategy() {
+		hideStrategy();
+
+		var cacheInfo = $.cache.XmlDatas["currentCacheInfo"];
+		var dataNode = cacheInfo.querySelector("data");
+		var fieldNodes = dataNode.querySelectorAll("row *");
+        
+        var result = {};
+        $.each(fieldNodes, function(i, node) {
+        	result[node.nodeName] = $.XML.getText(node);
+        });
+ 
+		var jsonData = JSON.stringify(result);
+		$.ajax({
+			url: URL_CACHE_EDIT,
+			method: "POST",
+			params:{"cacheCode": result.code , "jsonData":jsonData},
+			onsuccess: function() {
+				loadInitGrid();
+			}
+		});	
+	}
+
+	window.onload = init;
+
+</script>
+
+</head>
+
+<body>
+
+	<!-- 版面 开始 -->
+	<table class="panel">
+	  <tr class="header"> <td/><td/><td/><td/> </tr>
+	  <tr class="body"> 
+		<td/>
+		<td id="palette">
+		  <div>
+		  	<div class="bar">
+				<span class="icon"></span>缓存池
+				<span class="refreshTreeBT"></span>
+			</div>
+			<Tree id="tree"><div class="loading"></div></Tree>
+		  </div> 
+		</td>
+		<td class="groove">
+			<table>
+				<tr> 
+					<td id="gridTitle">
+						<span class="icon"></span>缓存池明细
+						<span id="poolHitRate"></span>
+						<span class="buttonBox" id="gridToolBar"></span>
+					</td> 
+				</tr>
+				<tr> 
+					<td id="gridContainer"> 
+						<Grid id="poolsGrid"></Grid> 
+					</td> 
+				</tr>
+			</table>                            
+		</td>
+		<td/>
+	  </tr>
+	  <tr class="footer"> <td/><td/><td/><td/> </tr>
+	</table>
+	<!-- 版面 结束 -->
+
+</body>
+</html>

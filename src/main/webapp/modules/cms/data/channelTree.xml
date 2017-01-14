@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+	<ChannelTree>
+		<actionSet>
+			<treeNode id="s3" name="Temp站点" icon="images/site_0.gif" disabled="1" isSite="1" _open="true">
+				<treeNode id="r3" name="栏目3" icon="images/channel_0.gif" disabled="1" _open="true">
+					<treeNode id="r3.1" name="栏目3.1" icon="images/channel_0.gif" disabled="1" />
+					<treeNode id="r3.2" name="栏目3.2" icon="images/channel_0.gif" disabled="1" />
+				</treeNode>
+				<treeNode id="r4" name="栏目4" icon="images/channel_1.gif" disabled="1" />
+				<treeNode id="r5" name="栏目5" icon="images/channel_0.gif" disabled="0" />
+			</treeNode>
+		</actionSet>
+	</ChannelTree>
+</Response>

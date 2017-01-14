@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <SearchArticle>
+		<xform>
+			<declare>
+				<column name="title" caption="标题" mode="string"/>
+				<column name="author" caption="作者" mode="string"/>
+				<column name="keyword" caption="关键字" mode="string"/>
+				<column name="summary" caption="摘要" mode="string"/>
+				<column name="createTime" caption="创建时间从" mode="datetime"/>
+				<column name="status" caption="流程状态" mode="combo" values="0|1|2|3|4" texts="所有流程|编辑中|待发布|已发布|已过期"/>
+			</declare>
+			<layout>
+				<TR>
+					<TD width="70"><label binding="title"/></TD>
+					<TD><input binding="title"/></TD>
+				</TR>
+				<TR>
+					<TD><label binding="author"/></TD>
+					<TD><input binding="author"/></TD>
+				</TR>
+				<TR>
+					<TD><label binding="keyword"/></TD>
+					<TD><input binding="keyword"/></TD>
+				</TR>
+				<TR>
+					<TD><label binding="summary"/></TD>
+					<TD><input binding="summary"/></TD>
+				</TR>
+				<TR>
+					<TD><label binding="createTime"/></TD>
+					<TD><input binding="createTime"/></TD>
+				</TR>
+				<TR>
+					<TD><label binding="status"/></TD>
+					<TD><input binding="status"/></TD>
+				</TR>
+			</layout>
+			<data/>
+		</xform>
+    </SearchArticle>
+</Response>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<HTML>
+<HEAD>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/> 
+<meta charset="UTF-8">
+
+<script src="tools/tssJS/tssJS.all.js"></script>
+<script src="tools/tssUtils.js"></script>
+
+<script type="text/javascript">
+
+var queryString = location.search.substring(1);
+var _params = {};
+if(queryString && queryString.length > 0) {
+	var keyValues = queryString.split("&");
+	for(var i = 0; i < keyValues.length; i++) {
+	    // 注意: token值里也可能含有等号
+		var beaforeEqualSign = keyValues[i].split("=")[0];
+		var curName  = beaforeEqualSign.replace(/^ /gi, "");
+		var curValue = keyValues[i].replace(beaforeEqualSign + "=", "");
+		_params[curName] = unescape(curValue);
+	}
+}
+
+var url = _params["url"];
+if(url) {
+	var token = _params["token"];
+	if( token && token != "null" ) { 
+		// 判断是否已经单点登录当前应用了
+		if($.Cookie.getValue("token") === token ) {
+			document.location = url;
+		}
+
+		// 非IE浏览器（chrome、FF等）可直接跳转，iframe里能写cookie
+		if( !$.isIE ) {
+		    document.cookie = "token=" + token;
+			document.location = url;
+		}
+		else { // 直接用token在当前系统进行登录
+			$.ajax({
+				url: AUTH_PATH + "login.do",
+				headers: { "token": token.replace(/\"/g, '') },
+				onexception: function(errorMsg) {
+					// document.location = url;
+				},
+				onsuccess: function() {
+					// _alert(1);
+					document.location = url;
+				}
+			});
+		}
+	}
+}
+
+</script>
+
+</HEAD>
+
+<BODY>
+
+</BODY>
+</HTML>

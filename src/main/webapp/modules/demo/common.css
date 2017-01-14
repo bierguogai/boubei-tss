@@ -1,0 +1,46 @@
+* { font-size:12px; font-family:Tahoma,Verdana,微软雅黑,新宋体; color: #555; }
+body{ background:#D2E0F2; }
+a { color:black; text-decoration:none; }
+a:hover{ color:red; text-decoration:underline; }
+
+#dlg, #dlg2 {
+	padding:3px
+}
+#dlg-buttons a, #dlg-buttons2 a {
+    width: 90px;
+}
+
+#queryContainer {
+	height: 35px;
+	padding: 8px 0 0 10px;
+	background-color: #fff;
+}
+#queryContainer label { padding-left: 5px; padding-right: 5px;}
+#queryContainer input { width: 120px; }
+
+
+.easyui-dialog form table {
+    border-collapse: collapse;
+}
+
+.easyui-dialog form table { border: 1px solid #999; }
+
+.easyui-dialog form table tr { height: 40px; }
+
+.easyui-dialog form table td {
+    border: 1px solid #dddddd;
+    padding: 5px;
+}
+
+.easyui-dialog form table .label {
+    background-color: #eee;
+    width:60px;
+    text-align: right;
+}
+.easyui-dialog form table input.easyui-textbox {
+    width:172px;
+}
+
+.easyui-dialog form table input.easyui-datetimebox {
+    width:172px;
+}

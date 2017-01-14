@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Response> 
+  <ConfigParams> 
+    <xform> 
+      <declare> 
+        <column name="channelId" caption="栏目ID" mode="string"/>  
+        <column name="pageSize" caption="显示条数" mode="string"/>  
+        <column name="columns" caption="列顺序" mode="string"/>  
+        <column name="needPageInfo" caption="是否显示分页信息" mode="combo" values="true|false" texts="是|否"/> 
+      </declare>  
+      <layout> 
+        <TR> 
+          <TD width="120">
+            <label binding="channelId"/>
+          </TD>  
+          <TD> 
+            <input binding="channelId" type="text"/>
+            <br/> 
+          </TD> 
+        </TR>  
+        <TR> 
+          <TD>
+            <label binding="pageSize"/>
+          </TD>  
+          <TD> 
+            <input binding="pageSize" type="text"/>
+            <br/> 
+          </TD> 
+        </TR>  
+        <TR> 
+          <TD>
+            <label binding="columns"/>
+          </TD>  
+          <TD> 
+            <input binding="columns" type="text"/>
+            <br/> 
+          </TD> 
+        </TR>  
+        <TR> 
+          <TD>
+            <label binding="needPageInfo"/>
+          </TD>  
+          <TD> 
+            <input binding="needPageInfo" type="text"/>
+            <br/> 
+          </TD> 
+        </TR> 
+      </layout>  
+      <data></data> 
+    </xform> 
+  </ConfigParams> 
+</Response>

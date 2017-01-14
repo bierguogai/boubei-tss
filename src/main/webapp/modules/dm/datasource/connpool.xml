@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><Response><TL>
+<xform>
+	<declare prefix="cacheStrategy">
+		<column name="code" caption="数据源编码" empty="false" editable="false"/>
+		<column name="name" caption="数据源名称" empty="false"/>
+		<column name="interruptTime" caption="等待时间(微秒)" mode="number" inputReg="^\d*$" empty="false" errorMsg="请填入整数数字"/>	
+		<column name="cyclelife" caption="连接有效期(微秒)" mode="number" inputReg="^\d*$" empty="false" errorMsg="请填入整数数字"/>
+		<column name="initNum"   caption="初始化连接个数" mode="number" inputReg="^\d*$" empty="false" errorMsg="请填入整数数字"/>
+		<column name="poolSize"  caption="最大连接个数" mode="number" inputReg="^\d*$" empty="false" errorMsg="请填入整数数字"/>
+		
+		<column name="driver"  caption="数据库连类型" empty="false" mode="combo" 
+			values="oracle.jdbc.driver.OracleDriver|com.mysql.jdbc.Driver" 
+			texts="Oracle|MySQL"/>
+		<column name="connUrl"  caption="数据库连接地址" empty="false"/>
+		<column name="connUser" caption="数据库连接账号" empty="false"/>
+		<column name="connPwd"  caption="数据库连接密码" type="password" empty="false" />
+	</declare>
+	<layout>
+		<TR>
+			<TD width="100"><label binding="name"/></TD>
+			<TD><input binding="name"/></TD>
+			<TD width="100"><label binding="code"/></TD>
+			<TD><input binding="code"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="poolSize"/></TD>
+			<TD><input binding="poolSize" style="width:100px;"/></TD>
+			<TD><label binding="initNum"/></TD>
+			<TD><input binding="initNum" style="width:100px;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="cyclelife"/></TD>
+			<TD><input binding="cyclelife" style="width:100px;"/></TD>
+			<TD><label binding="interruptTime"/></TD>
+			<TD><input binding="interruptTime" style="width:100px;"/></TD>
+		</TR>
+		<TR>
+            <TD colspan="4"> <b style="color: red; padding: 8px 0; display: block;">*注: 0或空表示不限制，数据源编码为自动生成</b> </TD>
+        </TR>
+        <TR>
+            <TD colspan="4"><hr noshade="true" size="1"/></TD>
+        </TR>
+        <TR>
+			<TD><label binding="driver"/></TD>
+			<TD colspan="3">
+				<input binding="driver" style="width:150px;"/>
+				<b style="color: red; padding-left: 8px; display: inline-block;">目前只支持Oracle和MySQL</b>
+			</TD>
+		</TR>
+		<TR>
+			<TD><label binding="connUrl"/></TD>
+			<TD colspan="3"><textarea binding="connUrl" style="width:88%;height:80px"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="connUser"/></TD>
+			<TD><input binding="connUser"/></TD>
+			<TD><label binding="connPwd"/></TD>
+			<TD><input binding="connPwd"/></TD>
+		</TR>
+	</layout>
+	<data>
+	</data>
+</xform>
+</TL></Response>

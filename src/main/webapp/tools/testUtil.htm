@@ -1,0 +1,53 @@
+<!DOCTYPE HTML>
+<HTML xmlns:WorkSpace xmlns:Tree xmlns:Grid xmlns:Form>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>test tssUtil.js</title>
+
+<link href="tssJS/css/boubei.css" rel="stylesheet">
+<link href="../css/css.css" rel="stylesheet">
+
+<script src="tssJS/tssJS.all.js"></script>
+<script src="tssUtils.js"></script>
+
+<style>
+		 
+	</style>
+
+
+	<script type="text/javascript">
+
+		window.onload = function() {
+
+			testMyAlert();
+
+			createImportDiv('XML only', null, null);
+		};
+
+		function testMyAlert() {
+			$.showWaitingLayer();
+		 	$.showWaitingLayer();
+		 	$.showWaitingLayer();
+
+		 	window.setTimeout($.hideWaitingLayer, 2000);
+		 	$.hideWaitingLayer();
+		 	$.hideWaitingLayer();
+
+			var info = "出错了！";
+			var detail = "1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop1234567890qwertyuiop!!!!!!!!!!1234567890qwertyuiop";
+
+		 	alert(info, detail);
+		}
+
+	</script>
+</head>
+
+<body>
+
+ <div class="loading"></div>
+
+ <div class="separator"></div>
+
+</body>
+</html>

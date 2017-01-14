@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<portlet> 
+  <property> 
+    <name>后台管理导航（FM）</name>  
+    <version>V1.0 by Jon.King</version>  
+    <description> <![CDATA[登录后logo + 导航栏。包括修改用户信息 和 退出登录的功能。 00BFFF]]> </description> 
+  </property>  
+  <script> <![CDATA[function doMenu(contentId, methodName, params){
+    if("noop" != methodName){
+        var obj = $$(contentId);
+        try{ obj.portlet[methodName](params); }catch(e){}
+    }
+}
+function ${id}_onload() {
+  $.ajax({
+    url: "auth/message/num",
+    method: "GET",
+    type : "json",
+    ondata: function() {
+      var num = this.getResponseJSON();
+      if(num > 0) {
+        $.tssTip("您的站内信箱里有<b> " + num + " </b>条新的待办事项，<a href='javascript:void(0)' onclick='openMsgPage()'>点击查看。</a>");
+      }
+    }
+  });
+}
+function openMsgPage() {
+    doMenu('16', 'jumpTo', 'appCode:\'TSS\',redirect:\'/tss/redirect.html\',url:\'modules/um/message.html\'');
+}]]> </script>  
+  <style> <![CDATA[.top { height: 41px; background-image: url(${basepath}top_bg.jpg);}
+.top .logo { width: 571px;  height: 41px; background-image: url(${basepath}#{logoURL});}
+
+.menu * { padding:0; margin:0; }
+.menu a:hover {  text-decoration: none; }
+.menu { margin:1px 0px; position:absolute; top:0px; right:0px; font-size:13px; } 
+.menu ul { list-style-type: none; } 
+.menu ul li { float:left; position:relative; width:88px; text-align:center; } 
+.menu ul li a, 
+.menu ul li a:visited { 
+	display:block; height:25px; line-height:25px; 
+	color: #333; background: #049cdb; 
+} 
+.menu ul li ul { display: none; } 
+.menu ul li:hover a { color:#fff; background:#AFEEEE; border-bottom:1px solid #fff; } 
+.menu ul li:hover ul { display:block; position:absolute; top:25px; left:0; width:88px; } 
+.menu ul li:hover ul li a { display:block; background:#049cdb; color:#333; } 
+.menu ul li:hover ul li a:hover { color:#fff; font-weight:bold; }]]> </style>  
+  <html> <![CDATA[<div class="top" id="${id}">
+<div class="logo"></div>
+ 
+<#assign data = common.menuService.getNavigatorXML(#{menuId}) />
+<#assign doc  = common.manager.translateValue(data) />
+<#assign menu = doc.Menu />
+<#assign i  = 0 />
+<div class="menu"> 
+    <ul> 
+    <#list menu.MenuItem as item>
+        <script>
+            function openMenu${item.@id}(){
+                doMenu('${item.@contentId}', '${item.@methodName}', '${item.@params}');
+            };
+        </script>
+        <li>
+            <a href="javascript:void(0)" onclick="openMenu${item.@id}();">${item.@name}</a>
+            <ul>
+            <#list item.MenuItem as subItem>
+            <script>
+                function openMenu${subItem.@id}(){
+                    doMenu('${subItem.@contentId}', '${subItem.@methodName}', '${subItem.@params}');
+                };
+            </script>
+              <li><a href="javascript:void(0)" onclick="openMenu${subItem.@id}();">${subItem.@name}</a></li>
+            </#list>
+            </ul>
+        </li>
+        <#if i = 0 >
+            <script>  
+                var firstMenu = ${item.@id};
+            </script>
+        </#if>
+        <#assign i  = i + 1 />
+    </#list>
+    </ul>  
+</div> 
+  </div>
+
+<script>
+    // 如果有指定的菜单，则自动打开该菜单; 没有则打开第一个菜单对应的页面
+    var pointMenu = $.Query.get("_menu") || firstMenu;
+    if( pointMenu ) {         
+        $.Event.addEvent(window, "load", function(){
+            eval("openMenu" + pointMenu + "()");   
+        }); 
+    }
+</script>]]> </html>  
+  <events> 
+    <attach event="onload" onevent="${id}_onload"/> 
+  </events>  
+  <parameters> 
+    <param name="menuId" defaultValue="18"/>  
+    <param name="logoURL" defaultValue="logo.jpg"/> 
+  </parameters> 
+</portlet>

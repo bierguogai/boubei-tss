@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>演示CRUD</title>
+
+<link rel="stylesheet" href="common.css">
+
+<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+
+<script src="../../tools/easyui/jquery.min.js"></script>
+<script src="../../tools/easyui/jquery.easyui.min.js"></script>
+<script src="../../tools/easyui/datagrid-filter.js"></script>
+<script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+
+<script src="common.js"></script>
+
+<style type="text/css">
+    
+
+</style>
+
+<script type="text/javascript">
+
+BASE_URL = "../../demo";
+GET_URL   = BASE_URL + '/';  //{id}
+SAVE_URL  = BASE_URL;
+DELTE_URL = BASE_URL + '/';  //{id}
+QUERY_URL = BASE_URL + 'query';
+
+$(document).ready(function(){
+    query();
+
+    initCombobox('stateId', 'EntityState');
+    initCombobox('param3', 'EntityState');
+});
+
+function create(){
+    openDialog('新增', true);
+
+    initCombobox('stateId', 'EntityState', {}, 1);
+}
+
+function update(){
+    var row = getSelectedRow(); 
+    if (row){
+        openDialog('修改');
+
+        $.get(GET_URL + row.id, {}, function(data){
+            data['state.id'] = data.state.id;
+
+            $('#fm').form('load', data);
+        });
+    }
+}
+
+var FIELDS_1 = [
+        { field : 'ck', checkbox: true},
+        { field : 'id', title : 'ID', width : 90, sortable: true},
+        { field : 'name', title : '名称', width : 90 },
+        { field : 'code', title : '编码', width : 80, sortable: true },
+        { field : 'stateName', title : '状态', width : 80, sortable: true },
+        { field : 'udf1', title : '自定义1', width : 80 }, 
+        { field : 'udf2', title : '自定义2', width : 80 }, 
+        { field : 'udf3', title : '自定义3', width : 80 }
+    ];
+
+function query(params) {
+    params = params || {};
+
+    var dg = $('#t1').datagrid({
+        url: '../../demo/query',
+        queryParams: params,
+        fit : true,
+        fitColumns : true,
+        pagination : true,
+        pageSize : 10,
+        rownumbers : true,
+        singleSelect : true,
+        checkOnSelect : true,
+        selectOnCheck : true,
+        // remoteSort : false,
+        multiSort : true,
+        toolbar: [ 
+            { text: '新增', iconCls: 'icon-add', handler: create }, 
+            '-', { text: '修改', iconCls: 'icon-edit', handler: update }, 
+            '-', { text: '删除', iconCls : 'icon-remove', handler : _remove }, 
+            '-', { text: '导出', handler : _export }
+        ] ,
+        columns : [FIELDS_1],
+        loadFilter: function(data){
+            $.each(data.rows, function(i, item){
+                item.stateName = item.state.text;
+            });
+            return data;
+        },
+        onHeaderContextMenu: function(e, field){
+            e.preventDefault();
+            if (!cmenu){
+                createColumnMenu();
+            }
+            cmenu.menu('show', {left:e.pageX, top:e.pageY});
+        }
+    });
+
+    // datagrid-filter 适合全部数据在一页里加载完成的场景使用。 和分页一起用翻页时出不来数据
+    // dg.datagrid('enableFilter', [{
+    //         field:'id',
+    //         type:'numberbox',
+    //         options:{precision:1},
+    //         op:['equal','notequal','less','greater']
+    //     }]);
+}
+
+function beginQuery() {
+    var params = {};
+    params.code = $('#param1').val();
+    params.name = $('#param2').val();
+    params.stateId = $('#param3').textbox("getValue");
+    query(params);
+}
+
+</script>
+
+</head>
+<body>
+    <div id="main" class="easyui-layout" fit="true" >
+        <div id="queryContainer" data-options="region:'north'" border="false">
+            <label>编码:</label><input id="param1" class="easyui-textbox"></input>
+            <label>名称:</label><input id="param2" class="easyui-textbox"></input>
+            <label>状态:</label><input id="param3" class="easyui-textbox"></input>
+            <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'" onclick='beginQuery()'>查询</a>&nbsp;&nbsp;
+            <a href="#" class="easyui-linkbutton" onclick='moreParams()'>更多条件</a>&nbsp;
+            <a href="#" class="easyui-linkbutton" onclick='lessParams()'>收起条件</a>
+        </div>
+        <div id="dataContainer" data-options="region:'center'" border="false" title="数据列表">
+            <table id="t1" border="false"></table>
+        </div>
+    </div>
+
+    <div id="dlg" class="easyui-dialog" style="width:800px;height:200px;" closed="true" buttons="#dlg-buttons">
+        <form id="fm" method="post" novalidate>
+            <input name="id" type="hidden">
+            <table>
+                <tr>
+                    <td class="label">编码:</td>
+                    <td>
+                        <input name="code" class="easyui-textbox" required="true">
+                    </td>
+                    <td class="label">名称:</td>
+                    <td>
+                        <input name="name" class="easyui-textbox" required="true">
+                    </td>
+                    <td class="label">状态:</td>
+                    <td>
+                        <input name="state.id" id="stateId" class="easyui-textbox" required="true">
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label">自定义1:</td>
+                    <td>
+                        <input name="udf1" class="easyui-textbox">
+                    </td>
+                    <td class="label">自定义2:</td>
+                    <td>
+                        <input name="udf2" class="easyui-textbox">
+                    </td>
+                    <td class="label">自定义3:</td>
+                    <td>
+                        <input name="udf3" class="easyui-textbox" validType="email">
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+    <div id="dlg-buttons">
+        <a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="save()">保存</a>
+        <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="closeDialog()" >取消</a>
+    </div>
+
+</body>
+</html>

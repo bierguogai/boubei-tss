@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<portlet>
+  <property>
+    <name>当前位置</name>
+    <version>V1.0 by Jon.King</version>
+    <description><![CDATA[显示当前栏目位置。]]></description>
+  </property>
+  <script><![CDATA[function ${id}_onload(){
+    var obj = $("${id}_box");
+    var channelId = Query.get("channelId");
+    var id = Query.get("id");
+    
+    <#assign testChannelId = "6"/>
+    <@common.getChannelTree4Portlet common.Long.valueOf(channelId?default(testChannelId))/>
+    obj.innerHTML = "${common.doc.actionSet.treeNode.@name}";
+}]]></script>
+  <style><![CDATA[]]></style>
+  <html><![CDATA[<div id="${id}">
+  <div style="padding-top:6px;padding-bottom:6px;text-align:left;">&nbsp;&nbsp;·
+      当前位置： <a href="${common.defaultPageUrl}">首页</a> &raquo; <span id="${id}_box"></span>
+  <div style="padding-top:6px;padding-bottom:6px;"><img src="${basepath}dh_line.gif"></img></div>
+</div>]]></html>
+  <events>
+    <attach event="onload" onevent="${id}_onload"/>
+  </events>
+  <parameters/>
+</portlet>

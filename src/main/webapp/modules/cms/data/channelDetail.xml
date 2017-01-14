@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+	<ChannelInfo>
+		<xform>
+			<declare>
+				<column name="name" caption="栏目名称" mode="string" empty="false" maxLength="50"/>
+				<column name="overdueDate" caption="文章过期时间" mode="combo" values="0|1|2|3|4|5" texts="一年|六个月|一个季度|一个月|一个星期|一天"/>
+				<column name="remark" caption="栏目描述" mode="string" maxLength="255"/>
+			</declare>
+			<layout>
+				<TR>
+					<TD width="80"><label binding="name"/></TD>
+					<TD><input binding="name"/></TD>
+				</TR>
+				<TR>
+					<TD><label binding="overdueDate"/></TD>
+					<TD><input binding="overdueDate"/></TD>
+				</TR>
+				<TR>
+					<TD><label binding="remark"/></TD>
+					<TD>
+						<textarea binding="remark" style="width:90%;height:60px;"/>
+					</TD>
+				</TR>
+			</layout>
+			<data><row><name><![CDATA[TSS门户]]></name><overdueDate><![CDATA[5]]></overdueDate><remark><![CDATA[asdasddfg萨斯]]></remark></row></data>
+		</xform>
+	</ChannelInfo>
+</Response>

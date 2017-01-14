@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<portlet>
+  <property>
+    <name>logo+导航_登录后（模板引擎）</name>
+    <version>V1.0 by Jon.King</version>
+    <description><![CDATA[登录后logo + 导航栏。包括修改用户信息 和 退出登录的功能。]]></description>
+  </property>
+  <script><![CDATA[function ${id}_onload(){
+    var obj = $("${id}");
+    var btLogout = $("${id}_btLogout");
+    var btChangeUserInfo = $("${id}_btChangeUserInfo");
+
+    btLogout.onclick = function(){
+        logout();
+    }
+    btChangeUserInfo.onclick = function(){
+        window.showModalDialog("/pms/userInfo.htm",{},"dialogWidth:550px;dialogHeight:400px");
+    }
+}
+function settingPos(id,menu){
+    var obj = menu;
+    var subMenuDiv = document.getElementById(id);
+    var subMenu = document.getElementById("subMenu");
+    var baseoffsetLeft = document.getElementById("menu").childNodes(0).offsetLeft;
+
+    if(obj != null && subMenuDiv != null && subMenu != null){
+        var x = Math.floor(obj.offsetLeft + obj.offsetWidth/2 - subMenuDiv.offsetWidth/2) + parseInt(baseoffsetLeft);
+        if(x + subMenuDiv.offsetWidth > subMenu.offsetWidth){
+            x = subMenu.offsetWidth - subMenuDiv.offsetWidth;
+        }else if(0 > x){
+            x = parseInt(baseoffsetLeft);
+        }
+        subMenuDiv.style.left = x;
+    }
+}
+function showSubMenu(id){
+    var subMenuDiv = document.getElementById(id);
+    if(subMenuDiv != null){
+        subMenuDiv.style.visibility = "visible";
+    }
+}
+function hidSubMenu(id){
+    var subMenuDiv = document.getElementById(id);
+    if(subMenuDiv != null){
+        subMenuDiv.style.visibility = "hidden";
+    }
+}
+
+function doMenu(contentId,methodName,params){
+    if("noop" != methodName){
+        var obj = $(contentId);
+
+        try{
+            obj.portlet[methodName](params);
+        }catch(e){        
+        }
+    }
+}
+function logout(){
+	var p = new HttpRequestParams();
+	p.url = "/pms/logout.in";
+
+	var request = new HttpRequest(p);
+	request.onsuccess = function(){
+		Cookie.del("token","/pms");
+		Cookie.del("OA","/pms");
+		Cookie.del("UMS","/pms");
+		Cookie.del("PMS","/pms");
+		Cookie.del("CMS","/pms");
+		Cookie.del("DomAuthSessId","/pms");
+		Cookie.del("DomAuthSessId","/");
+		Cookie.del("LtpaToken","/pms");
+		Cookie.del("LtpaToken","/");
+		Cookie.del("JSESSIONID","/pms");
+		Cookie.del("JSESSIONID","/");
+		location.href = "/pms/gzcz.portal";
+	}
+	request.send();
+}
+]]></script>
+  <style><![CDATA[]]></style>
+  <prototypeStyle><![CDATA[#menu {
+    BORDER-TOP: #fff 1px solid; HEIGHT: 24px; BACKGROUND-COLOR: #004f91; text-align:left
+}
+#menu td {
+    FONT-SIZE: 14px; FONT-FAMILY: "宋体";
+}
+#menu A {
+    PADDING-RIGHT: 0.7em; PADDING-LEFT: 0.7em; PADDING-BOTTOM: 0px; MARGIN-LEFT: 3px; COLOR: #fff; PADDING-TOP: 0px; BORDER-BOTTOM: medium none; TEXT-DECORATION: none
+}
+#subMenu {
+    BACKGROUND-IMAGE: url(${basepath}submenu_bg.gif); BORDER-BOTTOM: #fff 1px solid; POSITION: relative; HEIGHT: 20px
+}
+#subMenu DIV {
+    VISIBILITY: hidden; POSITION: absolute; TOP: 0px; HEIGHT: 15px
+}
+#subMenu td {
+    FONT-SIZE: 12px; PADDING-TOP: 3px; FONT-FAMILY: "宋体"; PADDING-RIGHT: 5px; PADDING-LEFT: 5px;
+}
+#subMenu A {
+    font-size:12px;COLOR: #ffff00; PADDING-TOP: 0px; TEXT-DECORATION: none
+}]]></prototypeStyle>
+  <html><![CDATA[<table cellSpacing=0 cellPadding=0 width=100% align=center border=0 id="${id}">
+  <tr>
+    <td>
+      <div style="background-color:#1993E8;height:3px;font-size:1px;"></div>
+      <div style="background-color:#FFFFFF;position:relative;">
+        <img src="${basepath}#{logoURL}"/><div style="position:absolute;right:0px;top:0px;">
+	<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"         	
+              codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,29,0" width="400" height="80">
+		<param name="movie" value="${basepath}banner.swf">
+		<param name="quality" value="high">
+		<param name="wmode" value="transparent">
+		<embed src="${basepath}banner.swf" width="400" height="80" quality="high"
+			pluginspage="http://www.macromedia.com/go/getflashplayer" 
+			type="application/x-shockwave-flash" wmode="transparent"/>
+	</object>
+        </div>
+        <div style="position:absolute;left:450px;top:20px;">&nbsp;<strong>欢迎光临：[${common.Environment.getUserName()}]</strong>
+	  <br/><br/>【<a href="#" id="${id}_btLogout">退出系统</a>】
+	            【<a href="#" id="${id}_btChangeUserInfo">修改个人信息</a>】</div></div></td>
+  </tr>
+  <tr>
+    <td>
+      <div id="menu">
+        <#assign data = common.menuService.getMenuXML(#{menuId}) />
+        <#assign doc  = common.manager.translateValue(data) />
+        <#assign menu = doc.Menu />
+        <#assign i  = 0 />
+        <table height="100%" border="0" cellspacing="0">
+          <tr>
+            <#list menu.MenuItem as item>
+            <td onmouseover="settingPos('subMenu_${item.@id}',this);showSubMenu('subMenu_${item.@id}')"
+			    onmouseout="hidSubMenu('subMenu_${item.@id}')">
+              <a href="#" onclick="doMenu('${item.@contentId}','${item.@methodName}','${item.@params}')">${item.@name}</a></td>
+            <#if i = 0 >
+              <script>
+			    // 默认打开第一个菜单对应的页面
+                window.attachEvent("onload", function(){
+                    doMenu('${item.@contentId}','${item.@methodName}','${item.@params}');
+                });
+              </script>
+            </#if>
+            <#assign i  = i + 1 />
+            </#list>
+          </tr>
+        </table>
+      </div>
+      <div id=subMenu>
+        <#list menu.MenuItem as item>
+        <div id="subMenu_${item.@id}" onMouseOver="showSubMenu('subMenu_${item.@id}')" 
+		     onmouseout="hidSubMenu('subMenu_${item.@id}')">
+          <table border="0" cellspacing="0">
+            <tr>
+            <#list item.MenuItem as item2>
+              <td><a href="#" onclick="doMenu('${item2.@contentId}','${item2.@methodName}','${item2.@params}')">${item2.@name}</a></td>
+            </#list>
+            </tr>
+          </table>
+        </div>
+        </#list>
+      </div>
+    </td>
+  </tr>
+</table>]]></html>
+  <events>
+    <attach event="onload" onevent="${id}_onload"/>
+  </events>
+  <parameters>
+    <param name="menuId" defaultValue="195"/>
+    <param name="logoURL" defaultValue="logo.jpg"/>
+  </parameters>
+</portlet>

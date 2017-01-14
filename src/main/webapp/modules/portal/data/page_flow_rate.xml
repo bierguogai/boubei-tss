@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+	<PageFlowRate>
+        <grid>
+            <declare>
+                <column name="url" caption="页面" mode="string" align="center"/>
+                <column name="pv"  caption="流量" mode="string" align="center"/>
+	        </declare>
+            <data>
+                <row url="首页" pv="100"/>
+                <row url="门户主页" pv="80"/>
+            </data>
+        </grid>
+	</PageFlowRate>
+</Response>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<portlet> 
+  <property> 
+    <name>图文列表</name>  
+    <version/>  
+    <description> <![CDATA[]]> </description> 
+  </property>  
+  <script> <![CDATA[]]> </script>  
+  <style> <![CDATA[.clearfix { *zoom: 1; }
+.clearfix:before,
+.clearfix:after { display: table; line-height: 0; content: ""; }
+.clearfix:after { clear: both; }
+
+html { height: 100%; }
+body {
+  margin:0;
+  font-size: 14px;
+  font-family:"STHeiti","Arial","Microsoft Yahei","Hiragino Sans GB","Simsun,sans-self";
+  background-color: #f0f0f0;
+}
+
+* { box-sizing:border-box; }
+a { text-decoration: none; }
+.container { width: 1000px; margin: 0 auto; }
+
+.use-box {
+    background-color: #fff;
+    padding: 20px 25px 20px 5px;
+    margin: 0 10px 20px 10px;
+}
+.use-box .use-item {
+    width: 296px; height: 300px;
+    margin: 0 0 20px 20px;
+    position: relative;
+    float: left;
+}
+.use-box .use-item .big-pic img {
+    height: 170px;
+}
+.use-box .use-item .title {
+    height: 60px; line-height: 24px;
+    margin: 15px 20px;
+    font-size: 16px; font-weight: bold;
+}
+.use-box .use-item .title .a-color-blue { color: #333; }
+.use-box .use-item .title .a-color-blue:hover { color:#428bca; }
+.use-box .use-item .use-btm {
+    width: 100%; height: 46px; line-height: 46px;
+    padding: 0 20px;
+    position: absolute; left: 0; bottom: 0;
+    background-color: #f9f9f9;
+}
+
+.shadow-box-noshadow {background-color: #fff; margin-bottom: 10px; border: 1px solid #cacaca;}
+.shadow-box {background-color: #fff; margin-bottom: 10px; border: 1px solid #cacaca;}
+.shadow-box:hover {box-shadow: 0px 2px 2px rgba(0, 0, 0, .175);}
+ 
+.time {font-size:12px;color:#999;}
+.big-pic {width:100%;text-align:center;overflow:hidden;}
+.big-pic img { max-width:100%; }
+
+.i-icon {
+    display: inline-block; width: 20px; height: 20px;
+    background: url("${basepath}icon2.png") no-repeat;
+    vertical-align:text-bottom;
+}
+.cmt { color: #999; font-size: 12px; float: right!important; }
+.cmt:hover { color: #333; }
+.icon-cmt { background-position: -91px -8px }
+.cmt:hover .icon-cmt { background-position: -145px -247px; }]]> </style>  
+  <html> <![CDATA[<@common.getArticleListXML #{channelId}, 1, 12/>
+<div class="container wrap page-article" id="${id}">
+    <div class="use-box shadow-box-noshadow clearfix">
+
+<#if common.totalPageNum != '0'>
+  <#list common.articleList.item as item>
+   <#list item.Attachment as attach>
+        <div class="shadow-box use-item">
+            <div class="big-pic">
+                <a href="${common.articlePageUrl}&articleId=${item.id}">
+                    <img src="${attach.url}" alt="${item.title}">
+                </a>
+            </div>
+            <h3 class="title">
+                <a class="a-color-blue" href="${common.articlePageUrl}&articleId=${item.id}">
+                     ${item.title}
+                </a>
+            </h3>
+            <div class="use-btm">
+                <span class="time">${item.issueDate}</span>
+                <a class="cmt" href="${common.articlePageUrl}&articleId=${item.id}&cmt=true" title="评论">
+                    <i class="i-icon icon-cmt"></i>${item.commentNum}
+                </a>
+            </div>
+        </div>
+        <#break>
+     </#list>
+  </#list>
+</#if>
+
+    </div>
+</div>]]> </html>  
+  <events></events>  
+  <parameters> 
+    <param name="channelId" defaultValue="13"/> 
+  </parameters> 
+</portlet>

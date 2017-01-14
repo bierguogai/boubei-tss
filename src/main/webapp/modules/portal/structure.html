@@ -1,0 +1,74 @@
+<!DOCTYPE HTML>
+<HTML xmlns:WorkSpace xmlns:Tree xmlns:Grid>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>门户结构管理</title>
+
+<link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link href="../../css/css.css" rel="stylesheet">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssUtils.js"></script>
+
+<script src="structure.js"></script>
+
+</head>
+
+<body>
+
+<table class="panel" >
+   <tr class="header"> <td/><td/><td/><td/> </tr>
+   <tr class="body"> 
+    <td/>
+    <td id="palette">
+      <div>
+        <div class="bar">
+            <span class="icon"></span>门户结构
+            <span class="search"><input id="searchKey"/><input type="button" value="查 找"/></span>
+            <span class="refreshTreeBT"></span>
+        </div>
+        <Tree id="tree" moveable="true"><div class="loading"></div></Tree>
+      </div> 
+    </td>  
+    <td class="groove">
+			<!-- 标签区域 开始 -->
+			<WorkSpace:Box id="ws">
+			  <!-- page1 开始 -->
+			  <WorkSpace:Page id="page1">
+				  <div id="page1Form"></div>
+          <WorkSpace:PageStep>
+           <input type="button" class="tssbutton medium blue" value="保 存" id="page1BtSave"/>
+          </WorkSpace:PageStep>
+			  </WorkSpace:Page>
+			  <!-- page1 结束 -->
+
+			  <!-- page2 开始 -->
+			  <WorkSpace:Page id="page2" class="tight">
+			    <Tree id="page2Tree" selectSelf="true"></Tree>
+          <WorkSpace:PageStep>
+             <input type="button" class="tssbutton medium blue" value="保 存" id="page2BtSave"/>
+          </WorkSpace:PageStep>
+			  </WorkSpace:Page>
+			  <!-- page2 结束 -->
+
+			  <!-- page3 开始 -->
+			  <WorkSpace:Page id="page3">
+			    <!-- 缓存列表 开始 -->
+          <div id="page3CacheList"></div>
+          <WorkSpace:PageStep>
+             <input type="button" class="tssbutton medium blue" value="保 存" id="page3BtSave"/>
+          </WorkSpace:PageStep>
+          <!-- 缓存列表 结束 -->
+			  </WorkSpace:Page>
+			  <!-- page3 结束 -->
+			</WorkSpace:Box>
+			<!-- 标签区域 结束 -->
+    </td>
+    <td/>
+  </tr>
+  <tr class="footer"> <td/><td/><td/><td/> </tr>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?><Response><DetailInfo>
+<xform>
+			<declare prefix="decorator">
+				<column name="id" caption="ID号" mode="hidden" editable="false"/>
+				<column name="name" caption="名称" mode="string" maxLength="50" empty="false"/>
+				<column name="description" caption="备注" mode="string"/>
+                
+                <column name="script" caption="JS脚本" mode="string"/>
+                <column name="style" caption="CSS样式" mode="string"/>
+                <column name="html" caption="HTML片段" mode="string" empty="false"/>
+                <column name="events" caption="事件" mode="string"/>
+                <column name="parameters" caption="自定义参数" mode="string"/>
+				<column name="definition" caption="描述信息" mode="string"/>
+				<column name="version" caption="版本信息" mode="string" maxLength="100"/>
+			</declare>
+			<layout>
+				<TR>
+					<TD width="60"><label binding="name"/></TD>
+					<TD><input binding="name"/></TD>
+				</TR>
+				<TR>
+					<TD><label binding="html"/></TD>
+					<TD><textarea binding="html" style="width:95%;height:200px"/></TD>
+				</TR>
+				<TR>
+					<TD><label binding="script"/></TD>
+					<TD><textarea binding="script" style="width:95%;height:100px"/></TD>
+				</TR>
+				<TR>
+					<TD><label binding="style"/></TD>
+					<TD><textarea binding="style" style="width:95%;height:100px"/></TD>
+				</TR>
+				<TR>
+					<TD><label binding="events"/></TD>
+					<TD><textarea binding="events" style="width:95%;height:40px"/>注:请按照"事件名=处理方法"格式书写，例如"onload=${js.layout}.onload"</TD>
+				</TR>
+				<TR>
+					<TD>
+						<label binding="parameters"/>
+						<a href="javascript:void(0)" onclick="editParamsTemplate(2)" class="tssbutton small blue">配置</a>
+					</TD>
+					<TD><textarea binding="parameters" style="width:95%;height:40px"/>注:请按照"参数名=参数值"格式书写，例如"bgColor=#FFFFFF"
+					</TD>	
+				</TR>
+				<TR>
+					<TD><label binding="description"/></TD>
+					<TD><textarea binding="description" style="width:95%;height:40px"/></TD>
+				</TR>
+				<TR>
+					<TD><label binding="version"/></TD>
+					<TD><input binding="version" /></TD>
+				</TR>
+			</layout>
+			<data><row><portNumber><![CDATA[0]]></portNumber><createTime><![CDATA[Fri Sep 20 16:11:15 CST 2013]]></createTime><definition><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<decorator>
+  <property>
+    <name>banner加导航</name>
+    <version/>
+    <description>&lt;![CDATA[]]&gt;</description>
+  </property>
+  <script>&lt;![CDATA[]]&gt;</script>
+  <style>&lt;![CDATA[#${id} #menu {
+    BORDER-TOP: #fff 1px solid; HEIGHT: 26px; BACKGROUND-COLOR: #004f91; TEXT-ALIGN: center
+}
+#${id} #menu td {
+    FONT-SIZE: 14px; FONT-FAMILY: "宋体";
+}
+#${id} #menu A {
+    PADDING-RIGHT: 0.7em; PADDING-LEFT: 0.7em; PADDING-BOTTOM: 0px; MARGIN-LEFT: 3px; COLOR: #fff; PADDING-TOP: 0px; BORDER-BOTTOM: medium none; TEXT-DECORATION: none
+}
+#${id} #subMenu {
+    BACKGROUND-IMAGE: url(${basepath}submenu_bg.gif); BORDER-BOTTOM: #fff 1px solid; POSITION: relative; HEIGHT: 22px
+}
+#${id} #subMenu DIV {
+    VISIBILITY: hidden; POSITION: absolute; TOP: 0px; HEIGHT: 20px
+}
+#${id} #subMenu td {
+    FONT-SIZE: 12px; PADDING-TOP: 3px; FONT-FAMILY: "宋体"; PADDING-RIGHT: 5px; PADDING-LEFT: 5px;
+}
+#${id} #subMenu A {
+    COLOR: #fff; PADDING-TOP: 0px; TEXT-DECORATION: none
+}]]&gt;</style>
+  <html>&lt;![CDATA[<table cellSpacing=0 cellPadding=0 width=1000 align=center border=0 id="${id}">
+  <tr>
+    <td height=143>
+      <div style="background-color:#1993E8;height:5px;font-size:1px;"></div>
+      <div><object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,29,0" width="1000" height="145">
+        <param name="movie" value="${basepath}banner.swf">
+        <param name="quality" value="high">
+        <param name="wmode" value="transparent">
+        <embed src="${basepath}banner.swf" width="1000" height="145" quality="high" pluginspage="http://www.macromedia.com/go/getflashplayer" type="application/x-shockwave-flash" wmode="transparent"></embed>
+      </object></div>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      ${content}
+    </td>
+  </tr>
+</table>]]&gt;</html>
+  <events><attach event="onload" onevent="${id}_onLoad"/></events>
+  <parameters>
+	<param name="tableWidth" defaultValue="100%"/>
+    <param name="bgColor" defaultValue="#FFFFFF"/>
+  </parameters>
+</decorator>]]>
+</definition>
+<seqNo><![CDATA[1]]></seqNo>
+<creatorId><![CDATA[-1]]></creatorId>
+<type><![CDATA[2]]></type><levelNo><![CDATA[3]]></levelNo>
+<lockVersion><![CDATA[0]]></lockVersion>
+<version><![CDATA[]]></version><id><![CDATA[8]]></id><parentId><![CDATA[7]]></parentId>
+<creatorName><![CDATA[Admin]]></creatorName><decode><![CDATA[000020000200001]]></decode>
+<isDefault><![CDATA[0]]></isDefault><description><![CDATA[]]></description><isGroup><![CDATA[false]]></isGroup>
+<name><![CDATA[banner加导航]]></name><disabled><![CDATA[0]]></disabled></row></data>
+		</xform></DetailInfo></Response>

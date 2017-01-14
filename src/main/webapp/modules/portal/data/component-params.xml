@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+	<ConfigParams>
+        <xform>
+            <declare>	
+                <column name="bgColor" caption="背景色" mode="string"/>
+                <column name="wordsize" caption="字体大小" mode="string"/>
+            </declare>
+            <layout>
+                <TR>
+                    <TD width="50"><label binding="bgColor"/></TD>
+                    <TD><input binding="bgColor"/></TD>
+                </TR>
+                <TR>
+                    <TD><label binding="wordsize"/></TD>
+                    <TD><input binding="wordsize"/></TD>
+                </TR>
+            </layout>
+            <data>
+            </data>
+        </xform>
+	</ConfigParams>
+</Response>

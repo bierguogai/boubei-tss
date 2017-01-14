@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>示例：多次请求数据</title>
+
+<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+<link rel="stylesheet" href="../bi_template/common.css">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../bi_template/common.js"></script>
+ 
+<script src="../../tools/easyui/jquery.min.js"></script>
+<script src="../../tools/easyui/jquery.easyui.min.js"></script>
+
+<script src="../../tools/echarts/echarts-all-2.1.10.js"></script>
+
+<style>
+
+.bibt {
+    left: inherit; right: 5px; margin-right:88px;
+}
+
+</style>
+
+<script type="text/javascript">
+
+    URL_DATA_1 = '/tss/api/json/497';
+    URL_DATA_2 = '/tss/api/json/505';
+    URL_DATA_3 = '/tss/api/json/503'; 
+    URL_DATA_4 = '/tss/api/json/500'; 
+
+    var data1, data2, data3, data4, method = "POST", params;
+
+    // 判断是否为本地打开，是的话使用测试地址
+    if(location.protocol === 'file:') {
+        method = 'GET';
+        URL_DATA_1 = 'data/data_1.json?';
+        URL_DATA_2 = 'data/data_2.json?';
+        URL_DATA_3 = 'data/data_3.json?';
+        URL_DATA_4 = 'data/data_4.json?';
+    }
+
+    $(function() {
+        var globalValiable = window.parent.globalValiable;
+        if(globalValiable && globalValiable.queryParams) {
+            params = globalValiable.queryParams;
+        }
+        else {
+            params = {};
+        }
+
+        // 发送数据请求一
+        tssJS.ajax({
+            url : URL_DATA_1,
+            params : params,
+            method : method,
+            type : "json",
+            waiting : true,
+            ondata : function() {
+                data1 = this.getResponseJSON();
+                show1();
+
+                /* 
+                 * 发送数据请求二 （注意： 请求二是在请求一响应成功并返回数据后才发送）
+                 * 这种场景适合：当请求二需要以请求一的返回数据作为其参数条件时
+                 */
+                tssJS.ajax({
+                    url : URL_DATA_2,
+                    // params : params,  // 请求二不需要参数
+                    method : method,
+                    type : "json",
+                    waiting : true,
+                    ondata : function() {
+                        data2 = this.getResponseJSON();
+                        show2();
+                    }
+                });   
+            }
+        });
+
+        // 发送数据请求三 （注意： 请求三是和请求一并行发送）
+        tssJS.ajax({
+            url : URL_DATA_3,            
+            // params : params,  // 请求三不需要参数
+            method : method,
+            type : "json",
+            waiting : true,
+            ondata : function() {
+                data3 = this.getResponseJSON();
+                data3 && data4 && show34(); // show34方法需要等请求三和请求四都成功返回数据后才执行
+            }
+        });   
+
+        // 发送数据请求四 （注意： 请求四是和请求三及请求一并行发送）
+        tssJS.ajax({
+            url : URL_DATA_4,
+            params : {"param1": params.param3, "param2": params.param4},
+            method : method,
+            type : "json",
+            waiting : true,
+            ondata : function() {
+                data4 = this.getResponseJSON();
+                data3 && data4 && show34(); // show34方法需要等请求三和请求四都成功返回数据后才执行
+            }
+        });   
+    });
+ 
+    function show1() {
+        var values = [], names = [];
+        data1.each(function(i, item){
+            values.push(item.value);
+            names.push(item.name);
+        });
+
+        // 折线图
+        var option = {
+            legend: {
+                data:['按天统计访问次数']
+            },
+            calculable : true,
+            yAxis : [
+                {
+                    type : 'value'
+                }
+            ],
+            xAxis : [
+                {
+                    type : 'category',
+                    axisLine : {onZero: false},
+                    data : names
+                }
+            ],
+            series : [
+                {
+                    name:'按天统计访问次数',
+                    type:'line',
+                    smooth:true,
+                    data: values
+                }
+            ]
+        };                   
+
+        var chartObj = echarts.init($1("canvasDiv1"));
+        chartObj.setOption(option);              
+         
+    }
+
+    function show2() {
+        var values = [], names = [];
+        data2.each(function(i, item){
+            values.push(item.value);
+            names.push(item.name);
+        });
+
+        // 柱状图
+        var option = {
+            legend: {
+                data:['每月新增报表数量']
+            },
+            calculable : true,
+            yAxis : [
+                {
+                    type : 'value'
+                }
+            ],
+            xAxis : [
+                {
+                    type : 'category',
+                    axisLine : {onZero: false},
+                    data : names
+                }
+            ],
+            series : [
+                {
+                    name:'每月新增报表数量',
+                    type:'bar',
+                    smooth:true,
+                    data: values
+                }
+            ]
+        };                   
+
+        var chartObj = echarts.init($1("canvasDiv2"));
+        chartObj.setOption(option);                      
+    }
+
+    function show34() {
+        var values = [], names = [];
+        data4.each(function(i, item){
+            if(values.length <= 30) {
+                values.push(item.value);
+                names.push(item.name);
+            }           
+        });
+        values.reverse();
+        names.reverse();
+
+        // 条形图
+        var option = {
+            legend: {
+                data:['报表访问次数排名']
+            },
+            calculable : true,
+            tooltip : {
+                trigger: 'axis'
+            },
+            xAxis : [
+                {
+                    type : 'value'
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'category',
+                    data : names
+                }
+            ],
+            series : [
+                {
+                    name:'报表访问次数排名',
+                    type:'bar',
+                    data: values
+                }
+            ]
+        };                   
+
+        var chartObj = echarts.init($1("canvasDiv4"));
+        chartObj.setOption(option);        
+
+        // 表格明细
+        $('#t3').datagrid({
+            rownumbers : true,
+            columns:[table_columns],
+            data: data3,
+            rowStyler: function(index, row){
+                if ( parseInt(row["平均运行时长"]) >= 100 * 1000){
+                    return 'background-color:red;';
+                }
+            }
+        }); 
+    }
+
+    var table_columns = [ 
+                {field:"服务名称", title:"服务名称", width:"110px"}, 
+                {field:"方法", title:"方法", width:"80px"},                
+                {field:"平均运行时长", title:"平均运行时长", width:"100px",align:'right'}, 
+                {field:"最长运行时长", title:"最长运行时长", width:"100px",align:'right'}, 
+                {field:"访问次数", title:"访问次数", width:"60px",align:'right'},
+                {field:"最后访问时间", title:"最后访问时间", width:"100px"}
+            ];
+
+    function exportCSV() {
+        data2CSV("demo_detail", table_columns, data3);
+    }
+
+</script>
+</head>
+
+<body>
+
+    <input type="button" value="导出数据" class="tssbutton blue bibt" onclick="exportCSV()">
+
+    <div class="easyui-tabs" data-options="fit:true">
+        <div id="d1" title="统计BI访问情况" >
+            <div id='canvasDiv1' style="width:100%;height:300px"></div> 
+            <div id='canvasDiv2' style="width:100%;height:300px"></div> 
+        </div>
+              
+        <div id="d2" title="BI报表执行效率分析">          
+            <div id='canvasDiv4' style="width:600px;height:620px;display:inline-block;margin:10px;"></div> 
+            <div style="width:600px;height:600px;display:inline-block;">
+                <table id="t3" style="height:600px;"></table>
+            </div>  
+        </div>
+    </div>
+
+</body>
+</html>

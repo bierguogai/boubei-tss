@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<layout> 
+  <property> 
+    <name>田字布局器</name>  
+    <portNumber>4</portNumber>  
+    <version>V1.0 by Jon.King</version>  
+    <description><![CDATA[田字布局器。]]></description> 
+  </property>  
+  <script><![CDATA[]]></script>  
+  <style><![CDATA[]]></style>  
+  <prototypeStyle><![CDATA[]]></prototypeStyle>  
+  <html><![CDATA[<table id="${id}" border="0" width="#{tableWidth}" cellspacing="0" cellpadding="0">
+	<tr>
+                <td width="#{column1Width}" >${port0}</td>
+                <td width="#{column2Width}" >${port1}</td>
+	</tr>
+	<tr>
+                <td width="#{column1Width}" >${port2}</td>
+                <td width="#{column2Width}" >${port3}</td>
+	</tr>
+</table>
+		]]></html>  
+  <events/>  
+  <parameters> 
+    <param name="tableWidth" defaultValue="100%"/>  
+    <param name="column1Width" defaultValue="50%"/>  
+    <param name="column2Width" defaultValue="50%"/> 
+  </parameters> 
+</layout>

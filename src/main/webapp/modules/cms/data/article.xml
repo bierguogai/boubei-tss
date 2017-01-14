@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+<ArticleContent>
+	<![CDATA[ 最近几年以来，社会矛盾逐渐成为了中国公众瞩目的焦点---官员腐败，贫富差距扩大化，三农问题，仇富心态，教育改革，房产价格，医疗社保等一系列问题犹如走马灯一般纷纷闯入人们的视野，同时，许多富于代表性的事件也先后挑战着中国人眼球和心理的承受能力。我们的社会怎么了？相信只要稍微有点头脑的人都会问这个问题，也有很多人提出了解答。其中，有一种最为通行的说法就是:历史的轮回。具体地说来，历朝历代的统治时期大致可以分为三个阶段：1。天下创世 2。矛盾丛生3。总崩溃    个别王朝由于在中晚期实行了一些改革，缓和了社会矛盾，从而延长了统治时间。这是中国历史所特有的周期性振荡。综观国史，史实让笔者也不得不承认上述说法的合理性。那么，目前的中国是否在重新陷入这个历史的轮回怪圈呢？这倒的确是一个值得商榷的问题。]]>
+</ArticleContent>
+<AttachsList>
+	<grid>
+		<declare sequence="true">
+			<column caption="附件序号" name="seqNo" mode="number" display="none"/>
+			<column caption="文章ID"   name="articleId" mode="number" display="none"/>
+			<column caption="下载地址" name="uploadName" mode="string" display="none"/>
+			<column caption="名称"     name="name" mode="string"/>
+			<column caption="文件名"   name="fileName" mode="string"/>
+			<column caption="类型"     name="type" mode="string" align="center"/>
+			<column caption="文件后缀" name="fileExt" mode="string" display="none"/>
+		</declare>
+		<data>
+		</data>
+	</grid>
+</AttachsList>
+<ArticleInfo>
+<xform>
+	<declare>
+		<column name="title" caption="标题" mode="string" empty="false" maxLength="100"/>
+		<column name="subtitle" caption="副标题" mode="string" empty="true" maxLength="100"/>
+		<column name="author" caption="作者" mode="string" empty="false" maxLength="50"/>
+		<column name="summary" caption="摘要" mode="string" maxLength="500"/>
+		<column name="keyword" caption="关键字" mode="string" empty="false" maxLength="100"/>
+		<column name="issueDate" caption="发布日期" mode="date"/>
+		<column name="overdueDate" caption="过期日期" mode="date"/>
+	</declare>
+	<layout>
+		<TR>
+			<TD width="50"><label binding="title"/></TD>
+			<TD><input binding="title" style="width:80%"/></TD>
+			<TD width="50"><label binding="subtitle"/></TD>
+			<TD><input binding="subtitle" style="width:80%"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="author"/></TD>
+			<TD><input binding="author"/></TD>
+			<TD><label binding="issueDate"/></TD>
+			<TD><input binding="issueDate"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="keyword"/></TD>
+			<TD><input binding="keyword" style="width:80%"/></TD>
+			<TD><label binding="overdueDate"/></TD>
+			<TD><input binding="overdueDate"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="summary"/></TD>
+			<TD colspan="3">
+				<textarea binding="summary" style="width:80%;height:50px;"/>
+			</TD>
+		</TR>
+	</layout>
+	<data>
+		<row>
+			<author><![CDATA[Jon.King]]></author>
+			<createTime><![CDATA[2013-08-17]]></createTime>
+			<creatorId><![CDATA[-1]]></creatorId>
+			<creatorName><![CDATA[Admin]]></creatorName>
+			<hitCount><![CDATA[0]]></hitCount>
+			<id><![CDATA[1]]></id>
+			<isTop><![CDATA[0]]></isTop>
+			<keyword><![CDATA[历史 轮回 社会矛盾]]></keyword>
+			<lockVersion><![CDATA[0]]></lockVersion>
+			<overdueDate><![CDATA[2013-09-03]]></overdueDate>
+			<status><![CDATA[1]]></status>
+			<subtitle><![CDATA[对于当前中国社会矛盾的历史思考]]></subtitle>
+			<summary><![CDATA[历史 轮回 社会矛盾]]></summary>
+			<title><![CDATA[历史的轮回怪圈]]></title>
+			<channel.id><![CDATA[2]]></channel.id>
+		</row>
+	</data>
+</xform>
+</ArticleInfo>
+</Response>

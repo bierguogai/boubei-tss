@@ -1,0 +1,360 @@
+<!DOCTYPE HTML>
+<HTML xmlns:Grid>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>文章管理</title>
+
+<link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link href="../../css/css.css" rel="stylesheet">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssUtils.js"></script>
+
+<script src="../../tools/kindeditor/kindeditor-min.js"></script>
+<script src="../../tools/kindeditor/lang/zh_CN.js"></script>
+
+<style type="text/css">
+	body { overflow: auto; height: auto; width: 99%; }
+
+	.article {  background-color: #fff; margin: 0 2px; height: 100%;}
+	.article .summary { background-color: #fff; padding: 3px; }
+	.article .content { height: 380px; }
+	.article .attach  { height: 90px; }
+	.article .upload  { background-color: #E0ECFF; padding: 5px 0 5px 10px; }
+	.article .bts { border-top: 1px solid #ccc; padding: 5px 0 5px 10px; text-align: center; }
+	.article .bts input { margin-right:20px; }
+	
+	#content { width:99%; height:375px; visibility:hidden; }
+
+	.ke-icon-imageSelf {
+		background-image: url(../../tools/kindeditor/themes/default/default.png);
+		background-position: 0px -496px;
+		width: 16px;
+		height: 16px;
+	}
+	.imageSelf {
+		width: 250px;
+		height: 22px;
+		line-height: 22px;
+		margin-top: 5px;
+	}
+
+	.ke-icon-reportportlet {
+		background-image: url(../../tools/kindeditor/themes/default/default.png);
+		background-position: 0px -560px;
+		width: 16px;
+		height: 16px;
+	}
+	
+</style>
+
+<script type="text/javascript">
+<!--
+	
+	/* XMLHTTP请求地址汇总 */
+    URL_ARTICLE_DETAIL = AUTH_PATH + "article/";       // {articleId}
+	URL_ARTICLE_INIT   = AUTH_PATH + "article/init/";  // {channelId}
+    URL_SAVE_ARTICLE   = AUTH_PATH + "article";
+
+	if(window.parent == window.self) {
+		URL_ARTICLE_DETAIL = "data/article.xml?";
+		URL_ARTICLE_INIT   = "data/article.xml?";
+		URL_SAVE_ARTICLE   = "data/_success.xml?";
+	}
+
+	// 自定义插件 #1
+	KindEditor.lang({
+		imageSelf : '插入文章附件'
+	});
+	KindEditor.plugin('imageSelf', function(K) {
+		var self = this, name = 'imageSelf';
+		self.clickToolbar(name, function() {
+			var html = [];
+			html.push('<div style="margin:20px;">');
+			html.push('可选附件：<select class="imageSelf" id="attachSelector">');
+			$("#attachGrid tbody>tr").each(function(i, row){
+				if( $('td', row).length == 0 ) return;
+
+				var name = $('td[name=name]', row).attr('value');
+				var url  = NO_AUTH_PATH + $('td[name=relationUrl]', row).attr('value');
+				var type = $('td[name=type]', row).attr('value');
+				html.push('<option value="' + (type + "," + url + ", " + name) + '">' + $('td[name=name]', row).attr('value') + '</option>');
+			});
+			html.push('</select>');
+			html.push('<br/>添加说明：<input class="imageSelf" id="attachRemark">');
+			html.push('</div>');
+			self.createDialog({
+				name : 'imageSelf',
+				width : 450,
+				title : '选择要插入的图片或文档',
+				body : html.join('\n'),
+				yesBtn : {
+					name : "插入",
+					click : function(e) {
+						var html;
+						var title = $("#attachRemark").value();
+						var attach = $("#attachSelector").value();
+						if(!attach) {
+							return alert("您没有选择附件，请选择一个再点插入");
+						}
+						attach = attach.split(',');
+						if(attach[0] == '1') {
+							title = title || attach[2];
+							html = '<img class="imgAttach" src="' + attach[1] + '" alt="' + title + '"></img>';
+						} else {
+							html = '<a class="docAttach" href="' + attach[1] + '" target="_blank">' + title + '</a>';
+						} 
+						self.insertHtml(html);
+						self.select().hideDialog().focus();
+					}
+				}
+			});
+		});
+	});
+
+	KindEditor.lang({
+		reportportlet : '插入报表Portlet'
+	});
+	KindEditor.plugin('reportportlet', function(K) {
+		var self = this, name = 'reportportlet';
+		self.clickToolbar(name, function() {
+			var html = [];
+			html.push('<div style="margin:20px;line-height:22px;">');
+			html.push('报表ID ：<input id="reportId" style="width:100px;">');
+			html.push('<br/>报表宽度：<input id="reportWidth" value="100%" style="width:100px;">&nbsp;&nbsp;&nbsp;&nbsp;');
+			html.push('报表高度：<input id="reportHeight" value="600px" style="width:100px;">');
+			html.push('<br/>报表参数1：<input id="reportParam1" style="width:300px;">');
+			html.push('<br/>报表参数2：<input id="reportParam2" style="width:300px;">');
+			html.push('<br/>报表参数3：<input id="reportParam3" style="width:300px;">');
+			html.push('<br/>报表参数4：<input id="reportParam4" style="width:300px;">');
+			html.push('<br/>报表参数5：<input id="reportParam5" style="width:300px;">');
+			html.push('</div>');
+
+			self.createDialog({
+				name : 'reportportlet',
+				width : 450,
+				title : '插入报表Portlet',
+				body : html.join('\n'),
+				yesBtn : {
+					name : "插入",
+					click : function(e) {
+						var reportId = $("#reportId").value();
+						if(!reportId) {
+							return alert("报表ID不能为空");
+						}
+
+						var url = "/tss/modules/dm/report_portlet.html?id=" + reportId;
+
+						for(var i=1; i <= 5; i++) {
+							var tempV =  $('#reportParam' + i).value();
+							if(tempV) {
+								url += '&param' + i + '=' + tempV;
+							}
+						}
+						
+						var reportWidth = $("#reportWidth").value() || "100%";
+						var reportHeight = $("#reportHeight").value() || "600px";
+						var style = "width:" + reportWidth + ";height:" + reportHeight + ";";
+						var html = '<iframe src="' + url + '" frameborder="0" style="' + style + '"></iframe>';
+
+						self.insertHtml(html);
+						self.select().hideDialog().focus();
+					}
+				}
+			});
+		});
+	});
+
+
+	var editor;
+	KindEditor.ready( function(K) {
+		editor = K.create('textarea[name="content"]', {
+				resizeType: 1,
+				allowPreviewEmoticons : false,
+				allowImageUpload : false,
+				items : [
+					'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold', 'italic', 'underline', 'lineheight',
+					'removeformat', '|', 'justifyleft', 'justifycenter', 'justifyright', 'insertorderedlist',
+					'insertunorderedlist', '|', /*'image',*/ 'imageSelf', 'reportportlet', 'table', 'baidumap', '|', 'source', 'fullscreen', 'quickformat', 'preview']
+			});				
+	} );
+
+	var channelId;
+    var articleId;
+
+	function init() {
+		if(window.parent && window.parent.globalValiable) {
+			var globalValiable = window.parent.globalValiable;
+			channelId = globalValiable.channelId;
+			articleId = globalValiable.articleId;
+		}
+
+		initGridMenu();
+
+		var url;
+		if(articleId) {
+			url = URL_ARTICLE_DETAIL + articleId;
+		} else {
+			url = URL_ARTICLE_INIT + channelId; 
+			articleId = $.now(); // 取当前时间作为新文章的临时ID，上传附件时有用
+		}
+
+        var onresult = function(){
+            var articleInfoNode    = this.getNodeValue("ArticleInfo");
+            var articleContentNode = this.getNodeValue("ArticleContent");
+            var attachsListNode    = this.getNodeValue("AttachsList");
+
+			$.F("articleForm", articleInfoNode);
+			editor.insertHtml(articleContentNode);
+
+			var grid = $.G("attachGrid", attachsListNode);
+			grid.element.onRightClickRow = function() {
+				grid.element.contextmenu.show(event.clientX, event.clientY);
+			} 
+			grid.element.onDblClickRow = function(eventObj) {
+				deleteAttachment();
+			}
+
+            $1("btSave").onclick  = saveArticle;
+            $1("btSaveAndPublish").onclick  = saveAndPublishArticle;
+        }
+        
+		$.ajax({ url: url, method: "GET", onresult: onresult });
+	}
+ 
+    function saveArticle(isCommit) {
+        var articleForm = $.F("articleForm");
+        if( !articleForm.checkForm() ) return;
+
+        var request = new $.HttpRequest();
+        request.url = URL_SAVE_ARTICLE;
+        request.addParam("channel.id", channelId); // 文章所属栏目
+        request.addParam("articleId", articleId); 
+
+        // 文章基本信息
+        var articleInfoNode = articleForm.template.sourceXML;
+		var dataNode = articleInfoNode.querySelector("data");
+		request.setFormContent(dataNode);
+
+		// 文章正文
+		request.addParam("ArticleContent", editor.html());
+
+		// 文章图片附件
+		var attachsSeqNos = $.G("attachGrid").getColumnValues("seqNo");
+		request.addParam("attachList", attachsSeqNos.join(","));
+
+		// 是否保存并发布文章
+		if(isCommit) {
+			request.addParam("isCommit", "true");
+		}
+       
+		// 同步按钮状态
+        syncButton([$1("btSave")], request);
+
+        request.onsuccess = function() {
+           // 刷新框架页的对应栏目的文章列表
+           window.parent.showArticleList(channelId); 
+        }
+        request.send();
+    }
+
+     /* 保存并发布文章   */
+    function saveAndPublishArticle() {
+		saveArticle(true);
+	}
+ 
+	function uploadAttachment() {
+		var fileValue = $("#sourceFile").value();
+	    if( !fileValue ) {
+	         return $("#sourceFile").notice("您还没有选择文件，请选择一个文件再点上传!");               
+	    }
+
+	    if( checkUploadFile(fileValue) ) {
+	        return $.tssTip("当前后缀类型的文件已被禁止上传。");
+	    }
+    
+		var url = URL_UPLOAD_FILE + "?afterUploadClass=com.boubei.tss.cms.CreateAttach";
+		url += "&articleId=" + articleId;	
+		url += "&channelId=" + channelId;
+		url += "&type=" + $1("fileType").value;
+		
+		var form = $1("uploadForm");
+		form.action = url;
+		form.submit();
+	}
+
+	function addAttachments(seqNo, fileName, fileExt, oldfileName, downloadUrl) {
+		var type = $1("fileType").value;
+		var map = {
+			"seqNo": seqNo, 
+			"articleId": articleId, 
+			"type": type, 
+			"name": oldfileName, 
+			"relationUrl": downloadUrl, 
+			"fileName": fileName, 
+			"fileExt": fileExt
+		};
+		$.G("attachGrid").insertRow(map);
+	}
+
+	function deleteAttachment() {
+		$.confirm("您确定要删除该附件吗？", "删除确认", function(){
+			$.G("attachGrid").deleteSelectedRow();
+		});
+	}
+
+	function initGridMenu() { 
+        var item1 = {
+            label:"删除",
+            callback:deleteAttachment,
+            icon:ICON + "icon_del.gif"
+        }
+
+        var menu1 = new $.Menu();
+        menu1.addItem(item1);
+ 
+        $1("attachGrid").contextmenu = menu1;
+    }
+
+	window.onload = init;
+
+//-->
+</script>
+
+</head>
+
+<body>
+
+	<div class="article">
+		<div class="summary">
+			<div id="articleForm"></div>
+		</div>
+		<div class="content">
+			<textarea id="content" name="content"></textarea>
+		</div>
+		<div class="upload">
+			<form id="uploadForm" method="post" target='fileUpload' enctype="multipart/form-data">
+				附件类型: 
+				<select id="fileType">
+					<option value="1" selected>图片</option>
+					<option value="2">文档</option>
+				</select>
+				<input type="file" name="file" id="sourceFile"/>
+				<input type="button" class="tssbutton small blue" onclick="uploadAttachment()" value="上传附件" />
+				<b>&nbsp;单个附件大小不宜超过3M</b>
+			</form>
+			<iframe name='fileUpload' style='display:none;'></iframe>
+		</div>
+		<div class="attach">
+			<Grid id="attachGrid"></Grid>
+		</div>
+		<div class="bts">
+			<input type="button" value="保 存" class="tssbutton small blue" id="btSave"/> 
+			<input type="button" value="保存并提交" class="tssbutton small blue" id="btSaveAndPublish"/>
+			<input type="button" value="关 闭" class="tssbutton small blue" onclick="window.parent.showArticleList(channelId);"/>
+		</div>
+	</div>
+
+</body>
+</html>

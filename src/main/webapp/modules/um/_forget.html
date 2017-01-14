@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html> 
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>找回密码</title>
+
+<link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link href="../../css/css.css" rel="stylesheet">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssUtils.js"></script>
+
+<style type="text/css">
+
+  body { padding: 25px 0 0 40px; }
+
+</style>
+
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+
+    /* 后台响应数据节点名称  */
+    XML_FORGET_INFO = "ForgetInfo";
+    XML_USER_ID = "UserId";
+
+    /* 默认唯一编号名前缀 */
+    CACHE_FORGET_INFO = "forget__id";
+
+    /* XMLHTTP请求地址汇总 */
+    URL_INIT   = AUTH_PATH + "user/forgetpwd";
+    URL_QUESTION = NO_AUTH_PATH + "getQuestion.in";
+    URL_FORGET = NO_AUTH_PATH + "getPassword.in";
+    URL_RESET  = NO_AUTH_PATH + "resetPassword.in";
+
+    if( IS_TEST ) {
+        URL_INIT   = "data/_forget_init.xml";
+        URL_QUESTION = "data/_question.xml";
+        URL_FORGET = "data/_forget.xml";
+        URL_RESET  = "data/_success.xml";
+    }
+
+    var forgetForm;
+
+    function init() {
+        $.ajax({
+            url : URL_INIT,
+            headers : {"appCode": FROMEWORK_CODE, "anonymous": "true"},
+            onresult : function() { 
+                var forgetXML = this.getNodeValue(XML_FORGET_INFO);
+                $.cache.XmlDatas[CACHE_FORGET_INFO] = forgetXML;
+                forgetForm = $.F("forgetForm", forgetXML);
+
+                $1("password").disabled = "disabled";
+                $1("repassword").disabled = "disabled";
+                $1("resetBT").style.visibility = "hidden";
+
+                /* 自动获取密码提示的问题 */
+                $1("loginName").onblur = function() { 
+                    var value = this.value;
+                    if( !value ) return;
+
+                    forgetForm.updateDataExternal("loginName", value); 
+
+                    $.ajax({
+                        url: URL_QUESTION,
+                        params:  {"loginName": value},
+                        onexcption: function() {
+                            $1("passwordQuestion").focus();
+                        },
+                        onresult: function(){
+                            var question = this.getNodeValue("Question");  
+                            forgetForm.updateDataExternal("passwordQuestion", question);                         
+                            $1("passwordAnswer").focus();
+                        }
+                    });
+                }
+            }
+        });
+    }
+    
+    // 如果用户输入的密码问题答案正确，则返回该用户的UserID并允许其重新设置新密码
+    function getPassword() {
+        $.ajax({
+            url : URL_FORGET,
+            headers : {"appCode": FROMEWORK_CODE, "anonymous": "true"},
+            formNode : $.cache.XmlDatas[CACHE_FORGET_INFO].querySelector("data"),
+            onresult : function() { 
+                var userID = this.getNodeValue(XML_USER_ID);
+                forgetForm.updateDataExternal("userId", userID);
+
+                // 显示设置新密码
+                $1("password").disabled = "";
+                $1("repassword").disabled = "";
+                $1("resetBT").style.visibility = "visible";
+            }
+        });
+    }
+
+    /* 检测表单是否填写正确。点击“重置密码”按钮的时候触发 */
+    function checkForgetForm() {
+        var flag = true;
+        if( false == forgetForm.checkForm()) {
+            flag = false;
+        }
+        else {
+            var loginName = forgetForm.getData("loginName")||"";
+            var question  = forgetForm.getData("passwordQuestion")||"";
+            var answer    = forgetForm.getData("passwordAnswer")||"";
+ 
+            if( "" == (loginName||question||answer) ) {
+                flag = false;
+                if( "" == loginName ) {
+                    forgetForm.showCustomErrorInfo("loginName", "登录账号不能为空");
+                }
+            }
+        }
+        return flag;
+    }
+
+    /* 检测新密码 */
+    function checkNewPassword() {
+        var flag = true;
+        var password   = forgetForm.getData("password");
+        var repassword = forgetForm.getData("repassword");
+
+        if(password != repassword) {
+            flag = false;
+            forgetForm.showCustomErrorInfo("repassword", "两次密码输入不一致，请重新输入");
+        }
+        else if(null == password || "" == password) {
+            flag = false;
+            forgetForm.showCustomErrorInfo("password", "密码不能为空");
+        }
+        return flag;
+    }
+
+    /* 设置新密码 */
+    function setNewPassword() {
+        $.ajax({
+            url : URL_RESET,
+            headers: {"appCode": FROMEWORK_CODE, "anonymous": "true"},
+            params : {"type": "reset"},
+            formNode : $.cache.XmlDatas[CACHE_FORGET_INFO].querySelector("data"),
+            onsuccess : function() { 
+                window.close();
+            }
+        });
+    }
+
+    window.onload = init;
+
+//-->
+</SCRIPT>
+
+</head>
+
+<body>
+
+    <div id="forgetForm"></div>
+
+</body>
+</html>

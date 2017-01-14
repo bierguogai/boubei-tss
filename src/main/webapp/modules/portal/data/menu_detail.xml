@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><Response><MenuInfo>
+<xform>
+	<declare prefix="navigator">
+		<column name="id" mode="hidden"/>
+		<column name="name" caption="名称" mode="string" maxLength="50" empty="false"/>	
+		<column name="content.id" mode="hidden"/>
+		<column name="content.name" caption="门户结构" mode="function" cmd="getContent('content.name', 'content.id', 3)"/>	
+		<column name="url" caption="栏目URL地址" mode="function" cmd="getChannel()"/>
+		<column name="target" caption="目标区域" mode="string" maxLength="50" empty="false"/>			
+		<column name="description" caption="描述信息" mode="string"/>
+		
+		<column name="parentId" mode="hidden"/>
+		<column name="portalId" mode="hidden"/>
+		<column name="type" mode="hidden"/>
+		<column name="seqNo" mode="hidden"/>	
+	</declare>
+	<layout>
+		<TR>
+			<TD width="100"><label binding="name"/></TD>
+			<TD><input binding="name"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="target"/></TD>
+			<TD><input binding="target"/></TD>
+		</TR>
+		<TR>
+			<TD valign="top"><label binding="content.name"/></TD>
+			<TD><input binding="content.name"/></TD>
+		</TR>
+		<TR>
+			<TD width="80"><label binding="url"/></TD>
+			<TD><input binding="url" style="width:60%;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="description"/></TD>
+			<TD><textarea binding="description" style="width:100%;height:100px;"/></TD>
+		</TR>
+	</layout>
+	<data><row><createTime><![CDATA[Sat Sep 21 16:38:39 CST 2013]]></createTime><seqNo><![CDATA[1]]></seqNo><portalId><![CDATA[1]]></portalId><creatorId><![CDATA[-1]]></creatorId><type><![CDATA[3]]></type><levelNo><![CDATA[3]]></levelNo><lockVersion><![CDATA[0]]></lockVersion><id><![CDATA[2]]></id><parentId><![CDATA[1]]></parentId><creatorName><![CDATA[Admin]]></creatorName><decode><![CDATA[000010000100001]]></decode><name><![CDATA[首页]]></name><content.id><![CDATA[1]]></content.id><disabled><![CDATA[0]]></disabled><content.name><![CDATA[测试门户4MenuTest]]></content.name></row></data>
+</xform></MenuInfo></Response>

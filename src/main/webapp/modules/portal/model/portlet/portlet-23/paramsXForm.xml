@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Response> 
+  <ConfigParams> 
+    <xform> 
+      <declare> 
+        <column name="menuId" caption="菜单ID" mode="string"/>  
+        <column name="logoURL" caption="logo图片地址" mode="string"/> 
+      </declare>  
+      <layout> 
+        <TR> 
+          <TD width="120">
+            <label binding="menuId"/>
+          </TD>  
+          <TD>
+            <input binding="menuId" type="text"/>
+          </TD> 
+        </TR>  
+        <TR> 
+          <TD>
+            <label binding="logoURL"/>
+          </TD>  
+          <TD>
+            <input binding="logoURL" type="text"/>
+          </TD> 
+        </TR> 
+      </layout>  
+      <data/> 
+    </xform> 
+  </ConfigParams> 
+</Response>

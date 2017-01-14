@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+	<ResourceTree>
+		<actionSet>
+                  <treeNode id="-1" name=".." icon="images/folder.gif"/>
+                  <treeNode id="f1" name="aaaaa" isFolder="1" icon="images/folder.gif"/>
+                  <treeNode id="r3" name="bbb.js" icon="images/file.gif"/>
+                  <treeNode id="r1" name="ccc.js" icon="images/file.gif"/>
+                  <treeNode id="r2" name="ddd.js" icon="images/file.gif"/>
+                  <treeNode id="r3" name="eee.js" icon="images/file.gif"/>
+                  <treeNode id="r1" name="fff.js" icon="images/file.gif"/>
+                  <treeNode id="r2" name="ggg.js" icon="images/file.gif"/>
+                  <treeNode id="r3" name="hhh.js" icon="images/file.gif"/>
+		</actionSet>
+	</ResourceTree>
+	<ContextPath>/tss/portal/model/</ContextPath>
+</Response>

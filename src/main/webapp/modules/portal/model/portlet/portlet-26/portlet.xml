@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<portlet>
+  <property>
+    <name>全文检索</name>
+    <version>V1.0 by Jon.King</version>
+    <description><![CDATA[全文检索时使用，根据索引ID在相应的索引文件中按输入的关键字进行全文检索，检索结果在索引显示页面里展示。]]></description>
+  </property>
+  <script><![CDATA[function ${id}_onLoad(){
+    //创建搜索
+    var txt = $("${id}_searchContent");
+    var but = $("${id}_search");
+
+    but.onclick = function(){
+        if(txt.value == ""){
+            alert("请输入要搜索的内容.");
+            txt.focus();
+            return;
+        }else{
+            //开始搜索
+            var tacticId = $("colls").value;
+			var orderType = $("paixu").value;
+            var str = escape(txt.value);
+            var re = /%/gim;       // 创建正则表达式样式。
+            str = str.replace(re, "|");
+
+            thisUrl = "${common.searchResultUrl}" + "&tacticId=" + tacticId  + "&searchStr=" + str + "&orderType=" + orderType;
+            window.open(thisUrl);
+        }
+    }
+} ]]></script>
+  <style><![CDATA[/*
+#${id} .inputKey{ width: 120px; }
+#${id} .label{ padding-left: 10px; font-weight: bold; }
+*/]]></style>
+  <prototypeStyle><![CDATA[]]></prototypeStyle>
+  <html><![CDATA[<div id="${id}">
+<iframe name="${id}_iframe" width="0" height="0"></iframe>
+<form target="${id}_iframe" action="about:blank">
+<table cellSpacing=0 cellPadding=0 border=0>
+<tr height="30">
+  <td class="label">关键字：</td>
+  <td><input id="${id}_searchContent" class="inputKey"/></td>
+</tr>
+<tr height="30">
+  <td class="label">范&nbsp;&nbsp;围：</td>
+  <td>
+	<select id="colls" class="inputKey">
+	  <option value="1366">整站（按全文）</option>
+	  <option value="1367">整站（按标题）</option>
+	  <option value="1366">整站（按作者）</option>
+	  <option value="1366">整站（按关键字）</option>
+	  <option value="1366">金财工程</option>
+	  <option value="1363">最新公文</option>
+	</select>
+  </td>
+</tr>
+<tr height="30">
+  <td class="label">排&nbsp;&nbsp;序：</td>
+  <td>
+	<select onChange="" name="paixu" class="inputKey">
+	  <option value=1 selected>按发布时间</option>
+	  <option value=1 selected>按标题</option>
+	</select>
+  </td>
+</tr>
+<tr height="30">
+  <td>&nbsp;</td>
+  <td><input type=image src="${basepath}search.gif" border=0 id="${id}_search"></td>
+</tr>
+</table>
+<form>
+</div>]]></html>
+  <events>
+    <attach event="onload" onevent="${id}_onLoad"/>
+  </events>
+  <parameters/>
+</portlet>

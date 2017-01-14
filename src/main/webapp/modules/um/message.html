@@ -1,0 +1,213 @@
+<!DOCTYPE HTML>
+<HTML xmlns:WorkSpace xmlns:Tree xmlns:Grid>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>站内消息/待办事项</title>
+
+<link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link href="../../css/css.css" rel="stylesheet">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssUtils.js"></script>
+
+<style type="text/css">
+
+	.unread { color: red; cursor: pointer; }
+
+	#gridContainer td[title="未读"] {
+		color: red;
+	}
+
+	#alert_box .message {
+		max-height: 500px;
+	}
+
+</style>
+
+<SCRIPT type="text/javascript">
+<!--  
+    /* XMLHTTP请求地址汇总 */
+    URL_MSG_LIST   = AUTH_PATH + "message/list/";
+
+	if(IS_TEST) {
+		URL_MSG_LIST = "data/message_list.xml?";
+	}
+	
+    /* 页面初始化 */
+    function init() {
+		closePalette();
+
+		loadGridData(); 
+
+		/* Grid菜单初始化  */
+		var item1 = {
+			label:"查看",
+			callback: function() {
+				showMsgInfo(false);
+			},
+			icon:"images/view.gif"
+		};
+		var item2 = {
+			label:"删除",
+			callback: function() {
+				deleteMsg();
+			},
+			icon:"images/icon_del.gif"
+		}
+		var item3 = {
+			label:"回复",
+			callback: function() {
+				replyMsg();
+			},
+			icon:"images/draftbox.gif"
+		}
+
+		var menu = new $.Menu();
+		menu.addItem(item1);
+		menu.addItem(item2);
+		menu.addItem(item3);
+		$1("grid").contextmenu = menu;
+    }
+
+    /* grid加载数据  */
+    function loadGridData(page) {
+		$.showGrid(URL_MSG_LIST, "MsgList", showMsgInfo, "grid", page||"1", params);
+    }
+
+    var params = {};
+    function search() {
+    	var key = $("#searchKey").value();
+    	var field = $("#searchField").value() || "title";
+		if(key) {
+			params = {}; // 先清空老的条件
+			params[field] = key;
+			loadGridData();
+		}
+	}
+
+    /* 显示详细信息 */
+    function showMsgInfo(id) {		
+		var rowID = id || $.G("grid").getColumnValue("id");  
+		viewMessage(rowID, function(msg) {
+			msg && $.alert(msg.content.replace(/\n/g, "<br>"), msg.title);
+		});
+    }
+
+    function deleteMsg(id) {
+    	id = id || $.G("grid").getColumnValue("id"); 
+
+    	$.confirm("您确定要删除该信息吗？", "删除确认", function(){
+	        $.ajax({
+				url: AUTH_PATH + "message/" + id,
+				method: "DELETE"
+			});
+
+			$.G("grid").deleteSelectedRow();
+	    }); 	
+	}
+
+	function viewMessage(id, callback) {
+		$.ajax({
+			url: AUTH_PATH + "message/" + id,
+			method: "GET",
+			type : "json",
+			ondata: function() {
+				var message = this.getResponseJSON();
+				callback && callback(message);
+			}
+		});
+	}
+
+	function replyMsg(id, receiver, title) {
+		id = id || $.G("grid").getColumnValue("id"); 
+		receiver = receiver || $.G("grid").getColumnValue("senderId"); 
+		title = title || $.G("grid").getColumnValue("_title"); 
+
+		$.prompt("请输入你的回信内容", "站内信回复", function(result){
+			sendMessage(receiver, "答复：" + title, result);
+	    }); 
+	}
+
+	function batchView(ids) {
+		ids = ids || $.G("grid").getCheckedRows();
+	    if(!ids) return alert("你没有选中任何记录，请勾选后再进行批量操作。");
+
+	    $.ajax({
+	        url: AUTH_PATH + "message/batch/" + ids,
+			type : "json",
+	        ondata: function() { 
+	            loadGridData( $1("GridPageList").value ); // 更新Grid
+	        }
+	    });
+	}
+
+	function batchDelete(ids) {
+		ids = ids || $.G("grid").getCheckedRows();
+	    if(!ids)  return alert("你没有选中任何记录，请勾选后再进行批量操作。");
+
+	    $.confirm("您确定要执行删除吗？", "删除确认", function(){
+			$.ajax({
+		        url: AUTH_PATH + "message/" + ids,
+		        method: "DELETE",
+				type : "json",
+		        ondata: function() { 
+		            loadGridData( $1("GridPageList").value ); // 更新Grid
+		        }
+		    });
+	    }); 	
+	}
+	
+    window.onload = init;
+
+//-->
+</SCRIPT>
+
+</head>
+
+<body>
+
+<!-- 版面 开始 -->
+<table class="panel" >
+  <tr class="header"> <td/><td/><td/><td/> </tr>
+  <tr class="body"> 
+	<td/>
+	<!-- 左栏 开始 -->
+	<td id="palette">
+	</td>
+	<!-- 左栏 结束 -->
+	<td class="groove">
+	  <table>
+		<tr>
+			<td id="gridTitle">
+			  <span class="icon"></span>消息列表<span class="buttonBox" id="gridToolBar"></span>&nbsp;
+			  <span style="margin-left: 20px;">
+			  	<input id="searchKey" style="width:150px; height: 16px;"/>
+			  	<select id="searchField" style="top:0px;">
+			  		<option value="title" selected>标题</option>
+			  		<option value="sender">发送人</option>
+			  		<option value="content">内容</option>
+			  	</select>
+			  	<input type="button" class="tssbutton small blue" value="搜 索" onclick="search()"/>
+			  </span>
+			  <span>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+			  	<input type="button" class="tssbutton small blue" value="批量删除" onclick="batchDelete()"/>
+			  	<input type="button" class="tssbutton small blue" value="批量设为已阅" onclick="batchView()"/>
+			  	<input type="button" class="tssbutton small blue" value="全部设为已阅" onclick="batchView('view_all')"/>
+			  	<input type="button" class="tssbutton small blue" value="清空站内信" onclick="batchDelete('del_all')"/>
+			  </span>
+			</td>
+		</tr>
+		<tr>
+			<td id="gridContainer"><Grid id="grid"></Grid></td>
+		</tr>
+	  </table>
+	</td>
+	<td/>
+  </tr>
+  <tr class="footer"> <td/><td/><td/><td/> </tr>
+</table>
+<!-- 版面 结束 -->
+
+</body>
+</html>

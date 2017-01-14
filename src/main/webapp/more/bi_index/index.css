@@ -1,0 +1,320 @@
+@charset "UTF-8";
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  font-size: 12px;
+  font-family: Arial, Helvetica, '微软雅黑', sans-serif;
+  overflow: hidden;
+}
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+iframe {
+  height: 100%;
+  width: 100%;
+}
+.clearfix {
+  display: table;
+  zoom: 1;
+}
+.clearfix:after {
+  content: " ";
+  display: block;
+  clear: both;
+}
+.longtext {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+  white-space: nowrap;
+}
+.inline {
+  display: inline-block;
+}
+.hidden {
+  display: none;
+}
+header {
+  height: 36px;
+  background-color: #444359;
+  box-sizing: border-box;
+  color: #fff;
+}
+header .logo {
+  display: inline-block;
+  padding: 0 1em;
+  line-height: 33px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+header .logo .forename {
+  font-weight: bold;
+  font-size: 1.7em;
+  color: #4ecdc4;
+}
+header .logo .surname {
+  font-weight: normal;
+  font-size: 1.55em;
+  margin-left: 4px;
+}
+header ul {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  display: inline-block;
+  font-size: 1.2em;
+}
+header ul li {
+  float: left;
+  width: 100px;
+  max-width: 100px;
+  max-height: 36px;
+  text-align: center;
+  line-height: 36px;
+  border-left: 1px solid rgba(204, 204, 204, 0.2);
+  color: #fff;
+  list-style: none;
+  cursor: pointer;
+  font-size: 1em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+  white-space: nowrap;
+}
+header ul li.active {
+  background-color: #00b0f4;
+}
+section {
+  height: 100%;
+  background-color: #fff;
+  padding-bottom: 66px;
+  /* header + footer = 36 + 30 */
+}
+section .left,
+section .main {
+  height: 100%;
+  display: inline-block;
+}
+section .left {
+  width: 14.5%;
+  overflow-y: auto;
+  vertical-align: top;
+  background-color: #444359;
+}
+section .main {
+  width: 85.5%;
+  overflow-y: hidden;
+  background-color: #fff;
+}
+footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: 30px;
+  max-height: 30px;
+  overflow: hidden;
+  background-color: #2d2c41;
+  /* blueDark */
+}
+footer > span {
+  width: 50px;
+  height: 30px;
+  padding: 2px 13px;
+  background-color: #00b0f4;
+  border-right: 1px solid #295a94;
+}
+footer > span table td {
+  height: 12px;
+  width: 13px;
+  background-color: #fff;
+  border: 1px solid #00b0f4;
+  cursor: pointer;
+}
+footer ul {
+  position: absolute;
+  left: 50px;
+}
+footer ul li {
+  position: relative;
+  float: left;
+  width: 135px;
+  max-height: 30px;
+  line-height: 30px;
+  padding-left: 10px;
+  border-right: 1px solid rgba(204, 204, 204, 0.2);
+  color: #fff;
+  list-style: none;
+}
+footer ul li span {
+  display: inline-block;
+  cursor: pointer;
+  max-width: 108px;
+  min-width: 80px;
+  font-size: 1.1em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+  white-space: nowrap;
+}
+footer ul li i {
+  position: absolute;
+  top: -1px;
+  right: 6px;
+  cursor: pointer;
+  font-size: 1.2em;
+  display: none;
+}
+footer ul li:hover i {
+  display: inline-block;
+}
+footer ul li.active {
+  background-color: #00b0f4;
+}
+footer > div {
+  position: absolute;
+  right: 0;
+  width: 40px;
+  height: 30px;
+  padding: 0 12px;
+  cursor: pointer;
+  border-left: 1px solid rgba(204, 204, 204, 0.2);
+}
+footer > div > i,
+footer > div > i:before,
+footer > div > i:after {
+  position: absolute;
+  top: 14px;
+  border-radius: 1px;
+  height: 2px;
+  width: 16px;
+  background: #fff;
+  display: block;
+  content: '';
+}
+footer > div > i:before {
+  top: -6px;
+}
+footer > div > i:after {
+  top: 6px;
+}
+.other {
+  position: fixed;
+  bottom: 30px;
+  right: 0px;
+  display: none;
+  max-height: 400px;
+  width: 135px;
+  overflow: auto;
+  padding: 3px 0px;
+  border-radius: 5px;
+  font-size: 1.1em;
+  color: #fff;
+  background-color: #444359;
+}
+.other ul {
+  list-style: none;
+}
+.other ul li {
+  height: 24px;
+  line-height: 24px;
+  padding: 0 12px;
+  max-width: 135px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+  white-space: nowrap;
+  cursor: pointer;
+  text-align: center;
+}
+.other ul li.bc {
+  border-bottom: 1px solid rgba(204, 204, 204, 0.2);
+}
+.other ul li:hover {
+  background-color: #b63b4d;
+}
+.other ul li i {
+  display: none;
+}
+/** =======================
+ * 手风琴
+ ===========================*/
+.accordion {
+  width: 100%;
+  max-width: 250px;
+  margin: 0 auto;
+  background-color: #2d2c41;
+  /**
+	 * Submenu
+	 -----------------------------*/
+}
+.accordion .link {
+  position: relative;
+  padding: 12px;
+  color: #ccc;
+  font-size: 1.2em;
+  font-weight: 700;
+  border-bottom: 1px solid rgba(204, 204, 204, 0.2);
+  cursor: pointer;
+  transition: all 0.4s ease;
+}
+.accordion li:last-child .link {
+  border-bottom: 0;
+}
+.accordion li i.tag {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 1.2em;
+}
+.accordion li i.tag:after {
+  content: ">";
+}
+.accordion li.open .link {
+  color: #b63b4d;
+}
+.accordion li.open i.tag:after {
+  color: #b63b4d;
+  content: "V";
+}
+.accordion ul.submenu {
+  height: 0px;
+  overflow: hidden;
+  background-color: #444359;
+  font-size: 1.1em;
+  transition: height 0.3s ease-in-out;
+}
+.accordion ul.submenu li {
+  max-height: 36px;
+  border-bottom: 1px solid rgba(204, 204, 204, 0.2);
+}
+.accordion ul.submenu li a {
+  display: block;
+  padding: 0 10px;
+  line-height: 35px;
+  color: #fff;
+  text-indent: 12px;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+  white-space: nowrap;
+  overflow: inherit;
+  /* IE11下加了 overflow：hidden a 会下沉 */
+  transition: all 0.25s ease;
+}
+.accordion ul.submenu li a:hover {
+  background-color: #b63b4d;
+}
+.accordion ul.submenu.open {
+  height: 288px;
+  /* 只有定高平滑过渡才有效果 */
+  transition: height 0.3s ease-in-out;
+}

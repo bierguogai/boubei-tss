@@ -1,0 +1,243 @@
+<!DOCTYPE HTML>
+<html xmlns:Grid>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/> 
+<meta charset="UTF-8">
+<title> report portlet </title>
+
+<link rel="stylesheet" href="../../tools/tssJS/css/boubei.css"/>
+<link href="dm.css" rel="stylesheet">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssJS/tssJS.json2Form.js"></script>
+<script src="../../tools/tssJS/tssJS.jsonp.js"></script>
+<script src="../../tools/tssUtils.js"></script>
+<script src="reporter_x.js"></script>
+
+<style type="text/css">
+
+html, body { height: 100%; }
+body { width:100%; overflow: hidden; }
+#t1 { height: 100%; width: 100%; }
+#gridContainer { vertical-align: top; }
+.leftbar { left: -20px; border-right: 1px solid transparent; }
+
+</style>
+
+</head>
+<body>
+
+<iframe id="chartFrame" frameborder="0" class="container"></iframe>
+<iframe id="downloadFrame" style="display:none"></iframe>
+
+<table id="t1">
+  <tr>
+    <td id="gridTitle">
+      <span class="icon"></span><span class="title">查询结果</span><span class="buttonBox" id="gridToolBar"></span>
+    </td>
+  </tr>
+  <tr>
+    <td id="gridContainer">
+       <Grid id="grid"></Grid>
+    </td>
+  </tr>
+</table>    
+
+<script type="text/javascript">
+
+var IS_TEST = (location.protocol === 'file:');
+
+var refresh  = $.Query.get("refresh");
+var leftBar  = $.Query.get("leftBar"); 
+var reportId = $.Query.get("id") || 497; 
+var fixedParams;
+
+/* 
+   http://localhost:8088/tss/modules/dm/report_portlet.html?leftBar=true&refresh=3&id=501&param1=today-10
+   从邮件里打开 或 从文章里打开 */
+   
+var index = 10;  // 最多10个参数
+while(index--) {
+    var key = "param" + index;
+    var value = $.Query.get(key);
+    if(value) {
+        fixedParams = fixedParams || {};
+        fixedParams[key] = decodeURI(value);
+    }
+}
+
+var globalValiable = {}; // 用来存放传递给iframe页面的信息
+
+// check login
+$.getJSON("/tss/si/user", {}, function(data) {
+    if( data[0] && data[0] != 'ANONYMOUS' ) { 
+        initPortlet(); 
+    } else {
+        location.href = "/tss/login.html";
+    }
+}, "GET" )
+
+
+function initPortlet() {
+    var url = IS_TEST ? 'data/report_potlet.json' : '/tss/data/' +reportId+ '/define'
+
+    $.ajax({
+        url: url,
+        method: 'get',
+        type : "json",
+        ondata: function() {
+            var defines = this.getResponseJSON();
+            globalValiable.title  = defines[0];
+            globalValiable.define = defines[1];
+            globalValiable._url   = defines[2];
+            globalValiable.hasScript = defines[3];
+
+            var params = {}, allReady = true;
+            if( globalValiable.define ) {            
+                var _params = $.parseJSON(globalValiable.define);
+                $.each(_params, function(i, param) {
+
+                    var key = "param" + (i+1);  
+                    if(param.defaultValue) {
+                        params[key] = param.defaultValue;
+                    }
+
+                    // 优先使用通过url传入的参数            
+                    if(fixedParams && fixedParams[key]) {
+                        params[key] = fixedParams[key];
+                    }
+
+                    if(params[key] && (param.type == "date" || param.type == "datetime") ) {
+                        params[key] = $.transDay(params[key], param.type);
+                    }
+
+                    // 检查是否所有必填的参数都有默认值了，否的话不发起查询，直接弹出查询框
+                    if(param.nullable == "false" && !params[key]) {
+                        allReady = false;
+                    }
+                });
+
+                leftBar && $.leftbar( showQueryForm );
+                window.parent.$ && window.parent.$("#panel" + reportId).find(".setQuery").click(showQueryForm);
+            }
+            else { // 隐藏打开查询条件框的开关
+                $(".leftbar").hide();
+                window.parent.$ && window.parent.$("#panel" + reportId).find(".setQuery").hide();
+            }
+            
+            if(allReady) {
+                searchReport( params );
+            } else {
+                showQueryForm();
+            }
+            
+            // 是否自动刷新
+            if(refresh) {
+                refresh = parseInt(refresh);
+                window.setInterval( function() { searchReport( params ); }, refresh * 60 * 1000);
+            }
+        }
+    });
+}
+
+function showQueryForm() {
+    if( !globalValiable.define ) return;
+
+    var formId = "searchFormDiv";
+    if( $.cache.XmlDatas["searchFormXML"] ) {
+        $("#" + formId).show(true).center();
+        return;
+    }
+
+    var $searchForm = $("#" + formId);
+    if( !$searchForm.length ) {
+        var searchFormEl = $.createElement("div", "searchForm", formId);
+        document.body.appendChild(searchFormEl);
+
+        $searchForm = $(searchFormEl);
+    }
+
+    var searchForm = genQueryForm(globalValiable.title, globalValiable.define);
+    $searchForm.center();
+
+    if(globalValiable.queryParams) { // 设置上一次的查询条件
+        setTimeout(function() {
+            $.each(globalValiable.queryParams, function(key, value) {
+                searchForm.updateDataExternal(key, value);
+            });
+        
+        }, 200); // 待comboTree等加载好
+    }
+
+    $searchForm.find(".btSearch").click( function () {
+        if( searchForm.checkForm() ) {
+            var params = getParams();
+            globalValiable.queryParams = params; // 记录当前的条件
+            searchReport(params);
+        }
+    });
+    $searchForm.find(".btDownload").click( function () {
+        if( searchForm.checkForm() ) {
+            var params = getParams();
+            exportReport(reportId, params);
+        }
+    });
+}
+
+function searchReport(params) {
+
+    addShareBtn();
+    addSubscribeBtn();
+
+    // 没有独立的displayUri，则用Grid展示查询结果
+    if( !globalValiable._url ) {
+        $("#t1").show();
+        $("#chartFrame").hide();
+        $("#gridTitle .title").html("报表【" + globalValiable.title + "】查询结果");
+        searchGridReport(reportId, params);
+        return;
+    }
+
+    $("#t1").hide();
+    $("#chartFrame").show();
+    globalValiable.queryParams = params;
+    /* 
+     * 以下情形直接打开报表页面
+     * 1、如果地址里指明了nodb（数据库已经不可访问），则直接打开展示页面，使之读取静态的本地json数据作为展示用
+     * 2、没有script的报表, 直接嵌入报表展示页（后台直接返回空的SQLExcutor）
+     */
+    if( globalValiable._url.indexOf("?nodb=") > 0 || !globalValiable.hasScript) {
+        $("#chartFrame").attr("src", globalValiable._url);
+        return;
+    }
+
+    $.ajax({
+        url: "/tss/data/json/" + reportId,
+        type : "json",
+        waiting: true,
+        params: params,
+        ondata: function() {           
+            globalValiable.data = this.getResponseJSON();
+            $("#chartFrame").attr("src", globalValiable._url);
+        }
+    })
+}
+
+/* ------------------ 在小黄条上增加分享、订阅功能 -------------- */
+// 用户查询出结果后，可直接分享给其他人（通过栏目文章、邮件或站内信），url = 报表地址 + 参数 
+function addShareBtn() {
+
+}
+
+/* 用户订阅功能：将可定时推送的report整理成订阅列表供用户自行订阅（邮件或站内信）接收 
+    订阅条件为用户设置的个性化条件，没有则取报表的默认条件。
+    订阅报表的配置界面同“定时邮件”的配置界面：触发时间、参数（收件人不可修改，默认为当前用户）
+*/
+function addSubscribeBtn() {
+    
+}
+
+</script>  
+
+</body>
+</html>

@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+	<CacheManage>
+		<actionSet>
+            <cacheItem id="1" name="默认主题"/>
+            <cacheItem id="2" name="高山流水"/>
+            <cacheItem id="3" name="下里巴人"/>
+            <cacheItem id="4" name="春华秋实"/>
+            <cacheItem id="5" name="主题5"/>
+		</actionSet>
+	</CacheManage>
+</Response>

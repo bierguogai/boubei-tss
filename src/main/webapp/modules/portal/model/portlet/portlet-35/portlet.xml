@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<portlet>
+  <property>
+    <name>用户登录</name>
+    <version>V1.0 by Jon.King</version>
+    <description><![CDATA[用于用户输入用户名和密码进行登录，认证方式默认采用UMSLocalUserPWDIdentifier。登录成功后转向地址登录后地址。]]></description>
+  </property>
+  <script><![CDATA[function ${id}_onload(){
+    var login = $("${id}_login");
+    var loginname = $("${id}_loginname");
+    var password = $("${id}_password");
+    
+    var defaultUserName = Cookie.getValue("iUserName");
+    if(null != defaultUserName){
+        loginname.value = defaultUserName;
+    }
+
+    loginname.onkeypress = password.onkeypress = function(){
+        if (event.keyCode == 13){
+            login.onclick();
+        }
+    }
+    login.onclick = function(){
+        event.returnValue = false;
+        var lname = loginname.value;
+        var pwd = password.value;
+
+        if(lname == ""){
+            alert("请输入用户帐号！");
+            loginname.focus();
+            event.returnValue = false;
+            return;
+        }
+        if(pwd == ""){
+            alert("请输入密码！");
+            password.focus();
+            event.returnValue = false;
+            return;
+        }
+        var p = new HttpRequestParams();
+        p.url = "/pms/login.do";
+        p.relogin = "0";
+        p.setHeader("loginName", lname + "X");
+        p.setHeader("password", pwd);
+        p.setHeader("identifier", "cn.com.gsoft.ums.identification.identifier.UMSLocalUserPWDIdentifier");
+
+        var request = new HttpRequest(p);
+        request.onsuccess = function(){
+            Cookie.setValue("iUserName",lname);
+            location.href = "${common.afterLoginUrl}";
+        }
+        request.onexception = function(err){
+            alert(err.msg)
+        }
+        request.send();
+    };
+}
+function getCurDate(){
+    var d, s = "";
+    d = new Date();
+    s += d.getYear() + "年";
+    s += (d.getMonth() + 1) + "月";
+    s += d.getDate() + "日";
+    document.write(s);
+}]]></script>
+  <style><![CDATA[]]></style>
+  <prototypeStyle><![CDATA[]]></prototypeStyle>
+  <html><![CDATA[<table cellSpacing=0 cellPadding=0 width=1000 align=center bgColor=#ffffff border=0 id="${id}">
+  <tr>
+    <td valign=top height=31>
+      <div>
+        <table height=29 cellSpacing=0 cellPadding=0 width="100%" bgColor="#b7b6bb" border=0>
+          <tr>
+            <td width="120" align="center">
+            <script>
+               getCurDate();
+            </script>
+            </td>
+            <td width="700">
+              <div id="${id}_loginArea">
+                <IFrame name="nouseIFrame" width="0" height="0"></IFrame>
+                <table id=loginForm cellSpacing=0 cellPadding=0 width="400" border=0>
+                <form id="${id}_form" method="post" target="nouseIFrame" action="about:blank">
+                  <tr>
+                    <td width=30><img src="${basepath}title_login.gif"></td>
+                    <td>用户名</td>
+                    <td><input style="WIDTH: 83px" id="${id}_loginname" name="loginName"></td>
+                    <td>密码</td>
+                    <td><input style="WIDTH: 83px; HEIGHT: 22px" type="password" id="${id}_password" name="loginPsw"></td>
+                    <td><input style="CURSOR: hand" type="image" src="${basepath}button_login.gif" id="${id}_login"></td>
+                  </tr>
+                </form>
+                </table>
+              </div>
+            </td>
+            <td align="right">
+              <span style="cursor:pointer" onclick="window.external.addFavorite('http://10.100.1.5/pms/gzcz.portal','贵州财政厅');">收藏本页</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <span style="cursor:pointer" onclick="this.style.behavior='url(#default#homepage)';this.setHomePage('http://10.100.1.5/pms/gzcz.portal');">设为首页</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          </tr>
+        </table>
+      </div>
+    </td>
+  </tr>
+</table>]]></html>
+  <events>
+    <attach event="onload" onevent="${id}_onload"/>
+  </events>
+  <parameters/>
+</portlet>

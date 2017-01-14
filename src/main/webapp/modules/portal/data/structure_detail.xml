@@ -1,0 +1,163 @@
+﻿<?xml version="1.0" encoding="UTF-8"?><Response><DetailInfo>
+<xform>
+		<declare prefix="ps">
+			<column name="id" caption="ID号" mode="hidden" editable="false"/>
+			<column name="parentId" mode="hidden" editable="false"/>
+			<column name="portalId" mode="hidden" editable="false"/>
+			<column name="code" mode="hidden" editable="false"/>
+			<column name="type" mode="hidden" editable="false"/>
+			<column name="name" caption="名称" mode="string" maxLength="50" empty="false"/>
+			
+			<column name="theme.id" mode="hidden" editable="false"/>
+			<column name="theme.name" caption="默认主题" mode="string" maxLength="50" empty="false" editable="false"/>
+			<column name="currentTheme.name" mode="hidden" editable="false"/>
+			<column name="currentTheme.id" caption="当前主题" mode="combo" values="1" texts="默认主题"/>
+
+			<column name="definer.id" mode="hidden" editable="false"/>
+			<column name="decorator.id" mode="hidden" editable="false"/>
+			<column name="definer.name" caption="布局器" empty="false" mode="function"
+				cmd="getComponent('${definerType}', 'definer.id', 'definer.name', 'parameters')"/>
+			<column name="decorator.name" caption="修饰器" empty="false" mode="function"
+				cmd="getComponent(2, 'decorator.id', 'decorator.name', 'parameters')"/>
+			
+			<column name="js" caption="js文件" mode="string"/>
+			<column name="css" caption="css文件" mode="string"/>
+			<column name="jsCode" caption="js代码" mode="string"/>
+			<column name="cssCode" caption="css代码" mode="string"/>
+			
+			<column name="supplement" mode="hidden" />
+			<column name="parameters" mode="hidden" />
+			
+			<column name="description" caption="说明" mode="string"/>
+		</declare>
+            <layout>
+                <TR>
+                    <TD width="60"><label binding="name"/></TD>
+                    <TD><input binding="name" style="width:40%"/></TD>
+                </TR>
+                <TR showType="0">
+                    <TD><label binding="theme.name"/></TD>
+                    <TD>
+                        <input binding="theme.name" style="width:120px" title='默认主题：指浏览门户时候的默认主题'/> 
+                    </TD>
+                </TR>
+				<TR showType="0">
+                    <TD><label binding="currentTheme.id"/></TD>
+                    <TD>
+                        <input binding="currentTheme.id" style="width:120px" title='*当前主题：当前编辑中的主题，即更改门户某部分布局修饰时改动的主题'/> 
+                    </TD>
+                </TR>
+                <TR showType="1,2">
+                    <TD>
+                        <label binding="definer.name"/>
+                    </TD>
+                    <TD>
+                        <input binding="definer.name" style="width:200px"/>
+                        <a class="tssbutton small blue" id="configDefinerBt" href="javascript:void(0)" 
+                            onclick="configParams('layout','definer.id','definer.name','parameters')">配置</a>
+                    </TD>
+                </TR>
+                <TR showType="3">
+                    <TD>
+                        <label binding="definer.name"/>
+                    </TD>
+                    <TD>
+                        <input binding="definer.name" style="width:200px"/>
+                        <a class="tssbutton small blue" id="configDefinerBt" href="javascript:void(0)" 
+                            onclick="configParams('portlet','definer.id','definer.name','parameters')">配置</a>
+                    </TD>
+                </TR>
+                <TR showType="1,2,3">
+                    <TD>
+                        <label binding="decorator.name"/>
+                    </TD>
+                    <TD>
+                        <input binding="decorator.name" style="width:200px"/>
+                        <a class="tssbutton small blue" id="configDecoratorBt" href="javascript:void(0)" 
+                            onclick="configParams('decorator','decorator.id','decorator.name','parameters')">配置</a>
+                    </TD>
+                </TR>
+                <TR showType="0,1">
+                    <TD>
+                        <label binding="js"/>
+                    </TD>
+                    <TD>
+                        <input binding="js" style="width:50%"/>
+                    </TD>
+                </TR>
+                <TR showType="0,1">
+                    <TD>
+                        <label binding="css"/>
+                    </TD>
+                    <TD>
+                        <input binding="css" style="width:50%"/>
+                    </TD>
+                </TR>
+                <TR showType="0,1">
+                    <TD>
+                        <label binding="jsCode"/>
+                    </TD>
+                    <TD>
+                        <textarea binding="jsCode" style="width:100%;height:100px"/>
+                    </TD>
+                </TR>
+                <TR showType="0,1">
+                    <TD>
+                        <label binding="cssCode"/>
+                    </TD>
+                    <TD>
+                        <textarea binding="cssCode" style="width:100%;height:100px"/>
+                    </TD>
+                </TR>
+                <TR>
+                    <TD>
+                        <label binding="description"/>
+                    </TD>
+                    <TD>
+                        <textarea binding="description" style="width:100%;height:100px"/>
+                    </TD>
+                </TR>		
+            </layout>
+	    <data>
+		<row>
+			<currentTheme.id><![CDATA[1]]></currentTheme.id>
+			<createTime><![CDATA[Sat Sep 28 17:57:26 CST 2013]]></createTime>
+			<theme.name><![CDATA[默认主题]]></theme.name>
+			<seqNo><![CDATA[1]]></seqNo>
+			<portalId><![CDATA[1]]></portalId>
+			<theme.id><![CDATA[1]]></theme.id>
+			<creatorId><![CDATA[-1]]></creatorId>
+			<code><![CDATA[1380362246768]]></code>
+			<type><![CDATA[0]]></type>
+			<levelNo><![CDATA[2]]></levelNo>
+			<lockVersion><![CDATA[1]]></lockVersion>
+			<id><![CDATA[1]]></id>
+			<parentId><![CDATA[0]]></parentId>
+			<creatorName><![CDATA[Admin]]></creatorName>
+			<decode><![CDATA[0000100001]]></decode>
+			<currentTheme.name><![CDATA[默认主题]]></currentTheme.name>
+			<description><![CDATA[测试门户-2]]></description>
+			<definer.id><![CDATA[3]]></definer.id>
+			<definer.name><![CDATA[品字布局器]]></definer.name>
+			<decorator.id><![CDATA[8]]></decorator.id>
+			<decorator.name><![CDATA[修饰器（秋）]]></decorator.name>
+			<supplement>
+				<![CDATA[
+				<page>
+					<property><name>Jon的门户</name><description>&lt;![CDATA[]]&gt;</description></property>
+					<script><file>&lt;![CDATA[1.js,2,js]]&gt;</file><code>&lt;![CDATA[alert(123456)]]&gt;</code></script>
+					<style><file>&lt;![CDATA[1.css,2.css]]&gt;</file><code>&lt;![CDATA[.body {size:12px}]]&gt;</code></style>
+				</page>]]>
+			</supplement>
+			<parameters>
+				<![CDATA[
+				<params>
+					<portlet channelId="12">data/paramsXForm.xml</portlet>
+					<decorator bgColor="#ABCDEF">data/paramsXForm.xml</decorator>
+				</params>]]>
+			</parameters>
+			<name><![CDATA[Jon的门户-1]]></name>
+			<disabled><![CDATA[0]]></disabled>
+		</row>
+	</data>
+</xform></DetailInfo></Response>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html> 
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>系统登陆</title>
+<meta name="viewport" content="width=device-width">
+<meta name="apple-mobile-web-app-title" content="TSS登陆" />
+<meta name="keywords" content="卜贝软件，它山石，应用基础平台，门户，应用，内容, 聚合，数据分析，数据挖掘，大数据">
+
+<link rel="shortcut icon" href="images/tss.ico">
+<link rel="Bookmark" href="images/tss.ico">
+
+<link href="tools/tssJS/css/boubei.css" rel="stylesheet">
+
+<script src="tools/tssJS/tssJS.all.js"></script>
+<script src="tools/tssUtils.js"></script>
+<script src="tools/common/md5.js"></script>
+
+<style type="text/css">
+    html, body { height: 100%; }
+
+    body {
+        background-image: url(data:image/png;base64,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);
+        background-color: #222;
+    }
+    #login_box { position:relative; top:220px; width:420px; margin:0 auto; font-size:16px; padding-left: 10px; }
+    #login_box h1 { width: 328px; line-height:30px; text-indent: 5px; color: #fff; border-bottom:1px solid #009999; }
+    #login_box span { display: block; margin: 20px 0px; padding: 0px 5px; }
+    #login_box input { 
+        width: 320px; height:32px; line-height:22px;
+        border: 1px solid #009999; border-radius:3px; background-color: #eee; 
+    }
+    #login_box input:hover, #login_box input:focus { background-color: #fff; }
+
+    #login_box span.bottonBox { margin:10px 0px; }        
+    #bt_login { 
+        width: 320px; height: 32px; 
+        background-color: #049cdb; color: #fff; cursor: pointer;
+        border-radius: 3px; border: 1px solid #95B8E7; 
+    }
+    #bt_login:hover { background-color: #0064cd; }
+
+    #login_box a { padding-left: 3px; font-size: 15px; }
+    #login_box a:link { color: #f0f0f0; }
+    #login_box a:visited { color: #ccc; text-decoration:none; }
+    #login_box a:hover { color: #FEF7A9; text-decoration:underline; }
+    #login_box a:active { color: #ff7f24; }
+
+    @media screen and (max-width: 660px) {
+        #login_box a { display: none; }
+    }
+    @media screen and (max-width: 420px) {
+        #login_box { width: 100%; }
+        #login_box input, #bt_login, #login_box h1 { width: 95%; }
+    }
+
+</style>
+
+<script type="text/javascript">
+
+/*********************** 应用配置 开始 **********************************/
+ var 
+    indexPage = "index.html";    /* 登录成功后跳转到的页面 */
+ 
+ function setSysTitle() {
+    getParam('sysTitle', function(title) {
+        if( title ) {
+            indexPage = "index.portal";
+        } else {
+            title = '它山石基础平台';       
+        }
+
+        /*
+        if(document.body.offsetWidth < 768 || $.isMobile ) {
+            indexPage = "mobile/index.html";
+        }
+        */
+        $("#sys_title").html(title);
+     });
+ }
+
+/*********************** 应用配置 END **********************************/
+
+URL_GET_USER_NAME = "getLoginInfo.in";
+URL_LOGIN = AUTH_PATH + "login.do";
+
+window.onresize = function() {
+    $("#login_box").center();
+}
+
+$(function(){
+     setSysTitle(); 
+     window.onresize();
+
+     init();
+});
+
+function init() {
+    var accoutEl = $1("loginName"), passwdEl  = $1("password");
+    accoutEl.onfocus = function() {  passwdEl.disabled = true; }
+    accoutEl.value = $.Cookie.getValue("iUserName") || "";
+    accoutEl.focus();
+
+    $("#bt_login").click ( function() {
+        doLogin(accoutEl, passwdEl);
+    } );
+
+    $.Event.addEvent(document, "keydown", function(ev) {
+        if(13 == ev.keyCode) { // enter
+            $.Event.cancel(ev);
+            $("#bt_login").focus();
+
+            setTimeout(function() {
+                doLogin(accoutEl, passwdEl);
+            }, 10);
+        }
+    });
+
+    accoutEl.onblur = function() { 
+        var value = this.value;
+        if( !value ) {
+            return $(accoutEl).focus().notice("请输入账号");
+        }
+        if(accoutEl.identifier) {
+            delete accoutEl.identifier;
+        }
+        $.ajax({
+            url: URL_GET_USER_NAME,
+            params: {"loginName": value},
+            waiting: true,
+            onexcption: function() {
+                accoutEl.focus();
+            },
+            onresult: function(){
+                accoutEl.identifier = this.getNodeValue("identifier");
+                accoutEl.randomKey  = this.getNodeValue("randomKey");
+                
+                passwdEl.disabled = false;
+                passwdEl.focus();
+            }
+        });
+    }
+}
+
+var doLogin = function(accoutEl, passwdEl) {
+    var identifier = accoutEl.identifier;
+    var randomKey  = accoutEl.randomKey;   
+    var loginName  = accoutEl.value;
+    var password   = passwdEl.value;
+    
+    if( !loginName ) {
+        return $(accoutEl).focus().notice("请输入账号");
+    } 
+    else if( !password ) {
+        return $(passwdEl).focus().notice("请输入密码");
+    }
+    else if( !identifier ) {
+        return alert("系统无法登录，服务器异常，请联系管理员。");
+    }
+
+    $.ajax({
+        url: URL_LOGIN,
+        waiting: true,
+        headers : {
+            "loginName": $.encode(loginName, randomKey), 
+            "password":  $.encode(password, randomKey), 
+            "identifier": identifier
+        },
+        params: { 
+        	"_password": hex_md5(password)
+        },
+        onexception: function(errorMsg) {
+            passwdEl.focus();
+        },
+        onsuccess: function() {
+            $.Cookie.setValue("iUserName", loginName);
+            location.href = indexPage;
+        }
+    });
+}
+
+/* 找回密码  */
+function forget() {
+    $.openIframePanel("forgetPanel", "重置密码", 460, 300, "modules/um/_forget.html", true);
+}
+
+/* 注册 */
+function register() {
+    $.openIframePanel("registerPanel", "注册新用户", 550, 320, "modules/um/_register.htm", true);
+}
+
+</script>
+</head>
+
+<body>
+    <div id="login_box">
+        <h1 id="sys_title">Welcome</h1>
+        <span>
+            <input type="text" id="loginName" placeholder="请输入您的账号" /> <a href='#' onclick='register()'>注册</a>
+        </span>
+        <span>
+            <input type="password" id="password" placeholder="请输入您的密码"/> <a href='#' onclick='forget()'>忘记密码</a>
+        </span>
+        <span class='bottonBox'>
+            <button id='bt_login'>登 陆 系 统</button>
+        </span>
+    </div>
+</body>
+</html>

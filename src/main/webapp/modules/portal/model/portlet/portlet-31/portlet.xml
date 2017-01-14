@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<portlet>
+  <property>
+    <name>文章列表（模板引擎）</name>
+    <version>V1.0 by Jon.King</version>
+    <description><![CDATA[负责显示文章列表：采用Freemarker模板引擎读取并展示文章列表数据。		  ]]></description>
+  </property>
+  <script><![CDATA[function cutTitle(title, wordNum){
+      if(title.length > wordNum){
+          title = title.substr(0, wordNum);
+		  document.write(title + "...");
+      } else {
+		   document.write(title);
+	  }  
+}
+
+function cutTitle2(title, wordNum, issueDate, newImg){
+      cutTitle(title, wordNum);
+
+      var d, year, month, day = "";
+      d = new Date();
+	  year = d.getYear();	
+      month = d.getMonth() + 1;
+	  day = d.getDate();
+	  if(month < 10){ month = "0" + month; }
+	  if(day < 10)  { day = "0" + day; }
+      if(year + "-" + month + "-" + day == issueDate){
+            document.write("<img src=\"" + newImg + "\" border=\"0\" align=\"right\">");
+      }
+}
+
+function showPageInfo(currentPage, totalPageNum, totalRows, url){
+	  var menuId = Query.get("menuId");
+
+	  if(menuId != null){
+		  url = url + "&menuId=" + menuId;
+	  }
+
+	  document.write("<tr><td colspan=\"2\" align=\"right\">");
+	  document.write("共" + totalRows + "条，");
+	  document.write("分" + totalPageNum + "页，");
+	  document.write("当前第<font color=red>" + currentPage + "</font>页&nbsp;&nbsp;");
+
+	  document.write("<a href=\"" + url + "&page=1\">最前页</a> ");
+	  if(1 < currentPage){
+		  document.write("<a href=\"" + url + "&page=" + (currentPage-1) + "\">上一页</a> ");
+	  }else{
+		  document.write("上一页 ");
+	  }
+	  if(currentPage < totalPageNum){
+		  document.write("<a href=\"" + url + "&page=" + (currentPage+1) + "\">下一页</a> ");
+	  }else{
+		  document.write("下一页 ");
+	  }
+	  document.write("<a href=\"" + url + "&page=" + totalPageNum + "\">最后页</a> ");
+	  document.write("</td></tr> ");
+}]]></script>
+  <style><![CDATA[#${id} TD {
+	FONT-SIZE: 12px; COLOR: #000000; FONT-FAMILY: "宋体"
+}
+A {
+	COLOR: #000; TEXT-DECORATION: none
+}
+A.hover {
+	COLOR: #f00; TEXT-DECORATION: none
+}
+A.wzdt:link {
+	COLOR: #005291
+}
+A.wzdt:active {
+	COLOR: #005291
+}
+A.wzdt:visited {
+	COLOR: #005291
+}
+A.bulletin:link {
+	COLOR: #5a96dc
+}]]></style>
+  <html><![CDATA[<#assign tempChannelId = common.Long.valueOf(channelId?default('#{channelId}'))/>
+<@common.getArticleListXML tempChannelId, common.Integer.valueOf(page?default('1')), #{pageSize}/>
+<div id="${id}">
+	<div id="infolist">
+	  <table width="95%" border="0" cellspacing="1" cellpadding="0" align="center">
+	  <#if common.totalPageNum = '0'>
+		<tr><td>- 该栏目还没有文章 - </td><td width="20%"></td></tr>
+	  <#else>
+		<#list common.articleList.item as item>
+		<tr>
+                        <td align=center width="10"><img height=9 src="${basepath}arrow.gif" width=9></td>
+		  <td>
+			<a href="${common.articlePageUrl}&articleId=${item.id}" target="_blank">
+			  <script language="JavaScript">
+			  <!--
+		                 cutTitle2("${item.title}", #{wordNum}, "${item.issueDate}", "${basepath}icon_new.gif");
+			  //-->
+			  </script>
+			</a>
+		  </td>
+		  <!--<td width="78">[${item.issueDate}]</td>-->
+		</tr>
+		</#list>
+	  </#if>
+<script language="JavaScript">
+    if("#{needPageInfo}" == "true"){
+	showPageInfo(${common.currentPage}, ${common.totalPageNum}, ${common.totalRows}, "${common.articleListUrl}&channelId=${tempChannelId}");
+    }
+</script>
+	  </table>
+	</div>
+</div>]]></html>
+  <events/>
+  <parameters>
+    <param name="pageSize" defaultValue="20"/>
+    <param name="wordNum" defaultValue="32"/>
+    <param name="needPageInfo" defaultValue="true"/>
+    <param name="channelId" defaultValue="2"/>
+  </parameters>
+</portlet>

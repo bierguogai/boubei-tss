@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><Response><ChannelInfo>
+<xform>
+<declare>
+	<column name="name" caption="站点名称" mode="string" empty="false"/>
+	<column name="remark" caption="站点描述" mode="string" maxLength="255"/>
+	<column name="overdueDate" caption="文章过期时间" mode="combo" values="0|1|2|3|4|5" texts="一年|六个月|一个季度|一个月|一个星期|一天"/>
+	<column name="path" caption="发布路径" mode="string" empty="false"/>
+	<column name="docPath" caption="附件路径" mode="hidden"/>
+	<column name="imagePath" caption="图片路径" mode="hidden"/>	
+</declare>
+<layout>
+	<TR>
+		<TD width="80"><label binding="name"/></TD>
+		<TD><input binding="name"/></TD>
+	</TR>
+	<TR>
+		<TD><label binding="overdueDate"/></TD>
+		<TD><input binding="overdueDate"/></TD>
+	</TR>
+	<TR>
+		<TD><label binding="path"/></TD>
+		<TD><input binding="path"  title='指定一个安装环境的目录'/></TD>
+	</TR>
+	<TR>
+		<TD><label binding="remark"/></TD>
+		<TD>
+			<textarea binding="remark" style="width:90%;height:60px;"/>
+		</TD>
+	</TR>
+</layout>		
+<data><row><imagePath><![CDATA[img]]></imagePath><docPath><![CDATA[doc]]></docPath><name><![CDATA[TSS门户]]></name><overdueDate><![CDATA[5]]></overdueDate><remark><![CDATA[TSS门户 test remark]]></remark></row></data></xform></ChannelInfo></Response>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Response> 
+  <ConfigParams> 
+    <xform> 
+      <declare> 
+        <column name="channelId" caption="栏目ID" mode="string"/>  
+        <column name="pageSize" caption="每页个数" mode="string"/> 
+      </declare>  
+      <layout> 
+        <TR> 
+          <TD width="80"> 
+            <label binding="channelId"/> 
+          </TD>  
+          <TD> 
+            <input binding="channelId" type="text"/> 
+          </TD> 
+        </TR>  
+        <TR> 
+          <TD width="80"> 
+            <label binding="pageSize"/> 
+          </TD>  
+          <TD> 
+            <input binding="pageSize" type="text"/> 
+          </TD> 
+        </TR> 
+      </layout>  
+      <data/> 
+    </xform> 
+  </ConfigParams> 
+</Response>

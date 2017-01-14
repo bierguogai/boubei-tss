@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+	<bean name="PermissionServiceExporter" class="org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter">
+		<property name="service" ref="PermissionService"/>
+	    <property name="serviceInterface" value="com.boubei.tss.um.permission.PermissionService"/>
+	</bean>
+ 	
+	<bean name="LoginServiceExporter" class="org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter">
+		<property name="service" ref="LoginService"/>
+	    <property name="serviceInterface" value="com.boubei.tss.um.service.ILoginService"/>
+	</bean>	
+	
+	<!-- Remote 获取每种资源类型对应的"未补全表"和"补全表"和"资源表名" --> 
+	<bean name="ResourceTypeDaoExporter" class="org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter">
+		<property name="service" ref="ResourceTypeDao"/>
+	    <property name="serviceInterface" value="com.boubei.tss.um.permission.RemoteResourceTypeDao"/>
+	</bean>		
+	
+	<!-- Remote 在线用户管理，可选有 OnlineUserService or DBOnlineUserManager-->
+	<bean name="OnlineUserServiceExporter" class="org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter">
+		<property name="service" ref="OnlineUserService"/>
+	    <property name="serviceInterface" value="com.boubei.tss.framework.sso.online.IOnlineUserManager"/>
+	</bean>		
+ 
+</beans>

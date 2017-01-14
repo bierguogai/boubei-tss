@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Response> 
+  <ConfigParams> 
+    <xform> 
+      <declare> 
+        <column name="liwidth" caption="菜单宽度" mode="string"/>  
+        <column name="menuId" caption="菜单ID" mode="string"/> 
+      </declare>  
+      <layout> 
+        <TR> 
+          <TD width="50">
+            <label binding="liwidth"/>
+          </TD>  
+          <TD>
+            <input binding="liwidth" type="text"/>
+          </TD> 
+        </TR>  
+        <TR> 
+          <TD width="50">
+            <label binding="menuId"/>
+          </TD>  
+          <TD>
+            <input binding="menuId" type="text"/>
+          </TD> 
+        </TR> 
+      </layout>  
+      <data/> 
+    </xform> 
+  </ConfigParams> 
+</Response>

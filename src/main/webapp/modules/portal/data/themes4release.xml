@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+	<ThemeList>
+		<column name="theme.id" caption="主题" mode="string" values="1|2|3" texts="默认主题|高山流水|下里巴人"/>
+	</ThemeList>
+</Response>

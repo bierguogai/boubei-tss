@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html> 
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>它山石BI</title>
+<link rel="shortcut icon" href="images/tss.ico">
+<link rel="Bookmark" href="images/tss.ico">
+
+<link href="tools/tssJS/css/boubei.css" rel="stylesheet">
+
+<script src="tools/tssJS/tssJS.all.js"></script>
+<script src="tools/portlet.js"></script>
+
+<style>
+
+html, body { height: 100%; overflow: hidden; }
+.tssIFrame { position: absolute; top: 33px; width: 100%; border-top: 1px solid rgb(35,60,99); }
+.hidden { display: none; }
+
+.top { height: 33px; background-color: rgb(35,60,99); box-sizing: border-box; border-bottom: 1px solid #fff; }
+.top .logo { 
+    display: inline-block; position: absolute; left: 0; top: 0;
+    width: 346px; height: 32px; 
+    background: url(images/logo.png) no-repeat center;
+}
+
+.menu { position: absolute; top:1px; right: 0; font-size: 1.1em;  z-index: 10001; } 
+.menu a { background-color: rgb(35,60,99); color: #b7bac1; }
+.menu a:hover { background-color: #444; color: #fff; text-decoration: none; }
+
+.menu ul { list-style-type: none; } 
+.menu ul li { float:left; position:relative; width: 90px; text-align:center;  } 
+.menu>ul>li { border-right: 1px solid rgba(204,204,204,0.2); }
+.menu ul li a, 
+.menu ul li a:visited { display: block; height: 30px; line-height: 30px; 
+    overflow: hidden; text-overflow: ellipsis; word-break: break-all; white-space: nowrap; 
+} 
+.menu ul li ul { display: none; }  
+.menu ul li:hover ul { display: block; position: absolute; top: 30px; left:0; width: 85px; } 
+.menu ul li:hover a { border-bottom: 1px solid rgba(204,204,204,0.2); }
+
+li.biadmin { display: none; }
+li.bestuser { display: none; }
+
+#notice {
+    position: fixed; top: 5px; left: 200px; color: red;   
+    width: 40%; min-width: 360px; height: 24px; overflow: hidden;
+}
+#notice .container { float: left; width: 1000%; }
+#notice .container>div { float: left; }
+#notice .container>div>a {
+    display: inline-block; float: left; width: 400px; line-height: 20px; 
+    margin: 2px 30px; color: #fff; cursor:pointer; 
+    overflow: hidden; text-overflow: ellipsis; word-break: break-all; white-space: nowrap; 
+}
+#notice .container>div>a:link { color: #f0f0f0; }
+#notice .container>div>a:visited { color: #ccc; text-decoration:none; }
+#notice .container>div>a:hover { color: #FEF7A9; text-decoration:none; }
+#notice .container>div>a:active { color: #ff7f24; }
+#noticePanel .title { background-color: rgb(35,60,99); }
+
+</style>
+
+<script type="text/javascript">
+
+/* 用户信息初始化  */
+$(function(){
+    initUserInfo(function() {
+        resizeIFrame();
+
+        $.ajax({
+            url : "/tss/auth/user/has",
+            method : "GET",
+            type : "json",
+            ondata : function() {
+                var info = this.getResponseJSON();
+                if( info && info[1] ) {
+                    var roles = info[1];
+                    ( info[1].contains(1) || info[1].contains(-1) ) && $("li.biadmin").show(true);  // BI管理员
+                }
+            }
+        });
+
+        dbsx();
+        getBIMenu();
+    });
+});
+
+window.onresize = resizeIFrame;
+
+function turn2IFrame(url) {
+    if (url == "#") return;
+
+    var id = "if" + tssJS.hashCode(url);
+    var $iframe = $("#" + id);
+    if( $iframe.length == 0 ) {
+        var iframe = $.createElement("iframe", "tssIFrame", id);
+        $iframe = $(iframe);
+        $iframe.attr("frameborder", "0").attr("scrolling", "auto");
+        $(document.body).appendChild(iframe);
+
+        resizeIFrame();
+        $iframe.attr("src", url);
+    }
+
+    $(".tssIFrame").addClass("hidden").removeClass("open");
+    $iframe.removeClass("hidden").addClass("open");
+}
+function openMsgPage() {
+    turn2IFrame('modules/um/message.html');
+}
+var resizeIFrame = function resizeIFrame() {
+    $(".tssIFrame").css("height", (document.body.offsetHeight - 33) + "px"); 
+}
+
+function feedback() {
+    var url = encodeURI('modules/dm/record.html?_default=系统使用反馈');
+    turn2IFrame(url);
+}
+
+function showNotice(id, title) {
+    $.openIframePanel("noticePanel", title, 800, 480, "/tss/notice.html?articleId=" + id);
+}
+
+tssJS(function(){
+    var request = new $.HttpRequest();
+    request.url =  "/tss/auth/article/list/xml/2/1/5/false";
+    request.method = "GET";
+    request.onresult = function(){
+        var articleList = this.getNodeValue("ArticleList");
+        $("item", articleList).each(function(i, item){
+            var id = $( "id", item ).text(), title = $( "title", item ).text();
+            var a = tssJS.createElement("a");
+            a.href = "javascript:void(0);";
+            $(a).attr("onclick", "showNotice(" +id+ ", '" +title+ "')");
+            $(a).html( "【" + $( "issueDate", item ).text() + "】" + title);
+
+            $("#s1").appendChild(a);
+        });
+
+        showMQ();
+    }
+    request.send();
+
+    function showMQ() {
+        var speed = 100
+        var nDiv = $("#notice")[0];
+        var s1 = $("#s1")[0];
+        var s2 = $("#s2")[0];
+
+        $(s2).html( $(s1).html() );
+
+        function marquee(){
+            if(nDiv.scrollLeft >= s2.offsetWidth) {
+                nDiv.scrollLeft -= s1.offsetWidth
+            } else {
+                nDiv.scrollLeft += 4;
+            }
+        }
+
+        var mq = setInterval(marquee, speed);
+        nDiv.onmouseover = function() { clearInterval(mq); };
+        nDiv.onmouseout  = function() { mq = setInterval(marquee, speed); };
+    }
+});
+
+
+// ----------------------------------- 获取BI报表一级菜单 -----------------------------------
+var _menus = {}, items = {}, rootId = 669;
+MENU_URL = "/tss/auth/rp/my/" + rootId;
+
+var globalValiable = {};
+
+function getBIMenu() {
+	tssJS.ajax({
+		url: MENU_URL,
+		type: "json",
+		ondata: function() {
+			var data = this.getResponseJSON();
+
+			data.each( function(i, item) {
+				var id = item[0], pid = item[2], name = item[1], isReport = item[3];
+				items[id] = item;
+
+				if( pid == 0 ) return true;
+
+				if( pid == rootId ) { // 一级目录
+					var li = tssJS.createElement("li");
+					$(li).html("<a href='javascript:void(0)' onclick='openReport(" +id+ ")'>" +name+ "</a>");
+					$("#_bi>ul").appendChild(li);
+
+					_menus[id] = [];
+				}
+				else if( !isReport ) { // 二级目录
+					_menus[pid] && _menus[pid].push(item);
+					item.children = [];
+				}
+				else if( isReport ) {  // 报表
+					items[pid] && items[pid].children && items[pid].children.push(item);
+				}
+			} );
+
+            openReport(685); // 默认打开BI首页
+		}
+	})
+}
+
+function openReport(id) {
+	globalValiable.list = _menus[id];
+	turn2IFrame('more/bi_menu.html?id=' + id);
+}
+
+</script>
+
+</head>
+
+<body>
+ 
+<div class="top">
+    <div class="logo"></div>
+    <div class="menu"> 
+        <ul> 
+            <li id="_bi">
+            	<a href='javascript:void(0)'>BI</a>
+            	<ul></ul>
+            </li>           
+            <li><a href='javascript:void(0)' onclick="turn2IFrame('modules/dm/record.html')">数据录入</a></li>
+            <li class="biadmin"><a href='javascript:void(0)'>系统管理</a>    
+                <ul> 
+                    <li><a href='javascript:void(0)' onclick="turn2IFrame('modules/um/group.html')">用户管理</a></li>
+                    <li><a href='javascript:void(0)' onclick="turn2IFrame('modules/um/role.html')">角色授权</a> </li>
+                    <li><a href='javascript:void(0)' onclick="turn2IFrame('modules/_log/log.htm')">系统日志</a></li>
+                </ul> 
+            </li>  
+            <!-- <li id="x1"><a href='javascript:void(0)' onclick="feedback()">使用反馈</a> </li>             -->
+            <li style="width: 120px;">
+                <a href='javascript:void(0)' 
+                    onclick='$.openIframePanel("p1", "个人信息", 760, 320, "modules/um/_userInfo.htm", true);' id="userInfo">个人信息</a>
+                <ul>
+                    <li>
+                    	<a href='javascript:void(0)' onclick='$.openIframePanel("p2", "修改密码", 440, 300, "modules/um/_password.htm", true);'>修改密码</a>
+                    </li>
+                    <li><a href='javascript:void(0)' onclick="logout()">注销登陆</a></li>
+                    <li><a href='javascript:void(0)' onclick="openMsgPage()">待办事项</a></li> 
+                    <!-- <li><a href='index.portal' target="_self">返回门户</a></li> -->
+                </ul>
+            </li>            
+        </ul>  
+    </div> 
+</div>
+
+<div id="notice">
+    <div class="container">
+        <div id="s1">
+
+        </div>
+        <div id="s2"></div>
+    </div>
+</div>
+ 
+</body>
+</html>

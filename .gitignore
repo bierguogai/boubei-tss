@@ -1,0 +1,17 @@
+classes
+.class
+target
+bin
+build
+.settings
+.clover
+.classpath
+.project
+.svn
+*.db
+/webapp/src/main/webapp/upload
+/webapp/src/main/webapp/uploadFile
+
+.DS_Store
+
+src/test/resources/passwd

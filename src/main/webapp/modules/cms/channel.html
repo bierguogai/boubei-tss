@@ -1,0 +1,70 @@
+<!DOCTYPE HTML>
+<HTML xmlns:Tree xmlns:Grid>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>内容栏目管理</title>
+
+<link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link href="../../css/css.css" rel="stylesheet">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssUtils.js"></script>
+
+<script src="channel.js"></script>
+
+<style>
+
+  #channelFormDiv { width: 400px; max-height: 320px; top: 100px; left: 220px; display: none; }
+  #channelFormDiv .content { padding: 12px; overflow: auto; }
+  #channelFormDiv .buttonBox { margin: 0 auto; text-align: center; }
+  #channelFormDiv .buttonBox input { margin-left: 12px;  }
+  #channelFormDiv .max, #channelFormDiv .min { display: none; }   
+  #articleFrame { height: 100%; width: 100%; }
+  #channelFormSave { margin: 10px 10px 10px 150px; }
+
+</style>
+
+</head>
+
+<body>
+  <table class="panel" >
+     <tr class="header"> <td/><td/><td/><td/> </tr>
+     <tr class="body"> 
+      <td/>
+      <td id="palette">
+            <div>
+                <div class="bar">
+                    <span class="icon"></span>站点栏目
+                    <span class="search"><input id="searchKey"/><input type="button" value="查 找"/></span>
+                    <span class="refreshTreeBT"></span>
+                    <span class="paletteSwitch" id="paletteClose"></span>
+                </div>
+                <Tree id="tree" moveable="true"><div class="loading"></div></Tree>
+            </div> 
+      </td>
+      <td class="groove">
+        <table>
+          <tr>
+            <td id="gridTitle">
+              <span class="paletteSwitch" id="paletteOpen"></span><span class="icon"></span>
+              文章<span class="buttonBox" id="gridToolBar"></span>
+            </td>
+          </tr>
+          <tr>
+            <td class="hasframe" id="gridContainer">
+              <Grid id="grid"></Grid>
+              <iframe id="articleFrame" style="display:none" frameborder="0"></iframe>
+            </td>
+          </tr>
+        </table>
+      </td>
+      <td/>
+    </tr>
+    <tr class="footer"> <td/><td/><td/><td/> </tr>
+  </table>
+
+  <div id="channelFormDiv"></div>
+
+</body>
+</html>

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<layout> 
+  <property> 
+    <name>仿虎嗅布局器</name>  
+    <version/>  
+    <description> <![CDATA[]]> </description> 
+  </property>  
+  <script> <![CDATA[]]> </script>  
+  <style> <![CDATA[.clearfix { *zoom: 1; }
+.clearfix:before,
+.clearfix:after { display: table; line-height: 0; content: ""; }
+.clearfix:after { clear: both; }
+
+html { height: 100%; }
+body {
+  margin:0;
+  font-size: 14px;
+  font-family:"STHeiti","Arial","Microsoft Yahei","Hiragino Sans GB","Simsun,sans-self";
+  background-color: #f0f0f0;
+}
+
+* { box-sizing:border-box; }
+a { text-decoration: none; }
+.container { width: 1000px; margin: 0 auto; }
+
+.top nav { background-color: #2e3138;  height: 28px; }
+.top nav>ul { margin: 0; position: absolute; right: 10px; }
+.top nav>ul>li { float: left; list-style: none; }
+.top nav>ul>li:hover { background-color: #444; }
+.top nav>ul>li>a { line-height: 28px; padding: 0 15px; color: #b7bac1; font-size: 14px; }
+.top nav>ul>li>a:hover { color: #fff; }
+.top nav>ul>li .active { display: block; height: 28px; padding: 0 15px; background-color: #3498db; color: #fff; }
+
+.navbar {
+  background-color: #fff;
+  border-bottom: 1px solid #cacaca!important;
+  height: 77px;
+  margin-bottom: 10px;
+}
+.navbar .navbar-brand { display:inline-block; }
+.navbar .navbar-brand a { margin-left: -25px; }
+.navbar .navbar-brand a>img { margin-top: -2px; }
+.navbar nav { height: 77px; width: 800px; position:relative; display:inline-block; }
+
+.navbar-form { position:absolute; right:-40px; top:20px; }
+.navbar-form input {
+  width: 268px; height: 36px; line-height: 22px;
+  border: 1px solid #ddd; border-radius: 4px;
+  vertical-align: middle; padding: 6px 12px;
+  color: #555; font-size: 14px;
+}
+.navbar-form button {
+  position: absolute; right: 10px; top: 8px;
+  width: 21px; height: 21px;
+  text-indent: -999px; border: none;
+  background: url("${basepath}icon2.png") no-repeat -220px -11px;
+}
+
+header .navbar-nav { margin: 0; width: 500px; margin-left: 90px; }
+header .navbar-nav>li {
+    width: 80px; text-align: center;
+    border-right: 1px solid #f2f2f2; border-top: 2px solid #fff;
+    float: left; list-style: none;
+}
+header .navbar-nav>li a {
+  color: #333; font-size: 16px; text-decoration: none;
+}
+header .navbar-nav>li>a {
+  display: block; height: 74px; line-height: 45px; padding: 15px 0;
+  transition: all .2s;
+}
+
+header .navbar-nav>li:first-child { border-left: 1px solid #f2f2f2; }
+header .navbar-nav>li:hover,
+header .navbar-nav>li.active { border-top: 2px solid #38b7ea; border-right: 1px solid #2e3138; }
+header .navbar-nav>li:hover>a,
+header .navbar-nav>li.active>a,
+header .navbar-nav>li:focus>a { color: #fff; background-color: #2e3138; }
+
+header .navbar-nav>li.nav-news { position: relative; }
+header .navbar-nav>li.nav-news:after {
+    content: ''; display: inline-block; width:10px; height:10px;
+    position: absolute; right: 10px; top: 34px;
+    background-image:url(${basepath}icon.png);
+    background-repeat: no-repeat; background-position: -333px -39px;
+}
+
+header .navbar-nav>li.nav-news ul {
+    display: none; z-index: 3; width: 160px; padding: 0;
+    position: absolute; left: 0; top: 68px;
+    background-color: #2e3138;
+    box-shadow: 1px 2px 3px rgba(0,0,0,0.395);
+    border-radius: 0px 0 4px 4px;
+}
+header .navbar-nav>li.nav-news ul .nav-menu3 { display: none; margin: -68px 0px 0 160px; }
+header .navbar-nav>li.nav-news:hover ul.nav-menu2 { display: block; }
+header .navbar-nav>li.nav-news:hover ul.nav-menu2>li:hover ul.nav-menu3 { display: block; }
+header .navbar-nav>li.nav-news ul li {
+    height: 36px; line-height: 36px; text-align: left; margin-top: -1px;
+    border-top: 1px solid #363a43; border-bottom: 1px solid #2e3138;
+    position: relative; list-style: none;
+}
+header .navbar-nav>li.nav-news ul li:first-child { border-top-color: #2e3138; }
+header .navbar-nav>li.nav-news ul li:last-child  { border-radius: 0px 0 4px 4px; }
+header .navbar-nav>li.nav-news ul li:hover { background-color: #23252a; z-index: 9; }
+header .navbar-nav>li.nav-news ul li a { display: block; padding-left: 20px; color: #b7bac1; }
+header .navbar-nav>li.nav-news ul li a:hover { color: #fff; }]]> </style>  
+  <html> <![CDATA[<div class="top" style="background-color: #2e3138;">
+  <nav class="clearfix">
+      <ul>
+        <li><a class="active" href="javascript:void(0);">登录</a></li>
+        <li><a href="#">注册</a></li>
+      </ul>
+  </nav>
+</div>
+
+<header class="navbar">
+  <div class="container"> 
+    <div class="navbar-brand">
+        <a href="#"><img src="${basepath}logo.png" alt="logo.png"></a>
+    </div>
+    <nav>
+        <form class="navbar-form">
+          <input type="text" class="search" placeholder="请输入查询内容">
+          <button type="submit"></button>
+        </form>
+        <ul class="navbar-nav clearfix">
+          <li class="nav-news "> <a href="http://wwww.huxiu.com/">资讯</a> 
+            <ul class="nav-menu2"> 
+             <li><a href="http://wwww.huxiu.com/focus">看点资讯资讯</a></li> 
+             <li><a href="http://wwww.huxiu.com/opinions">观点</a></li> 
+             <li><a href="http://wwww.huxiu.com/books">读点</a></li>  
+            </ul> 
+          </li> 
+          <li><a href="#" target="_blank">用点</a></li> 
+          <li><a href="http://wwww.huxiu.com/collections" target="_blank">文集</a></li> 
+          <li class="nav-news "> 
+            <a href="http://wwww.huxiu.com/active" id="hx-active">活动</a> 
+            <ul class="nav-menu2"> 
+             <li><a>虎嗅活动</a> 
+              <ul class="nav-menu3"> 
+               <li><a href="http://www.huxiu.com/active/content/30/1.html" target="_blank">TOP DAY</a></li> 
+               <li><a href="http://www.huxiu.com/active/content/28/1.html" target="_blank">上道沙龙</a></li> 
+               <li><a href="http://wwww.huxiu.com/zhuanti/2014winterfm" target="_blank">F&M节</a></li> 
+               <li><a href="http://wwww.huxiu.com/zhuanti/hx2015xmtyx" target="_blank">WoW!营销会</a></li> 
+               <li><a href="http://wwww.huxiu.com/zhuanti/hxtingshuhui8" target="_blank">虎嗅听书会</a></li> 
+               <li><a href="http://wwww.huxiu.com/special" target="_blank">更多虎嗅活动</a></li> 
+              </ul> 
+             </li> 
+           <li><a href="http://wwww.huxiu.com/active">活动日历</a></li> 
+          </ul> </li> 
+          <li><a href="http://wwww.huxiu.com/group" target="_blank">群组</a></li> 
+        </ul>
+    </nav>
+  </div>
+</header>
+
+<div id="${id}"> 
+    ${port0} 
+</div>]]> </html>  
+  <events></events>  
+  <parameters></parameters> 
+</layout>

@@ -1,0 +1,258 @@
+<!DOCTYPE HTML>
+<HTML xmlns:WorkSpace xmlns:Tree xmlns:Grid>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>门户发布管理</title>
+
+<link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link href="../../css/css.css" rel="stylesheet">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssUtils.js"></script>
+
+<script type="text/javascript">
+<!--
+	/* 后台响应数据节点名称  */
+    XML_MAIN_TREE  = "ReleaseConfigTree";
+    XML_NODE_INFO  = "ReleaseConfig";
+    XML_THEME_LIST = "ThemeList";
+
+	CACHE_TREE_NODE_DETAIL = "_TREE_NODE_DETAIL";
+ 
+    /* XMLHTTP请求地址汇总 */
+	URL_INIT            = AUTH_PATH + "portal/release/list";
+    URL_NODE_DETAIL     = AUTH_PATH + "portal/release/";
+    URL_SAVE_NODE       = AUTH_PATH + "portal/release";
+    URL_DELETE_NODE     = AUTH_PATH + "portal/release";
+    URL_GET_THEME_LIST  = AUTH_PATH + "portal/theme4release/";
+	URL_GET_PORTAL_LIST = AUTH_PATH + "portal/activePortals";
+	URL_GET_PAGE_LIST   = AUTH_PATH + "portal/activePages/";
+    URL_GET_PS_TREE     = AUTH_PATH + "navigator/pstree/";
+
+	if(IS_TEST) {
+		URL_INIT            = "data/releaseConfig_tree.xml?";
+		URL_NODE_DETAIL     = "data/releaseConfig.xml?";
+		URL_SAVE_NODE       = "data/_success.xml?";
+		URL_DELETE_NODE     = "data/_success.xml?";
+		URL_GET_THEME_LIST  = "data/themes4release.xml?";
+		URL_GET_PORTAL_LIST = "data/structure_tree.xml?";
+		URL_GET_PAGE_LIST   = "data/structure_page_tree.xml?";
+        URL_GET_PS_TREE      = "data/structure_tree2.xml?";
+	}
+
+    function init() {
+        initMenus();
+        initWorkSpace(false);
+        initEvents();
+
+        loadInitData();
+    }
+  
+    function initMenus() {
+        ICON = "images/";
+        var item1 = {
+            label:"新建访问地址",
+            callback:addReleaseConfig,            
+            visible:function() {return "_root" == getTreeNodeId();}
+        }
+        var item2 = {
+            label:"删除",
+            callback:function() { delTreeNode() },
+            icon:ICON + "icon_del.gif",
+            visible:function() {return "_root" != getTreeNodeId();}
+        }
+        var item3 = {
+            label:"编辑",
+            callback:editReleaseConfig,
+            icon:ICON + "icon_edit.gif",
+            visible:function() {return "_root" != getTreeNodeId();}
+        }
+
+        var menu1 = new $.Menu();
+        menu1.addItem(item1);
+        menu1.addItem(item2);
+        menu1.addItem(item3);
+
+        $1("tree").contextmenu = menu1;
+    }
+ 
+    function loadInitData() {
+        var onresult = function() {
+            var tree = $.T("tree", this.getNodeValue(XML_MAIN_TREE));
+            tree.onTreeNodeDoubleClick = function(ev) { editReleaseConfig(); }
+            tree.onTreeNodeRightClick = function(ev) { onTreeNodeRightClick(ev); }
+        }
+
+        $.ajax({ url: URL_INIT, onresult: onresult});
+    }
+ 
+    function editReleaseConfig() {
+        var treeNode = $.T("tree").getActiveTreeNode();
+		var treeID   = treeNode.id;
+		var treeName = treeNode.name;
+
+		var callback = {};
+		callback.onTabChange = function() {
+			setTimeout(function() {
+				loadTreeDetailData(treeID);
+			}, TIMEOUT_TAB_CHANGE);
+		};
+
+		var inf = {};
+		inf.label = OPERATION_EDIT.replace(/\$label/i, treeName);
+		inf.SID = CACHE_TREE_NODE_DETAIL + treeID;
+		inf.defaultPage = "page1";
+		inf.callback = callback;
+		ws.open(inf);
+    }
+ 
+    function loadTreeDetailData(treeID) {
+		var onresult = function() {
+			var dataXmlNode = this.getNodeValue(XML_NODE_INFO);
+
+			$.cache.XmlDatas[treeID] = dataXmlNode;
+
+			var page1Form = $.F("page1Form", dataXmlNode);
+
+			var portalName = page1Form.getData("portal.name");
+			if( !$.isNullOrEmpty(portalName) ) {
+				page1Form.setEditable("page.name", "true");
+			} else {
+				page1Form.setEditable("page.name", "false");
+			}
+
+			$1("page1BtSave").onclick = function() {
+				savePublish(treeID);
+			}
+		}
+
+		$.ajax({ url: URL_NODE_DETAIL + treeID, onresult: onresult});
+    }
+ 
+    function savePublish(treeID) {
+        var page1Form = $.F("page1Form");
+        if(  !page1Form.checkForm() ) {
+            return;
+        }
+
+        var request = new $.HttpRequest();
+        request.url = URL_SAVE_NODE;
+ 
+		var dataNode = $.cache.XmlDatas[treeID].querySelector("data");
+		request.setFormContent(dataNode);   
+
+        syncButton([$1("page1BtSave")], request);
+
+        request.onresult = function() {
+			var xmlNode = this.getNodeValue(XML_MAIN_TREE).querySelector("treeNode");
+			appendTreeNode("_root", xmlNode);
+			ws.closeActiveTab();
+        }
+        request.onsuccess = function() {
+			var name = page1Form.getData("name");
+			modifyTreeNode(treeID, "name", name);
+			ws.closeActiveTab();
+        }
+        request.send();
+    }
+ 
+    function addReleaseConfig() {
+        var treeName = "发布";
+        var treeID = DEFAULT_NEW_ID;
+
+        var callback = {};
+        callback.onTabChange = function() {
+            setTimeout(function() {
+                loadTreeDetailData(treeID);
+            }, TIMEOUT_TAB_CHANGE);
+        };
+
+        var inf = {};
+        inf.defaultPage = "page1";
+        inf.label = OPERATION_ADD.replace(/\$label/i,treeName);
+        inf.callback = callback;
+        inf.SID = CACHE_TREE_NODE_DETAIL + treeID;
+        ws.open(inf);
+    }
+
+    /* 获取门户 */
+    function getPortal() {
+        popupTree(URL_GET_PORTAL_LIST, "SourceTree", {}, function(portal){
+            var page1Form = $.F("page1Form");
+            page1Form.updateDataExternal("page.id", "");
+            page1Form.updateDataExternal("page.name","");
+            page1Form.updateDataExternal("theme.id", "");
+
+            page1Form.updateDataExternal("portal.id", portal.id);
+            page1Form.updateDataExternal("portal.name", portal.name);
+
+            // 获取门户对应主题列表
+            var request = new $.HttpRequest();
+            request.url = URL_GET_THEME_LIST + portal.id;
+            request.onresult = function() {
+                var column = this.getNodeValue(XML_THEME_LIST);
+                var name = column.getAttribute("name");
+
+                page1Form.setEditable("true");
+
+                var values = column.getAttribute("values"), texts = column.getAttribute("texts");
+                page1Form.updateField("theme.id", [
+                    {"name": "texts", "value": texts},
+                    {"name": "values", "value": values}
+                 ]);
+            }
+            request.send();
+        });
+    }
+
+    /* 获取页面内容  */
+    function getPage() {
+        var page1Form = $.F("page1Form");
+        var portalId = page1Form.getData("portal.id");
+        var url = URL_GET_PS_TREE + portalId + "/3";
+        popupTree(url, "StructureTree", {}, function(page){
+            page1Form.updateDataExternal("page.id", page.id);
+            page1Form.updateDataExternal("page.name", page.name);
+        });
+    }
+
+    window.onload = init;
+	
+//-->
+</script>
+
+</head>
+
+<body>
+
+<table class="panel" >
+    <tr class="header"> <td/><td/><td/><td/> </tr>
+    <tr class="body"> 
+        <td/>
+        <td id="palette">
+            <div>
+                <div class="bar">
+                    <span class="icon"></span>发布地址
+                    <span class="refreshTreeBT"></span>
+                </div>
+                <Tree id="tree"><div class="loading"></div></Tree>
+            </div> 
+        </td>
+        <td class="groove">
+    		<WorkSpace:Box id="ws">
+    		    <WorkSpace:Page id="page1">
+        			<div id="page1Form"></div>
+                    <WorkSpace:PageStep>
+                        <input type="button" class="tssbutton medium blue" value="保 存" id="page1BtSave"/>
+                    </WorkSpace:PageStep>
+    		    </WorkSpace:Page>
+    		</WorkSpace:Box>
+    	</td>
+        <td/>
+    </tr>
+    <tr class="footer"> <td/><td/><td/><td/> </tr>
+</table>
+
+</body>
+</html>

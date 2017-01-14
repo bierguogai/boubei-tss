@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<decorator>
+  <property>
+    <name>banner加导航</name>
+    <version/>
+    <description><![CDATA[]]></description>
+  </property>
+  <script><![CDATA[]]></script>
+  <style><![CDATA[#${id} #menu {
+    BORDER-TOP: #fff 1px solid; HEIGHT: 26px; BACKGROUND-COLOR: #004f91; TEXT-ALIGN: center
+}
+#${id} #menu td {
+    FONT-SIZE: 14px; FONT-FAMILY: "宋体";
+}
+#${id} #menu A {
+    PADDING-RIGHT: 0.7em; PADDING-LEFT: 0.7em; PADDING-BOTTOM: 0px; MARGIN-LEFT: 3px; COLOR: #fff; PADDING-TOP: 0px; BORDER-BOTTOM: medium none; TEXT-DECORATION: none
+}
+#${id} #subMenu {
+    BACKGROUND-IMAGE: url(${basepath}submenu_bg.gif); BORDER-BOTTOM: #fff 1px solid; POSITION: relative; HEIGHT: 22px
+}
+#${id} #subMenu DIV {
+    VISIBILITY: hidden; POSITION: absolute; TOP: 0px; HEIGHT: 20px
+}
+#${id} #subMenu td {
+    FONT-SIZE: 12px; PADDING-TOP: 3px; FONT-FAMILY: "宋体"; PADDING-RIGHT: 5px; PADDING-LEFT: 5px;
+}
+#${id} #subMenu A {
+    COLOR: #fff; PADDING-TOP: 0px; TEXT-DECORATION: none
+}]]></style>
+  <prototypeStyle><![CDATA[]]></prototypeStyle>
+  <html><![CDATA[<table cellSpacing=0 cellPadding=0 width=1000 align=center border=0 id="${id}">
+  <tr>
+    <td height=143>
+      <div style="background-color:#1993E8;height:5px;font-size:1px;"></div>
+      <div><object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,29,0" width="1000" height="145">
+        <param name="movie" value="${basepath}banner.swf">
+        <param name="quality" value="high">
+        <param name="wmode" value="transparent">
+        <embed src="${basepath}banner.swf" width="1000" height="145" quality="high" pluginspage="http://www.macromedia.com/go/getflashplayer" type="application/x-shockwave-flash" wmode="transparent"></embed>
+      </object></div>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      ${content}
+    </td>
+  </tr>
+</table>]]></html>
+  <events/>
+  <parameters/>
+</decorator>

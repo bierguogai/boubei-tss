@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><Response><SourceInfo>
+<xform>
+	<declare>	
+		<column name="id"     caption="数据录入ID"  mode="number" editable="false"/>
+		<column name="name"   caption="数据录入名" maxLength="30" empty="false"/>
+		<column name="datasource" caption="目标数据库" mode="combo" empty="false"/>
+		<column name="table"  caption="目标数据表" maxLength="100"/>
+		<column name="define" caption="表字段定义" maxLength="10000" empty="false"/>
+		<column name="customizePage" caption="自定义录入页" maxLength="100"/>
+		<column name="customizeJS" caption="录入表单控制" maxLength="10000"/>
+		<column name="customizeTJ" caption="数据过滤条件" maxLength="1000"/>
+		<column name="customizeGrid" caption="全局JS" maxLength="4000"/>
+		<column name="remark" caption="数据录入简介" maxLength="200"/>
+		<column name="needLog"  caption="记录更新日志" mode="combo" values="0|1" texts="否|是"/>
+		<column name="needFile" caption="是否上传文件" mode="combo" values="0|1" texts="否|是"/>
+		<column name="batchImp" caption="允许批量导入" mode="combo" values="0|1" texts="否|是"/>
+	</declare>
+	<layout>
+		<TR>
+			<TD width="80"><label binding="name"/></TD>
+			<TD width="280"><input binding="name" style="width:200px;"/></TD>
+			<TD width="80"><label binding="id"/></TD>
+			<TD width="250"><input binding="id" style="width:60px;"/></TD>
+			<TD width="100"><label binding="needLog"/></TD>
+			<TD><input binding="needLog"/></TD>
+		</TR>
+		<TR>
+			<TD width="80"><label binding="datasource"/></TD>
+			<TD>
+				<input binding="datasource" style="width:150px; margin-right:10px;"/>
+				<a href="#" onclick="manageDS()" class="tssbutton small blue">管理数据源</a>
+			</TD>
+			<TD width="80"><label binding="table"/></TD>
+			<TD><input binding="table" style="width:180px;"/></TD>
+			<TD width="100"><label binding="needFile"/></TD>
+			<TD><input binding="needFile"/></TD>
+		</TR>
+		<TR>
+			<TD></TD>
+			<TD></TD>			
+			<TD><label binding="customizePage"/></TD>
+			<TD><input binding="customizePage" style="width:220px;"/></TD>
+			<TD><label binding="batchImp"/></TD>
+			<TD><input binding="batchImp"/></TD>
+		</TR>
+		<TR>
+			<TD valign="top">
+				<label binding="define"/><br/><br/>
+				<a href="#" onclick="configDefine()" class="tssbutton small blue">配置</a>
+			</TD>
+			<TD colspan="5"><textarea binding="define" style="width:97%;height:120px"/></TD>
+		</TR>
+		<TR>
+			<TD valign="top"><label binding="customizeJS"/></TD>
+			<TD colspan="5"><textarea binding="customizeJS" style="width:97%;height:150px"/></TD>
+		</TR>
+		<TR>
+			<TD valign="top"><label binding="customizeTJ"/></TD>
+			<TD colspan="5"><textarea binding="customizeTJ" style="width:97%;height:40px"/></TD>
+		</TR>
+		<TR>
+			<TD valign="top"><label binding="customizeGrid"/></TD>
+			<TD colspan="5"><textarea binding="customizeGrid" style="width:97%;height:120px"/></TD>
+		</TR>
+		<TR>
+			<TD valign="top"><label binding="remark"/></TD>
+			<TD colspan="5"><textarea binding="remark" style="width:97%;height:40px"/></TD>
+		</TR>
+	</layout>
+	<data><row><createTime><![CDATA[2015-04-08 00:00:00.0]]></createTime><define><![CDATA[[
+  {'label':'分公司','code':'org','nullable':'false','jsonUrl':'../../data/json/CompanyNameList','onchange':'getNextLevelOption(^center^, 399, ^param1^)'},
+  {'label':'分拨中心','code':'center','options':{'codes':'','names':''}},
+  {'label':'考核内容','code':'content','height':'72','width':'300'},
+  {'label':'完成情况','code':'wcqk','options':{'codes':'优秀|良好|及格','names':'优秀|良好|及格'},'width':'100'},
+  {'label':'自我评分','code':'score','type':'number','checkReg':'^[0-9]\\d{0,1}$','errorMsg':'请输入0到99之间的数字','width':'100'},
+  {'label':'日期','code':'day','type':'date','nullable':'false','defaultValue':'today-0'}
+]]]></define><updateTime><![CDATA[2015-04-12 00:00:00.0]]></updateTime><seqNo><![CDATA[1]]></seqNo><remark><![CDATA[数据录入示例
+'jsonUrl':'../../service/orgs','onchange':'getNextLevelOption(^center^, ^../../service/centers^, ^param1^)']]></remark><creatorId><![CDATA[-1]]></creatorId><updatorName><![CDATA[Admin]]></updatorName><customizeJS><![CDATA[alert(123);]]></customizeJS><table><![CDATA[x_tbl_jx]]></table><type><![CDATA[1]]></type><levelNo><![CDATA[3]]></levelNo><updatorId><![CDATA[-1]]></updatorId><lockVersion><![CDATA[16]]></lockVersion><id><![CDATA[1]]></id><parentId><![CDATA[9]]></parentId><creatorName><![CDATA[Admin]]></creatorName><decode><![CDATA[000010000100001]]></decode><name><![CDATA[绩效考核--MySQL]]></name><datasource><![CDATA[connpool-btr-mysql]]></datasource></row></data>
+</xform></SourceInfo></Response>

@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+	<ReleaseConfigTree>
+		<actionSet>
+			<treeNode id="_root" name="全部" _open="true">
+				<treeNode id="1" icon="images/url.gif" name="门户发布配置"></treeNode>
+			</treeNode>
+		</actionSet>
+	</ReleaseConfigTree>
+</Response>

@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<portlet>
+  <property>
+    <name>文章列表（AJAX）</name>
+    <version>V1.0</version>
+    <description><![CDATA[采用AJAX的形式读取并展示文章列表。]]></description>
+  </property>
+  <script><![CDATA[var ArticleList = {};
+ 
+ArticleList.instance = function(obj){ 
+    for(var item in this){         
+         obj[item] = this[item];
+    }
+    this.clear();
+}
+ 
+ArticleList.clear = function(){
+    this.innerHTML = "";
+}
+
+/*
+ *	函数说明：载入数据
+ *	参数：string:action       数据源地址
+              string:params       参数
+              string:columns      文章列表显示列名顺序
+              string:article      文章页地址
+ */
+ArticleList.load = function(params, columns, articlePageUrl){
+    // 设置LOADING层
+    var layer = $("waiting_layer");
+    this.style.filter = "gray()";
+    
+    var oWidth = this.offsetWidth;
+    var oHeight = this.offsetHeight;
+    with(layer.style){
+        position = "relative";
+        top = -(oHeight/2) - 15 + "px";
+        left = oWidth/2 -50 +"px";
+        zIndex = "20000";
+        display = "";
+    }
+
+    // 创建文章列表
+	this.page = params.page;
+	this.pageSize = params.pageSize;
+	this.channelId = params.channelId;
+	this.needPageInfo = params.needPageInfo;
+
+    this.columns = columns;
+    this.articlePageUrl = articlePageUrl;
+
+    this.gotoPage(this.page);
+}
+
+ArticleList.gotoPage = function(page) {
+	this.page = page;            
+    var thisObj = this;
+
+	var p = new HttpRequestParams();
+	p.url =  "/tss/auth/article/list/xml/" + this.channelId + "/" + this.page + "/" + this.pageSize + "/false";
+	p.method = "GET";
+
+	var request = new HttpRequest(p);
+	request.onresult = function(){
+		var articleList = this.getNodeValue("ArticleList");
+		thisObj.clear();
+		thisObj.setArticleList(articleList);
+
+		var layer = $("waiting_layer");
+		layer.style.display = "none";
+	}
+	request.onexception = function(){
+		var delay = 3;
+
+		thisObj.innerHTML = "读取失败,将在" + delay + "秒后自动刷新，或点击<a href=#abc>此处</a>刷新</span>" ;
+
+		var timeout = setTimeout(function(){
+			thisObj.gotoPage(page);
+		}, delay * 1000);
+
+		thisObj.getElementsByTagName("a")[0].onclick = function(){
+			clearTimeout(timeout);
+			thisObj.gotoPage(page);
+		}
+	}
+	request.send();
+}
+
+/*
+ *	函数说明：遍历列表项并创建
+ */
+ArticleList.setArticleList = function(curNode){
+    var thisObj = this;
+
+    // 获取配置参数
+    var columns = null;
+    if(null != this.columns && "" != this.columns){
+        columns = this.columns.split(",");
+    }
+    if(null == columns || columns.length == 0) {
+        columns = ["title", "issueDate"];
+    }
+
+	// 左侧大标题
+	var channelName = curNode.selectSingleNode("./channelName/text()");
+	if(null != channelName){
+		var bigTitle = $("Left_big_title");
+		if(null != bigTitle && bigTitle.innerHTML == "Loading..."){
+			bigTitle.innerHTML = channelName.nodeValue;
+		}
+	}
+
+    var currentPage = parseInt(thisObj.page);
+	var pageSize = parseInt(thisObj.pageSize);
+	var totalPage = curNode.selectSingleNode("./totalPageNum/text()").nodeValue;
+    var articleNodes = curNode.selectNodes("./item");
+    if(0 < articleNodes.length){
+        for(var i=0,iLen=articleNodes.length; i<iLen; i++){
+            var articleNode = articleNodes[i];
+			var count = i + (currentPage - 1) * pageSize + 1;
+            this.createArticleItem(articleNode, columns, count);
+        }
+
+        // 创建页码信息
+		if(this.needPageInfo == "true"){
+			var currentPage = parseInt(thisObj.page);
+			if (totalPage != null && totalPage != "" && totalPage >= 1){
+				thisObj.setPage(currentPage, totalPage);
+			}
+		}
+    } else {
+        this.innerHTML = "<table cellspacing='0' cellpadding='0'><tbody><tr class=\"item\"><td class=\"title\">- 该栏目还没有文章 -</td></tr></tbody></table>";
+    }
+}
+
+/*
+ *	函数说明：创建列表项
+ *	参数：  XmlNode:articleNode        XmlNode实例
+            Array:columns           显示列顺序的数组
+ */
+ArticleList.createArticleItem = function(articleNode, columns, count){
+    var thisObj = this;
+
+    var tableObj = this.getElementsByTagName("tbody")[0];
+    if(tableObj == null) {
+		if(this.needPageInfo == "true") {
+			this.innerHTML = "<table class='titleTable' cellspacing='0' cellpadding='0'><tbody><tr><td width='40' class='tTd'>编号</td><td class='tTd'>标题</td><td class='tTd' width='100'>出处</td><td class='tTd' width='100'>时间</td></tr></tbody></table>";
+		} else {
+			this.innerHTML = "<table class='titleTable' cellspacing='0' cellpadding='0'><tbody></tbody></table>";
+		}
+        
+        tableObj = this.getElementsByTagName("tbody")[0];
+    }
+
+    var tr = Element.createElement("tr");
+
+	if(this.needPageInfo == "true"){
+		// 编号
+		var tdBH = Element.createElement("td");
+		tdBH.innerHTML = count;
+		tdBH.style.textAlign = "center";
+		tdBH.className = "tTd"; 
+		tr.appendChild(tdBH);
+	}
+	
+	var id = getTextNodeValue(articleNode.selectSingleNode("id/text()"));
+    for(var i=0; i < columns.length; i++) {
+        var column = columns[i];
+
+        var node = articleNode.selectSingleNode(column);
+        if( node ) {
+            var text = getTextNodeValue(node.selectSingleNode("./text()"));
+			var tdXX = Element.createElement("td");
+			tdXX.innerHTML = tdXX.title = text + "&nbsp;";
+			tdXX.className = column; 
+			tr.appendChild(tdXX);
+        }
+    }
+
+    tableObj.appendChild(tr);
+
+	// 添加事件
+	tr.onclick = function(){
+		window.open(thisObj.articlePageUrl + "/" + id);
+	}
+	tr.onmouseover = function(){
+		this.className = "hover"; 
+	}
+	tr.onmouseout = function() {
+	    this.className = ""; 
+	}
+}
+
+/*
+ *	函数说明：获取文本节点字符串内容
+ *	参数：  XmlNode:textNode        文本节点
+ */
+function getTextNodeValue(textNode){
+    if( textNode ) {
+        return textNode.nodeValue;
+    }
+    return "";
+}
+
+ArticleList.setPage = function(totalPageNum, currentPage) {
+	var pageDiv = $$("pageInfo");
+	if(pageDiv == null) {
+		pageDiv = Element.createElement("div");
+		pageDiv.id = "pageInfo";
+	}
+	this.appendChild(pageDiv);
+
+	var container = pageDiv;
+	var totalPageNum = totalPageNum;
+	var currentPage = currentPage;
+
+	function setPageList() {
+		if (currentPage == i) {
+			a[a.length] = "<a href=\"#\" class=\"on\">" + i + "</a>";
+		} else {
+			a[a.length] = "<a href=\"#\">" + i + "</a>";
+		}
+	}
+	
+	var a = []; // a href array
+	if (currentPage == 1) {
+		a[a.length] = "<a href=\"#\" class=\"prev unclick\">prev</a>";
+	} else {
+		a[a.length] = "<a href=\"#\" class=\"prev\">prev</a>";
+	}
+ 
+	if (totalPageNum <= 10) {
+		for (var i = 1; i <= totalPageNum; i++) {
+			setPageList();
+		}
+	} else {
+		if (currentPage <= 4) {
+			for (var i = 1; i <= 5; i++) {
+			  setPageList();
+			}
+			a[a.length] = "...<a href=\"#\">" + totalPageNum + "</a>";
+		} 
+		else if (currentPage >= totalPageNum - 3) {
+			a[a.length] = "<a href=\"#\">1</a>...";
+			for (var i = totalPageNum - 4; i <= totalPageNum; i++) {
+				setPageList();
+			}
+		}
+		else { // 当前页在中间部分
+		  a[a.length] = "<a href=\"#\">1</a>...";
+		  for (var i = currentPage - 2; i <= currentPage + 2; i++) {
+			  setPageList();
+		  }
+		  a[a.length] = "...<a href=\"#\">" + totalPageNum + "</a>";
+		}
+	}
+
+	if (currentPage == totalPageNum) {
+		a[a.length] = "<a href=\"#\" class=\"next unclick\">next</a>";
+	} else {
+		a[a.length] = "<a href=\"#\" class=\"next\">next</a>";
+	}
+	container.innerHTML = a.join("");
+
+	// 事件点击
+	var pageClick = function() {
+		var oAlink = container.getElementsByTagName("a");
+		var inx = currentPage; // 初始的页码
+		oAlink[0].onclick = function() { //点击上一页
+			if (inx == 1) {
+				return false;
+			}
+			inx--;
+			gotoPage(inx);
+			return false;
+		}
+		for (var i = 1; i < oAlink.length - 1; i++) { //点击页码
+			oAlink[i].onclick = function() {
+				inx = parseInt(this.innerHTML);
+				gotoPage(inx);
+				return false;
+			}
+		}
+		oAlink[oAlink.length - 1].onclick = function() { //点击下一页
+			if (inx == totalPageNum) {
+				return false;
+			}
+			inx++;
+			gotoPage(inx);
+			return false;
+		}
+	} ()
+}
+
+
+function ${id}_onLoad(){
+    var ${id} = $("${id}"); 
+    ArticleList.instance(${id}); // 初始化文章列表
+
+    var channelId = "#{channelId}";
+    if("" == channelId){ // 配置为空时自动读取地址参数
+        channelId = Query.get("channelId");
+    }
+    if("" != channelId && null != channelId){
+        var params = {channelId:channelId, pageSize:"#{pageSize}", page:"1", needPageInfo:"#{needPageInfo}"}
+        ${id}.load(params, "#{columns}", "${common.articlePageUrl}");
+    }
+}]]></script>
+  <style><![CDATA[#${id}{
+   padding:8px;
+   width:100%;
+}
+#${id} .titleTable{
+  width:99%;
+  position:relative;
+  top:0px;
+  left:-8px;
+}
+#${id} .titleTable td {
+  color:#000099;
+  vertical-align:middle;
+  padding:0px;
+  height:22px;
+  border-bottom:1px dotted #CCCCCC;
+}
+#${id} .hover{
+  background-color:#FEF7A9;
+  cursor:pointer;
+  cursor:hand;
+}
+
+#${id} .tTd{
+	font-size:12px;
+	height:20px;
+	border:0px;
+	border-bottom:1px solid #cccccc;
+	border-right:1px solid #cccccc;
+	text-align:center;
+}
+#${id} .title{
+  font-size: 12px;
+  font-weight:normal;
+  text-align:left;
+}
+#${id} .author{
+  width:70px;
+  font-size: 12px;
+  font-weight:normal;
+}
+#${id} .issueDate{
+  font-size: 10px;
+  font-family:Verdana;
+  color:#999999;
+  width:75px;
+  text-overflow:ellipsis;
+  word-break:keep-all;
+  overflow:hidden;
+}
+#pageInfo { margin:2px; }
+#pageInfo a{text-decoration:none;display:inline-block;line-height:14px;padding:2px 5px;color:#333;border:1px solid #ccc;margin:0 2px;}
+#pageInfo a:hover,.page a.on{background:#999;color:#fff;border:1px solid #333;}
+#pageInfo a.unclick,.page a.unclick:hover{background:none;border:1px solid #eee;color:#999;cursor:default;}]]></style>
+  <html><![CDATA[<div id="${id}">数据加载中...</div>
+<div style="font-size:1px;"><img src="${basepath}loading.gif" style='display:none' id="waiting_layer"/></div>]]></html>
+  <events>
+    <attach event="onload" onevent="${id}_onLoad"/>
+  </events>
+  <parameters>
+    <param name="channelId" defaultValue="2"/>
+    <param name="pageSize" defaultValue="15"/>
+    <param name="needPageInfo" defaultValue="true"/>
+    <param name="columns" defaultValue="title,author,issueDate"/>
+  </parameters>
+</portlet>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<portlet>
+  <property>
+    <name>图片新闻（模板引擎）</name>
+    <version>V1.0 by Jon.King</version>
+    <description><![CDATA[负责实现滚动图片新闻。]]></description>
+  </property>
+  <script><![CDATA[function ${id}_Marquee(){
+    var demo = ${id}_demo;
+    var demo1 = ${id}_demo1;
+    var demo2 = ${id}_demo2;
+    if(demo2.offsetHeight - demo.scrollTop <= 0)//当滚动至demo1与demo2交界时
+        demo.scrollTop -= demo1.offsetHeight;  //demo跳到最顶端
+    else{
+        demo.scrollTop++;
+    }
+}
+function ${id}_onload(){
+    var speed = 30;
+    var demo  = ${id}_demo;
+    var demo1 = ${id}_demo1;
+    var demo2 = ${id}_demo2;
+
+    demo2.innerHTML=demo1.innerHTML; //克隆demo1为demo2
+
+    var MyMar=setInterval(${id}_Marquee,speed); //设置定时器
+    demo.onmouseover=function() { clearInterval(MyMar) }; //鼠标移上时清除定时器达到滚动停止的目的
+    demo.onmouseout=function() { MyMar=setInterval(${id}_Marquee,speed) }; //鼠标移开时重设定时器
+}]]></script>
+  <style><![CDATA[]]></style>
+  <html><![CDATA[<@common.getArticleListXML #{channelId}, 1, #{pageSize}/>
+
+<#assign count = 0/>
+
+<div id="${id}">
+        <div id="${id}_demo" style="overflow: hidden; height: 590px;"/>
+	<div id="${id}_demo1">
+	<#if common.totalPageNum != '0'>
+	  <#list common.articleList.item as item>
+		<#list item.Attachment as attach>
+		  <#if attach.@type = 'image' && count < 5 >
+			  <div style="padding-top:5px;padding-bottom:5px;">
+				<a href="${common.articlePageUrl}&articleId=${item.id}" target="_blank">
+				  <img src="${attach.url}" width="175" border="0" alt="${item.title}" style="margin-bottom:5px;"/><br>${item.title}
+				</a>
+			  </div>
+			  <#assign count = count + 1 />
+		  </#if>
+		</#list>
+	   </#list>
+	</#if>
+	</div>
+           <div id="${id}_demo2"></div>
+</div>]]></html>
+  <events>
+    <attach event="onload" onevent="${id}_onload"/>
+  </events>
+  <parameters>
+    <param name="channelId" defaultValue="2"/>
+    <param name="pageSize" defaultValue="5"/>
+  </parameters>
+</portlet>

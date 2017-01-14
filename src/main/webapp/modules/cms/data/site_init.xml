@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+<ChannelTree>
+ <actionSet title="" _open="true">
+     <treeNode name="全部" id="_root" _open="true">
+       <treeNode isSite="1" siteId="1" type="0"  icon="images/site_0.gif" status="0"  disabled="0" name="市局门户网站" id="1" _open="true">
+       <treeNode isSite="0" siteId="1" seqNo="1" icon="images/channel_0.gif" status="0"  disabled="0" name="电子公告" id="2"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="2" icon="images/channel_0.gif" status="0"  disabled="0" name="新闻快讯" id="3"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="3" icon="images/channel_0.gif" status="0"  disabled="0" name="公文浏览" id="4">
+       <treeNode isSite="0" siteId="1" seqNo="1" icon="images/channel_0.gif" status="0"  disabled="0" name="最新文件" id="5"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="2" icon="images/channel_0.gif" status="0"  disabled="0" name="工商简报" id="6"></treeNode></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="4" icon="images/channel_0.gif" status="0"  disabled="0" name="企业注册登记" id="7"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="5" icon="images/channel_0.gif" status="0"  disabled="0" name="企业监管" id="8"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="6" icon="images/channel_0.gif" status="0"  disabled="0" name="经济检查" id="9"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="7" icon="images/channel_0.gif" status="0"  disabled="0" name="商标广告" id="10"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="8" icon="images/channel_0.gif" status="0"  disabled="0" name="市场监管" id="11"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="9" icon="images/channel_0.gif" status="0"  disabled="0" name="合同监管" id="12"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="10" icon="images/channel_0.gif" status="0"  disabled="0" name="理财与保障" id="13"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="11" icon="images/channel_0.gif" status="0"  disabled="0" name="信息化建设" id="14"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="12" icon="images/channel_0.gif" status="0"  disabled="0" name="党风与廉政" id="15"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="13" icon="images/channel_0.gif" status="0"  disabled="0" name="消费维权" id="16"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="14" icon="images/channel_0.gif" status="0"  disabled="0" name="企业信用" id="17"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="15" icon="images/channel_0.gif" status="0"  disabled="0" name="学习园地" id="18"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="16" icon="images/channel_0.gif" status="0"  disabled="0" name="法制园地" id="19"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="17" icon="images/channel_0.gif" status="0"  disabled="0" name="学会天地" id="20"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="18" icon="images/channel_0.gif" status="0"  disabled="0" name="红盾护农" id="21"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="19" icon="images/channel_0.gif" status="0"  disabled="0" name="执法实务" id="22"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="20" icon="images/channel_0.gif" status="0"  disabled="0" name="领导讲话" id="23"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="21" icon="images/channel_0.gif" status="0"  disabled="0" name="本月重点" id="24"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="22" icon="images/channel_0.gif" status="0"  disabled="0" name="目标责任制" id="25"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="23" icon="images/channel_0.gif" status="0"  disabled="0" name="中介服务" id="26"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="24" icon="images/channel_0.gif" status="0"  disabled="0" name="食品安全" id="27"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="25" icon="images/channel_0.gif" status="0"  disabled="0" name="图片新闻" id="28"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="26" icon="images/channel_0.gif" status="0"  disabled="0" name="视频点播" id="29"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="27" icon="images/channel_0.gif" status="0"  disabled="0" name="基层动态" id="30"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="28" icon="images/channel_0.gif" status="0"  disabled="0" name="紧急通知" id="31"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="29" icon="images/channel_0.gif" status="0"  disabled="0" name="实用工具" id="32">
+       <treeNode isSite="0" siteId="1" seqNo="1" icon="images/channel_0.gif" status="0"  disabled="0" name="菜谱" id="33"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="2" icon="images/channel_0.gif" status="0"  disabled="0" name="值班表" id="34">
+       <treeNode isSite="0" siteId="1" seqNo="1" icon="images/channel_0.gif" status="0"  disabled="0" name="双休日" id="35"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="2" icon="images/channel_0.gif" status="0"  disabled="0" name="夜间" id="36"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="3" icon="images/channel_0.gif" status="0"  disabled="0" name="节假日" id="37"></treeNode></treeNode></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="30" icon="images/channel_0.gif" status="0"  disabled="0" name="下载" id="41">
+       <treeNode isSite="0" siteId="1" seqNo="1" icon="images/channel_0.gif" status="0"  disabled="0" name="业务类" id="42"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="2" icon="images/channel_0.gif" status="0"  disabled="0" name="工具类" id="43"></treeNode></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="31" icon="images/channel_0.gif" status="0"  disabled="0" name="OA导入文章" id="44">
+       <treeNode isSite="0" siteId="1" seqNo="1" icon="images/channel_0.gif" status="0"  disabled="0" name="OA发文" id="45"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="2" icon="images/channel_0.gif" status="0"  disabled="0" name="OA收文" id="46"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="3" icon="images/channel_0.gif" status="0"  disabled="0" name="OA信息" id="47"></treeNode>
+       <treeNode isSite="0" siteId="1" seqNo="4" icon="images/channel_0.gif" status="0"  disabled="0" name="OA简报" id="48"></treeNode>
+              <treeNode isSite="0" siteId="1" seqNo="5" icon="images/channel_0.gif" status="0"  disabled="0" name="OA电子公告" id="49"></treeNode>
+              <treeNode isSite="0" siteId="1" seqNo="7" icon="images/channel_0.gif" status="0"  disabled="0" name="OA征求意见稿" id="51"></treeNode>
+       </treeNode>
+              <treeNode isSite="0" siteId="1" seqNo="33" icon="images/channel_0.gif" status="0"  disabled="0" name="友情链接" id="181"></treeNode>
+       </treeNode>
+       
+       <treeNode isSite="1" siteId="2" type="0" icon="images/site_0.gif" status="0"  disabled="0" name="市局门户网站(分局)" id="121">
+              <treeNode isSite="0" siteId="2" seqNo="1" icon="images/channel_0.gif" status="0"  disabled="0" name="电子公告" id="122"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="2" icon="images/channel_0.gif" status="0"  disabled="0" name="新闻快讯" id="123"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="3" icon="images/channel_0.gif" status="0"  disabled="0" name="公文浏览" id="124">
+              <treeNode isSite="0" siteId="2" seqNo="1" icon="images/channel_0.gif" status="0"  disabled="0" name="最新文件" id="125"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="2" icon="images/channel_0.gif" status="0"  disabled="0" name="工商简报" id="126"></treeNode></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="4" icon="images/channel_0.gif" status="0"  disabled="0" name="企业注册登记" id="127"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="5" icon="images/channel_0.gif" status="0"  disabled="0" name="企业监管" id="128"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="6" icon="images/channel_0.gif" status="0"  disabled="0" name="经济检查" id="129"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="7" icon="images/channel_0.gif" status="0"  disabled="0" name="商标广告" id="130"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="8" icon="images/channel_0.gif" status="0"  disabled="0" name="市场监管" id="131"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="9" icon="images/channel_0.gif" status="0"  disabled="0" name="合同监管" id="132"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="10" icon="images/channel_0.gif" status="0"  disabled="0" name="理财与保障" id="133"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="11" icon="images/channel_0.gif" status="0"  disabled="0" name="信息化建设" id="134"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="12" icon="images/channel_0.gif" status="0"  disabled="0" name="党风与廉政" id="135"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="13" icon="images/channel_0.gif" status="0"  disabled="0" name="消费维权" id="136"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="14" icon="images/channel_0.gif" status="0"  disabled="0" name="企业信用" id="137"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="15" icon="images/channel_0.gif" status="0"  disabled="0" name="学习园地" id="138"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="16" icon="images/channel_0.gif" status="0"  disabled="0" name="法制园地" id="139"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="17" icon="images/channel_0.gif" status="0"  disabled="0" name="学会天地" id="140"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="18" icon="images/channel_0.gif" status="0"  disabled="0" name="红盾护农" id="141"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="19" icon="images/channel_0.gif" status="0"  disabled="0" name="执法实务" id="142"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="20" icon="images/channel_0.gif" status="0"  disabled="0" name="领导讲话" id="143"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="21" icon="images/channel_0.gif" status="0"  disabled="0" name="本月重点" id="144"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="22" icon="images/channel_0.gif" status="0"  disabled="0" name="目标责任制" id="145"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="23" icon="images/channel_0.gif" status="0"  disabled="0" name="中介服务" id="146"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="24" icon="images/channel_0.gif" status="0"  disabled="0" name="食品安全" id="147"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="25" icon="images/channel_0.gif" status="0"  disabled="0" name="图片新闻" id="148"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="26" icon="images/channel_0.gif" status="0"  disabled="0" name="视频点播" id="149"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="27" icon="images/channel_0.gif" status="0"  disabled="0" name="基层动态" id="150"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="28" icon="images/channel_0.gif" status="0"  disabled="0" name="紧急通知" id="151"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="29" icon="images/channel_0.gif" status="0"  disabled="0" name="实用工具" id="152">
+              <treeNode isSite="0" siteId="2" seqNo="1" icon="images/channel_0.gif" status="0"  disabled="0" name="菜谱" id="153"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="2" icon="images/channel_0.gif" status="0"  disabled="0" name="值班表" id="154">
+              <treeNode isSite="0" siteId="2" seqNo="1" icon="images/channel_0.gif" status="0"  disabled="0" name="双休日" id="155"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="2" icon="images/channel_0.gif" status="0"  disabled="0" name="夜间" id="156"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="3" icon="images/channel_0.gif" status="0"  disabled="0" name="节假日" id="157"></treeNode></treeNode></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="30" icon="images/channel_0.gif" status="0"  disabled="0" name="下载" id="158">
+              <treeNode isSite="0" siteId="2" seqNo="1" icon="images/channel_0.gif" status="0"  disabled="0" name="业务类" id="159"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="2" icon="images/channel_0.gif" status="0"  disabled="0" name="工具类" id="160"></treeNode></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="31" icon="images/channel_0.gif" status="0"  disabled="0" name="OA导入文章" id="161">
+              <treeNode isSite="0" siteId="2" seqNo="1" icon="images/channel_0.gif" status="0"  disabled="0" name="OA发文" id="162"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="2" icon="images/channel_0.gif" status="0"  disabled="0" name="OA收文" id="163"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="3" icon="images/channel_0.gif" status="0"  disabled="0" name="OA信息" id="164"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="4" icon="images/channel_0.gif" status="0"  disabled="0" name="OA简报" id="165"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="5" icon="images/channel_0.gif" status="0"  disabled="0" name="OA电子公告" id="166"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="6" icon="images/channel_0.gif" status="0"  disabled="0" name="OA内部明电" id="167"></treeNode>
+              <treeNode isSite="0" siteId="2" seqNo="7" icon="images/channel_0.gif" status="0"  disabled="0" name="OA征求意见稿" id="168"></treeNode></treeNode></treeNode>
+          </treeNode>
+        </actionSet>
+       </ChannelTree>
+</Response>

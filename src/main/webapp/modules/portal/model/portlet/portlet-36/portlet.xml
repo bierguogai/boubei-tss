@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<portlet>
+  <property>
+    <name>纵向二级菜单</name>
+    <version>V1.0 by Jon.King</version>
+    <description><![CDATA[显示左侧二级菜单。如果是主菜单，则只显示全部一级菜单项，否则只显示一级菜单项下的二级、三级菜单项。
+可通过以下地址预览：
+http://localhost:8088/pms/pms/group!previewElement.action?id=59&type=3&menuId=77]]></description>
+  </property>
+  <script><![CDATA[]]></script>
+  <style><![CDATA[]]></style>
+  <prototypeStyle><![CDATA[]]></prototypeStyle>
+  <html><![CDATA[<div id="${id}">
+<!--判断菜单doc是否已经存在了，因为有可能logo + 导航 portlet 已经取过菜单了-->
+<#assign doc  = doc?default(common.manager.translateValue(common.menuService.getMenuXML(#{menuId})))/>
+  <table width="167" border="0" cellspacing="0" cellpadding="0" id="js_menu">
+    <tr height="16"><td></td></tr>
+<#list doc.Menu.MenuItem as item>
+  <#if item.@id = menuId?default("#{menuId}")>
+    <#list item.MenuItem as item3>
+      <tr> 
+        <td class="l2_bgtext" height="31" background="${basepath}#{img}">
+          <a href="${item3.@url}&menuId=${item3.@id}">${item3.@name}</a></td>
+      </tr>
+      <!--二级菜单项不显示-->
+      <tr style="DISPLAY: none"> 
+        <td >
+          <div id="l2_subtext">
+            <ul>
+            <#list item3.MenuItem as item4>
+              <li><a href="${item4.@url}&menuId=${item4.@id}">${item4.@name}</a></li>
+            </#list>
+            </ul>
+          </div> 
+        </td>	
+      </tr>
+      <tr height="8">
+        <td></td>
+      </tr>
+    </#list>
+  <#else>
+    <#list item.MenuItem as item2>
+      <#if item2.@id = menuId?default("#{menuId}")>
+        <#list item.MenuItem as item3>
+          <tr> 
+            <td class="l2_bgtext" height="31" background="${basepath}#{img}"><a href="${item3.@url}&menuId=${item3.@id}">${item3.@name}</a></td>
+          </tr>
+          <tr style=""> 
+            <td >
+              <div id="l2_subtext">
+                <ul>
+                <#list item3.MenuItem as item4>
+                  <li><a href="${item4.@url}&menuId=${item3.@id}&submenuId=${item4.@id}">${item4.@name}</a></li>
+                </#list>
+                </ul>
+              </div> 
+            </td>	
+          </tr>
+          <tr height="8">
+            <td></td>
+          </tr>
+        </#list>
+      </#if>
+    </#list>
+  </#if>
+</#list>
+  </table>
+  <a href="#"><img class="top" valign="base" border="0" src="${basepath}top.gif"></a>
+</div>]]></html>
+  <events/>
+  <parameters>
+    <param name="img" defaultValue="blue.gif"/>
+    <param name="menuId" defaultValue="66"/>
+  </parameters>
+</portlet>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<portlet>
+  <property>
+    <name>logo+导航（模板引擎）</name>
+    <version>V1.0 by Jon.King</version>
+    <description><![CDATA[用于设置logo图片、读取菜单、显示菜单和二级菜单]]></description>
+  </property>
+  <script><![CDATA[]]></script>
+  <style><![CDATA[]]></style>
+  <prototypeStyle><![CDATA[]]></prototypeStyle>
+  <html><![CDATA[<div id="${id}">
+  <div id="menu">
+    <#assign data = common.menuService.getMenuXML(#{menuId}) />
+    <#assign doc  = common.manager.translateValue(data) />
+    <#assign menu = doc.Menu />
+    <table height="100%" border="0" align="center" cellspacing="0">
+      <tr>
+        <#list menu.MenuItem as item>
+          <td onmouseover="settingPos('subMenu_${item.@id}',this);showSubMenu('subMenu_${item.@id}')" 
+              onmouseout="hidSubMenu('subMenu_${item.@id}')">
+          <a href="${item.@url}&menuId=${item.@id}" target="${item.@target}">${item.@name}</a></td>
+        </#list>
+      </tr>
+    </table>
+  </div>
+  <div id=subMenu>
+    <#list menu.MenuItem as item>
+    <div id="subMenu_${item.@id}" onMouseOver="showSubMenu('subMenu_${item.@id}')" 
+	                       onmouseout="hidSubMenu('subMenu_${item.@id}')">
+      <table border="0" cellspacing="0">
+        <tr>
+          <#list item.MenuItem as item2>
+              <td><a href="${item2.@url}&menuId=${item2.@id}" target="${item2.@target}">
+                   ${item2.@name}</a></td>
+          </#list>
+        </tr>
+      </table>
+    </div>
+    </#list>
+  </div>
+</div>]]></html>
+  <events/>
+  <parameters>
+    <param name="menuId" defaultValue="1"/>
+    <param name="logoURL" defaultValue="banner.jpg"/>
+  </parameters>
+</portlet>

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<portlet>
+  <property>
+    <name>图片新闻_单个循环</name>
+    <version>V1.0</version>
+    <description><![CDATA[单个循环显示图片新闻。]]></description>
+  </property>
+  <script><![CDATA[<#assign data = common.articleService.getPicArticleListByChannel(#{channelId}, 1, #{pageSize}) />
+<#assign doc  = common.manager.translateValue(data) />
+<#assign articleList = doc.Response.ArticleList.rss/>
+
+function ${id}_onload(){
+    var data = "";
+    var ${id} = $("${id}");
+//********************建立所需数组*********************************
+    var articleIds = new Array();
+    var picUrl = new Array();
+    var title  = new Array();
+    var content = new Array();
+
+<#list articleList.item as item>
+	<#list item.Attachment as attach>
+		//将内容放入数组
+                     articleIds[articleIds.length] = ${item.id};
+		title[title.length] = "${item.title}";
+		content[content.length] = "${item.summary}";
+		picUrl[picUrl.length] = "${attach.url}";
+	</#list>
+</#list>
+    if(title.length > 0){
+        changeImgs();
+    }else{
+        var img = $("${id}_tpxw_pic");
+        var td = $("${id}_tpxw_descrip");
+        img.style.visibility = "visible";
+        img.src = "${basepath}noNews.gif";
+        td.innerHTML = "";
+    }
+
+
+//******************具体图片交换***************************
+    function changeImgs() {	
+        var img = $("${id}_tpxw_pic");
+        img.style.visibility = "visible";
+
+        var td = $("${id}_tpxw_descrip");
+        var contentTd = $("${id}_content");
+        var contentSpan = Element.createElement("span");
+        contentTd.appendChild(contentSpan);
+        td.className = "tdout";
+
+        var span = Element.createElement("span");
+        span.className = "spanout";
+        td.appendChild(span);
+        
+        var imgNum = 0;
+        function changeImg(){ 
+            if (imgNum < picUrl.length - 1){imgNum++; } else { imgNum = 0; }
+            img.src = picUrl[imgNum]; // 显示图片
+            span.title = title[imgNum]; //显示标题
+            var smallTitle = title[imgNum];
+            if (smallTitle.length > 10) {
+                smallTitle = smallTitle.substring(0,10) + "...";
+            }
+            span.innerHTML = smallTitle;
+            span.onmouseover = function() {
+                td.className = "tdover";
+            }
+            span.onmouseout = function() {
+                td.className = "tdout";
+            }
+
+			// 显示描述
+            contentSpan.title = content[imgNum];
+            contentSpan.style.cursor = "pointer";
+            contentSpan.style.cursor = "hand";
+            if(content[imgNum].length > 100){
+                contentSpan.innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;" + content[imgNum].substring(0,100) + "...";
+            }else{
+                contentSpan.innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;" + content[imgNum];
+            }
+            
+            var thisUrl = "${common.articlePageUrl}&articleId=" + articleIds[imgNum];
+            img.onclick = function(){
+                window.open(thisUrl);
+            }
+            img.style.cursor = "pointer";
+            img.style.cursor = "hand";
+            
+            span.onclick = contentSpan.onclick = function(){
+                window.open(thisUrl);
+            }
+
+            setTimeout(changeImg, 6000);
+        }
+
+        changeImg();
+    }
+}]]></script>
+  <style><![CDATA[#${id} .tdover{ font-size:12px;text-align:center;height:20px;cursor:pointer;cursor:hand;}
+#${id} .tdout{ font-size:12px;text-align:center;height:20px;}]]></style>
+  <prototypeStyle><![CDATA[]]></prototypeStyle>
+  <html><![CDATA[<div class="portlet" id="${id}">
+<table border=0 width=100% cellspacing=0 cellpadding=0>
+    <tr>
+        <td>
+        <table border=0 width=250 cellspacing=0 cellpadding=0>
+            <tr>
+                <td style="padding-top:5px;padding-left:3px">
+                 <img style="visibility:hidden" src="${basepath}loading.gif" id="${id}_tpxw_pic" width="212" height="156" border="0"/>
+                </td>
+            </tr>
+            <tr>
+                <td id="${id}_tpxw_descrip"></td>
+            </tr>
+        </table>
+        </td>
+        <td id="${id}_content" width=200 valign=top style="padding-top:10px;word-break:break-all"></td>
+    </tr>
+</table>
+</div>]]></html>
+  <events>
+    <attach event="onload" onevent="${id}_onload"/>
+  </events>
+  <parameters>
+    <param name="channelId" defaultValue="13"/>
+    <param name="pageSize" defaultValue="2"/>
+  </parameters>
+</portlet>

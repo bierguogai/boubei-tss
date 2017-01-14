@@ -1,0 +1,158 @@
+<!DOCTYPE HTML>
+<HTML xmlns:Tree xmlns:Grid>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>数据录入采集</title>
+
+<link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link href="../../css/css.css" rel="stylesheet">
+<link href="dm.css" rel="stylesheet">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssJS/tssJS.json2Form.js"></script>
+<script src="../../tools/tssJS/tssJS.jsonp.js"></script>
+<script src="../../tools/tssUtils.js"></script>
+
+<script src="dm.js"></script>
+<script src="record.js"></script>
+
+<style>
+
+.bts { padding-left: 10px; padding-top: 10px; text-align: center; }
+
+.Formbox { display:none; background-color:#E0ECFF; border-radius: 5px; }
+
+#recordFormDiv { width: 96%; height: 100%; padding: 10px; display: none; overflow-y: auto;}
+
+#recordDefinesDiv { width: 500px; height: 370px; padding: 5px; }
+#recordDefinesDiv Tree, #defineForm { background-color: #fff; display:inline-block; }
+#recordDefinesDiv Tree { width:152px; height:90%; overflow-y: auto; }
+#defineForm { width:320px; height:95%; padding:5px; position:absolute; top:5px; left:176px; }
+
+#recordDefinesDiv .required {
+    color: red;
+    width: 10px;
+    display: inline-block;
+ 	text-align: right;
+}
+#recordDefinesDiv label {
+	display: inline-block;
+    width: 60px;
+    text-align: right;
+    line-height: 28px;
+    color: #CC99CC;
+}
+#recordDefinesDiv input[type=text] {
+    width: 200px;
+    height: 18px;
+    line-height: 18px;
+    border: 1px solid #95B8E7;
+    border-radius: 2px;
+    padding-left: 2px;
+}
+#recordDefinesDiv input[type=range] {
+    width: 178px;
+    margin-right: 5px;
+}
+#recordDefinesDiv select {
+    border: 1px solid #95B8E7;
+    height: 20px;
+    width: 70px;
+    border-radius: 2px;
+}
+hr { height: 8px; border: none; border-top: 1px dashed #95B8E7; margin-top: 3px; }
+#recordDefinesDiv .bts { margin-left: 10px; padding-top: 5px; position:absolute; bottom: 2px; left:0; }
+
+</style>
+
+</head>
+
+<body>
+
+<table class="panel" >
+  <tr class="header"> <td/><td/><td/><td/> </tr>
+  <tr class="body"> 
+	<td/>
+	<!-- 左栏 开始 -->
+	<td id="palette">
+	  <div>
+	  	<div class="bar">
+			<span class="icon"></span>资源树 
+            <span class="search"><input id="searchKey"/><input type="button" value="查 找"/></span>
+			<span class="refreshTreeBT"></span>
+			<span class="paletteSwitch" id="paletteClose"></span>
+		</div>
+		<Tree id="tree" moveable="true"><div class="loading"></div></Tree>
+	  </div> 
+	</td>
+	<td class="groove">
+        <div id="recordFormDiv">
+            <div id="recordForm"></div>
+            <div class="bts">
+                <input type="button" class="tssbutton medium blue" value="保 存" id="sourceSave"/> &nbsp;&nbsp;&nbsp;
+                <input type="button" class="tssbutton medium blue" value="关 闭" id="closeRecordForm"/>
+            </div>
+        </div>	
+	</td>
+	<td/>
+  </tr>
+  <tr class="footer"> <td/><td/><td/><td/> </tr>
+</table>
+
+<div id="recordDefinesDiv" class="dialog Formbox">
+	<Tree id="fieldTree" moveable="true"></Tree>
+	<div id="defineForm">
+		<label>字段名称：</label><input type="text" id="_label" /><em class="required">*</em>
+		<label>字段编码：</label><input type="text" id="_code" placeholder="一律小写字母或数字"/><em class="required">*</em>
+		<br><label>字段类型:</label>
+		<select id="_type">
+			<option value="string">字符串</option>
+			<option value="number">数字</option>
+			<option value="date">日期</option>
+			<option value="datetime">日期时间</option>
+            <option value="hidden">隐藏</option>
+		</select> 
+		<label>是否必填:</label>
+		<select id="_nullable">
+			<option value="false">是</option>
+			<option value="true">否</option>
+		</select>  
+		<br><label>默认值：</label><input type="text" id="_defaultValue" placeholder="为参数添加一个默认值"/>
+		<br><label>作为条件：</label>
+		<select id="_isparam">
+			<option value="true">是</option>
+			<option value="false">否</option>
+		</select> 
+
+		<div id="selectRelation">
+			<label>校验正则：</label><input type="text" id="_checkReg" />
+            <label>出错提示：</label><input type="text" id="_errorMsg" />
+
+			<br><label>宽度：</label> 
+			<input type="range" id="_width" min="60" max="350" value="200" step="10"/><span id="_width_">200</span>px
+
+			<br><label>高度：</label>
+			<input type="range" id="_height" min="18" max="180" value="18" step="1"/><span id="_height_">18</span>px
+					
+			<hr>
+			<label>下拉列表：</label><input type="text" id="_options" placeholder="格式：1|2, A|B 或 数据服务地址"/>
+			&nbsp;<button class="tssbutton small blue" onclick="checkDataService()">选择</button>
+			<br><label>是否多选：</label>
+			<select id="_multiple">
+				<option value="true">是</option>
+				<option value="false">否</option>
+			</select> 
+			<br><label>联动方法：</label><input type="text" id="_onchange" />
+		</div>
+	</div>
+	<div class="bts">
+		<input type="button" class="tssbutton small blue" value="完 成" onclick="saveDefine()"/>
+		<input type="button" class="tssbutton small blue" value="关 闭" onclick="closeDefine()"/>
+	</div>
+</div>
+
+<iframe id="downloadFrame" style="display:none"></iframe>
+
+</body>
+</html>

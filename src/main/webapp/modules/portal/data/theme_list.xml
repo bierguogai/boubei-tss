@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+	<ThemeList>
+		<actionSet>
+            <treeNode name="全部" id="_root" _open="true">
+                <treeNode id="r1" name="默认主题" icon="images/default_theme.gif" isDefault="1"/>
+                <treeNode id="r2" name="高山流水" icon="images/theme.gif"/>
+                <treeNode id="r3" name="下里巴人" icon="images/theme.gif"/>
+            </treeNode>
+		</actionSet>
+	</ThemeList>
+</Response>

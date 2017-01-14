@@ -1,0 +1,295 @@
+<!DOCTYPE HTML>
+<HTML xmlns:Tree xmlns:Grid>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>资源文件管理</title>
+
+<link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link href="../../css/css.css" rel="stylesheet">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssUtils.js"></script>
+
+<style>
+    .dialog { width: 440px; border: 0; background-color:#E0ECFF; overflow:auto; padding:1px 0; border-radius: 0; }
+
+    .dialog Tree { height: 300px; }
+
+    .header { height: 25px; padding: 3px 3px 0 15px; color: #555; font-size: 14px; border-bottom: 1px solid #95B8E7; }
+    .header input { background-color:#fff; height: 18px;}
+    .header #contextPath{ background-color:#eee; width:290px; } 
+    .header #fileFilter { width: 50px; padding-left:3px; }
+
+    .dialog>div:nth-child(2) { background-color: #fff; } 
+
+    .dialog .bts { padding: 4px 20px; border-top: 1px solid #95B8E7; }
+    .dialog .bts button { margin-left: 5px; }
+   
+</style>
+
+<SCRIPT type="text/javascript">
+<!--
+    /* 后台响应数据节点名称 */
+    XML_MAIN_TREE = "ResourceTree";
+    XML_CONTEXT_PATH = "ContextPath";
+
+    /* XMLHTTP请求地址汇总 */
+    URL_SOURCE_TREE    = AUTH_PATH + "portal/file/list";
+    URL_RENAME_FILE    = AUTH_PATH + "portal/file";
+    URL_DEL_FILES      = AUTH_PATH + "portal/file";
+    URL_DOWNLOAD_FILES = AUTH_PATH + "portal/file";
+    URL_ADD_FOLDER     = AUTH_PATH + "portal/file";
+
+    if (IS_TEST) {
+        URL_SOURCE_TREE    = "data/resource_init.xml?";
+        URL_RENAME_FILE    = "data/_success.xml?";
+        URL_DEL_FILES      = "data/_success.xml?";
+        URL_DOWNLOAD_FILES = "data/download.zip?";
+        URL_ADD_FOLDER     = "data/_success.xml?";
+    }
+
+    var code = $.Query.get("code"), 
+        type = $.Query.get("type"),
+        useOrignName = $.Query.get("useOrignName");
+
+    function init() {
+        loadFileTree();
+
+        $(".dialog").center();
+    }
+
+    function loadFileTree(contextPath, filter) {
+        var params = {"code": code, "type": type};
+        if (contextPath) {
+            params.contextPath = contextPath;
+        }
+        if (filter) {
+            params.filter = filter;
+        }
+
+        $.ajax({
+            url: URL_SOURCE_TREE,
+            params: params,
+            onresult: function() {
+                var dataXmlNode = this.getNodeValue(XML_MAIN_TREE);
+                var contextPath = this.getNodeValue(XML_CONTEXT_PATH);
+
+                var tree = $.T("tree", dataXmlNode);
+
+                tree.onTreeNodeDoubleClick = function(ev) {
+                    var treeNode = getActiveTreeNode();
+                    var id = treeNode.id;
+                    var name = treeNode.name;
+                    var isFolder = treeNode.getAttribute("isFolder");
+                    if ("-1" == id) {
+                        var newPath = getParentContextPath(); // 回到父目录
+                        loadFileTree(newPath);
+                    } else if ("1" == isFolder) {
+                        var newPath = getFolderContextPath(name); // 进入子目录
+                        loadFileTree(newPath);
+                    }
+                }
+
+                // 显示相对路径
+                var pathEl = $1("contextPath");
+                pathEl.value = pathEl.title = contextPath;
+            }
+        });
+    }
+
+    /* 获取上级文件夹相对路径 */
+    function getParentContextPath() {
+        var pathEl = $1("contextPath");
+        var contextPath = pathEl.value;
+        var newPath = contextPath.replace(/[^//]*\/?$/, "");
+        if (newPath == "") {
+            return null
+        }
+        return newPath;
+    }
+
+    /* 获取当前文件夹相对路径  */
+    function getFolderContextPath(name) {
+        var pathEl = $1("contextPath");
+        var contextPath = pathEl.value;
+        return contextPath + "/" + name;
+    }
+
+    /* 删除资源文件 */
+    function delFiles() {
+        var checkedNodes = $.T("tree").getCheckedNodes();
+        if ( checkedNodes.length == 0 ) {
+            return alert("请先选择要删除的文件");
+        }
+
+        $.confirm("您确定要删除选中的文件吗？", "删除确认", function(){
+            var fileNames = [];
+            var folderNames = [];
+            checkedNodes.each(function(i, node){
+                var name = node.name;
+                var isFolder = node.getAttribute("isFolder");
+                if ("-1" != node.id) {
+                    if ("1" == isFolder) {
+                        folderNames.push(name);
+                    } else {
+                        fileNames.push(name);
+                    }
+                }
+            });
+     
+            if ( fileNames.length == 0 && folderNames.length == 0 ) {
+                return;
+            }
+    
+            var contextPath = $1("contextPath").value;
+            $.ajax({
+                url: URL_DEL_FILES,
+                method: "DELETE",
+                params: {
+                    "contextPath": contextPath,
+                    "fileNames": fileNames.join(","),
+                    "folderNames": folderNames.join(",")
+                },
+                onsuccess: function() {
+                    removeTreeNode($.T("tree"), ["-1"]);
+                }
+            });
+        });
+    }
+
+    /* 重命名资源文件  */
+    function renameFile() {
+        var checkedNodes = $.T("tree").getCheckedNodes();
+        if (checkedNodes.length == 0) {
+            return alert("请先选择要重命名的文件");
+        }
+        if (checkedNodes.length > 1) {
+            return alert("一次只能对一个文件重命名");
+        }
+
+        var selectNode = checkedNodes[0];
+        var id = selectNode.id;
+        if ("-1" == id) {
+            return;
+        }
+
+        var name = selectNode.name;
+        $.prompt("请输入新的文件（夹）名称", "信息输入", function(newName) {
+            if ( $.isNullOrEmpty(newName) ) return alert("名称不能为空。");
+            
+            var contextPath = $1("contextPath").value;
+            $.ajax({
+                url: URL_RENAME_FILE,
+                method: "PUT",
+                params: {
+                    "contextPath": contextPath,
+                    "fileName": name,
+                    "newFileName": newName
+                },
+                onsuccess: function() {
+                    modifyTreeNode(id, "name", newName);
+                }
+            });
+        }, name);
+        
+        
+    }
+
+    /* 下载资源文件  */
+    function downloadFiles() {
+        var checkedNodes = $.T("tree").getCheckedNodes();
+        if ( checkedNodes.length == 0 ) {
+            return alert("请先选择要下载的文件");
+        }
+ 
+        var fileNames = [];
+        var folderNames = [];
+        checkedNodes.each(function(i, node){
+            var name = node.name;
+            var isFolder = node.getAttribute("isFolder");
+            if ("-1" != node.id) {
+                if ("1" == isFolder) {
+                    folderNames.push(name);
+                } else {
+                    fileNames.push(name);
+                }
+            }
+        });
+ 
+        var url = URL_DOWNLOAD_FILES;
+        url += "?contextPath=" + $1("contextPath").value;
+        url += "&fileNames=" + fileNames.join(",");
+        url += "&folderNames=" + folderNames.join(",");
+
+        var frameName = createExportFrame();
+        $1(frameName).setAttribute("src", url);
+    }
+
+    /* 新建文件夹  */
+    function addFolder() {
+        $.prompt("请输入新的文件夹名称", "信息输入", function(name) {
+            if ( $.isNullOrEmpty(name) ) return alert("名称不能为空。");;
+            
+            var contextPath = $1("contextPath").value;
+            $.ajax({
+                url: URL_RENAME_FILE,
+                method: "POST",
+                params: {
+                    "contextPath": contextPath,
+                    "newFileName": name
+                },
+                onsuccess: function() {
+                    loadFileTree(contextPath);
+                }
+            });
+        });
+    }
+
+    /* 过滤文件  */
+    function filterFiles() {
+        var filter = $1("fileFilter").value;
+        var contextPath = $1("contextPath").value;
+        loadFileTree(contextPath, filter);
+    }
+
+    function upload() {
+        var contextPath = $1("contextPath").value;
+        var url = URL_UPLOAD_FILE + "?contextPath=" + contextPath; 
+        url += "&afterUploadClass=com.boubei.tss.portal.helper.MovePortalFile";
+        if(useOrignName) {
+            url += "&useOrignName=" + useOrignName;
+        }
+
+        var importDiv = createImportDiv("点击图标选择要上传的文件", null, url);
+        $(importDiv).show();
+    }
+
+    window.onload = init;
+
+//-->
+</SCRIPT>
+</head>
+
+<body>
+    <div class="dialog">
+        <div class="header">
+            <input type="text" id="contextPath" readOnly="true"/>
+            <input type="text" id="fileFilter" value="*.*">
+            <button class="tssbutton blue small" onclick="filterFiles()">过滤</button>&nbsp;           
+        </div>
+        <div>
+            <Tree id="tree" treeType="multi"></Tree>
+        </div>
+        <div class="bts">
+            <button class="tssbutton small blue" onclick="upload()">上传附件</button>
+            <button class="tssbutton small blue" onclick="downloadFiles()">下载附件</button>
+            <button class="tssbutton small blue" onclick="renameFile()">重命名</button>
+            <button class="tssbutton small blue" onclick="delFiles()">删除附件</button>
+            <button class="tssbutton small blue" onclick="addFolder()">新建目录</button>
+        </div>
+    </div>
+ 
+</body>
+
+</html>

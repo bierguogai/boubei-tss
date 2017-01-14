@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+	<Success>
+		<msg><![CDATA[ 保存成功^ ^ ]]></msg>
+		<description><![CDATA[ 您填写的数据已经保存入数据库，以下省略N字... ]]></description>
+		<type>1</type>
+	</Success>
+	<!-- <ArticleTypeTree>
+        <actionSet>
+            <treeNode seqNo="3" modifiedDate="2006-06-12 16:06:00" channelType="0" creationDate="2006-05-28 08:05:00" status="0" name="childChannel" id="c22" icon="../platform/images/icon/icon_group.gif" _childFrontStr="&lt;span class=&quot;space&quot;&gt;&lt;/span&gt;&lt;span class=&quot;space&quot;&gt;&lt;/span&gt;&lt;span class=&quot;space&quot;&gt;&lt;/span&gt;"/>
+        </actionSet>
+    </ArticleTypeTree> -->
+</Response>

@@ -1,0 +1,57 @@
+<!DOCTYPE HTML>
+<HTML xmlns:WorkSpace xmlns:Tree xmlns:Grid>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>门户组件管理</title>
+
+<link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link href="../../css/css.css" rel="stylesheet">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssUtils.js"></script>
+
+<script src="component.js"></script>
+ 
+</head>
+
+<body>
+<table class="panel" >
+   <tr class="header"> <td/><td/><td/><td/> </tr>
+   <tr class="body"> 
+    <td/>
+    <td id="palette">
+      <div>
+          <div class="bar">
+              <span class="icon"></span>门户组件
+              <span class="refreshTreeBT"></span>
+          </div>
+          <Tree id="tree" moveable="true"><div class="loading"></div></Tree>
+      </div> 
+    </td> 
+    <td class="groove">
+      <WorkSpace:Box id="ws">
+        <WorkSpace:Page id="page1">
+            <div id="page1Form"></div>    
+            <WorkSpace:PageStep>
+              <input type="button" class="tssbutton medium blue" value="保 存" id="page1BtSave"/>
+            </WorkSpace:PageStep>
+        </WorkSpace:Page>
+      </WorkSpace:Box>
+    </td>
+    <td/>
+  </tr>
+  <tr class="footer"> <td/><td/><td/><td/> </tr>
+</table>
+
+<div class="dialog cp" style="display: none">
+  <h2></h2>
+  <textarea name="paramTemplate" rows="26" cols="86" id="paramTemplate" style="border:0;"></textarea>
+  <div class="bts">
+    <input type="button" value="保 存" class="tssbutton small blue" id="b2"/>
+    <input type="button" value="关 闭" class="tssbutton small blue" id="b3"/> 
+  </td>
+</div>
+
+</body>
+</html>

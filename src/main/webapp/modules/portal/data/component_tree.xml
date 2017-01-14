@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+<SourceTree>
+<actionSet>
+<treeNode icon="images/folder.gif" type="1" id="1" parentId="0" name="布局器组" isGroup="true" disabled="0" _open="true">
+	<treeNode icon="images/folder.gif" type="1" id="5" parentId="1" name="常用布局器列表" isGroup="true" disabled="0" _open="true">
+		<treeNode icon="images/layout_0.gif" code="layout-7" type="1" id="7" parentId="5" isDefault="0" name="品字型布局器" isGroup="false" disabled="0"></treeNode>
+		<treeNode icon="images/layout_0.gif" code="layout-7" type="1" id="71" parentId="5" isDefault="0" name="田字型布局器" isGroup="false" disabled="0"></treeNode>
+	</treeNode>
+	<treeNode icon="images/default_layout_0.gif" code="layout-2" type="1" id="2" parentId="1" isDefault="1" name="默认布局器" isGroup="false" disabled="0"></treeNode>
+</treeNode>
+
+<treeNode icon="images/folder.gif" type="2" id="3" parentId="0" name="修饰器组" isGroup="true" disabled="0" _open="true">
+	<treeNode icon="images/default_decorator_0.gif" code="decorator-4" type="2" id="4" parentId="3" name="默认修饰器" isGroup="false" disabled="0"></treeNode>
+</treeNode>
+<treeNode icon="images/folder.gif" type="2" id="7" parentId="0" name="portlet组" isGroup="true" disabled="0" _open="true">
+	<treeNode icon="images/portlet_0.gif" code="portlet-4" type="2" id="8" parentId="3" name="portlet-1" isGroup="false" disabled="0"></treeNode>
+</treeNode>
+
+</actionSet></SourceTree></Response>

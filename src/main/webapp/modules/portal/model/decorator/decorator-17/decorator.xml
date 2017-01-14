@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<decorator>
+  <property>
+    <name>全文检索</name>
+    <version/>
+    <description><![CDATA[]]></description>
+  </property>
+  <script><![CDATA[]]></script>
+  <style><![CDATA[]]></style>
+  <prototypeStyle><![CDATA[]]></prototypeStyle>
+  <html><![CDATA[<table cellSpacing=0 cellPadding=0 width=195 border=0 id="${id}">
+  <TR>
+    <td class="bg_titleCx" style="background-image: url(${basepath}title_kscx.jpg)" height=28>全文检索</td>
+  </TR>
+  <TR>
+    <td class=border_wsbsdt vAlign=top  align=center bgColor=#ebebed>
+     ${content}
+    </td>
+  </tr>
+</table>]]></html>
+  <events/>
+  <parameters/>
+</decorator>

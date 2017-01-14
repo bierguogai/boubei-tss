@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html> 
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>它山石</title>
+<link rel="shortcut icon" href="images/tss.ico">
+<link rel="Bookmark" href="images/tss.ico">
+
+<link href="tools/tssJS/css/boubei.css" rel="stylesheet">
+
+<script src="tools/tssJS/tssJS.all.js"></script>
+<script src="tools/portlet.js"></script>
+
+<style>
+
+html, body { height: 100%; overflow: hidden; }
+.tssIFrame { position: absolute; top: 30px; width: 100%; }
+.hidden { display: none; }
+
+/* 顶部 背景色：#323232，隔条：rgba(204,204,204,0.2)，字体色：#b7bac1 */
+.top { height: 30px; box-sizing: border-box; 
+    background: #323232;
+    background: linear-gradient(180deg, #323232 0px, #555 100%) repeat-x; 
+}
+.top .logo { 
+    display: inline-block; text-decoration: none; padding: 0px 12px; color: #fff; position: absolute; left: 0;
+    line-height: 30px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale; 
+}
+.top .logo .forename { font-weight: bold; font-size: 20px; color: #4ecdc4; }
+.top .logo .surname  { font-weight: normal; font-size: 18px; color: #fff; }
+
+.menu { position: absolute; top:0; right: 0; font-size: 1.1em; z-index: 10001; } 
+.menu a { background-color: #323232; color: #b7bac1; 
+    background: linear-gradient(180deg, #323232 0px, #555 100%) repeat-x;
+}
+.menu a:hover { background-color: #444; color:#fff; text-decoration: none; }
+
+.menu ul { list-style-type: none; } 
+.menu ul li { float:left; position:relative; width: 85px; text-align:center;  } 
+.menu>ul>li { border-right: 1px solid rgba(204,204,204,0.2); }
+.menu ul li a, 
+.menu ul li a:visited { display: block; height: 30px; line-height: 30px; 
+    overflow: hidden; text-overflow: ellipsis; word-break: break-all; white-space: nowrap; 
+} 
+.menu ul li ul { display: none; }  
+.menu ul li:hover ul { display: block; position: absolute; top: 30px; left:0; width: 85px; } 
+
+#iframeSrc { position: absolute; top: 30px; }
+
+#notice {
+    position: fixed; top: 5px; left: 220px; color: red;   
+    width: 400px; height: 24px; overflow: hidden;
+}
+#notice .container { float: left; width: 1000%; }
+#notice .container>div { float: left; }
+#notice .container>div>a {
+    display: inline-block; float: left; width: 400px; line-height: 20px; 
+    margin: 2px 30px; color: #fff; cursor:pointer; 
+    overflow: hidden; text-overflow: ellipsis; word-break: break-all; white-space: nowrap; 
+}
+#notice .container>div>a:link { color: #f0f0f0; }
+#notice .container>div>a:visited { color: #ccc; text-decoration:none; }
+#notice .container>div>a:hover { color: #FEF7A9; text-decoration:none; }
+#notice .container>div>a:active { color: #ff7f24; }
+
+</style>
+
+<script type="text/javascript">
+
+/* 用户信息初始化  */
+window.onload = function() {
+    initUserInfo(function() {
+        resizeIFrame();
+        openUrl("modules/dm/report.html");
+
+        dbsx();
+    });
+
+    /* 禁止鼠标右键 */
+    document.oncontextmenu = function(ev) {
+        ev = ev || window.event;
+        $.Event.cancel(ev); 
+    }
+}
+
+window.onresize = resizeIFrame;
+
+function openUrl(url) {
+    if (url == "#") return;
+
+    var id = "if" + tssJS.hashCode(url);
+    var $iframe = $("#" + id);
+    if( $iframe.length == 0 ) {
+        var iframe = $.createElement("iframe", "tssIFrame", id);
+        $iframe = $(iframe);
+        $iframe.attr("frameborder", "0").attr("scrolling", "auto");
+        $(document.body).appendChild(iframe);
+
+        resizeIFrame();
+        $iframe.attr("src", url);
+    }
+
+    $(".tssIFrame").addClass("hidden").removeClass("open");
+    $iframe.removeClass("hidden").addClass("open");
+}
+
+function openMsgPage() {
+    openUrl('modules/um/message.html');
+}
+var resizeIFrame = function resizeIFrame() {
+    $(".tssIFrame").css("height", (document.body.offsetHeight - 30) + "px");
+}
+
+function feedback() {
+    var url = encodeURI('modules/dm/record.html?_default=系统使用反馈');
+    openUrl(url);
+}
+
+// ----------------------------------------- 顶部跑马灯公告栏 ----------------------------------------------------
+function showNotice(id, title) {
+    $.openIframePanel("noticePanel", title, 800, 480, "/tss/notice.html?articleId=" + id);
+}
+
+var channelId = 13;
+tssJS(function(){
+    var request = new $.HttpRequest();
+    request.url =  "/tss/auth/article/list/xml/" +channelId+ "/1/5/false";
+    request.method = "GET";
+    request.onresult = function(){
+        var articleList = this.getNodeValue("ArticleList");
+        $("item", articleList).each(function(i, item){
+            var id = $( "id", item ).text(), title = $( "title", item ).text();
+            var a = tssJS.createElement("a");
+            a.href = "javascript:void(0);";
+            $(a).attr("onclick", "showNotice(" +id+ ", '" +title+ "')");
+            $(a).html( "【" + $( "issueDate", item ).text() + "】" + title);
+
+            $("#s1").appendChild(a);
+        });
+
+        showMQ();
+    }
+    request.send();
+
+    function showMQ() {
+        var speed = 100
+        var nDiv = $("#notice")[0];
+        var s1 = $("#s1")[0];
+        var s2 = $("#s2")[0];
+
+        $(s2).html( $(s1).html() );
+
+        function marquee(){
+            if(nDiv.scrollLeft >= s2.offsetWidth) {
+                nDiv.scrollLeft -= s1.offsetWidth
+            } else {
+                nDiv.scrollLeft += 4;
+            }
+        }
+
+        var mq = setInterval(marquee, speed);
+        nDiv.onmouseover = function() { clearInterval(mq); };
+        nDiv.onmouseout  = function() { mq = setInterval(marquee, speed); };
+    }
+});
+// ----------------------------------------- 顶部跑马灯公告栏End ----------------------------------------------------
+
+</script>
+
+</head>
+
+<body>
+ 
+<div class="top">
+    <div class="logo">
+        <b class="forename">它山石</b><b class="surname">&nbsp;基础平台</b>
+    </div>
+    <div class="menu"> 
+        <ul> 
+            <li><a href='javascript:void(0)' onclick="openMsgPage()">待办事项</a></li> 
+            <li><a href='javascript:void(0)'>数据管理</a>    
+                <ul> 
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/dm/report.html')">数据报表</a></li> 
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/dm/record.html')">数据采集</a> </li>
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/cms/channel.html')">栏目内容</a></li>
+                </ul> 
+            </li>  
+            <li><a href='javascript:void(0)'>用户权限</a>    
+                <ul> 
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/um/group.html')">用户管理</a></li> 
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/um/role.html')">角色授权</a></li> 
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/um/subauth.html')">权限转授</a></li> 
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/um/resource.html')">应用资源</a></li> 
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/portal/navigator.html')">菜单导航</a></li>
+                </ul> 
+            </li> 
+            <li><a href='javascript:void(0)'>系统辅助</a>    
+                <ul> 
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/_log/log.htm')">日志查询</a></li> 
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/_param/param.htm')">系统参数</a></li> 
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/_cache/cache.htm')">缓存监控</a></li> 
+                    <li><a href='javascript:void(0)' onclick="openUrl('more/x/xn.html')">性能监控</a> </li>
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/dm/datasource.html')">数据源</a></li> 
+                    <li><a href='javascript:void(0)' onclick="feedback()">管理反馈</a> </li>
+                    <li><a href='javascript:void(0)' onclick="openUrl('more/x/feedback.html')">查看反馈</a></li> 
+                </ul> 
+            </li>   
+            <li>
+                <a href='javascript:void(0)' 
+                    onclick='$.openIframePanel("p1", "个人信息", 760, 320, "modules/um/_userInfo.htm", true);' id="userInfo">个人信息</a>
+                <ul>
+                    <li><a href='javascript:void(0)' onclick='$.openIframePanel("p2", "修改密码", 440, 300, "modules/um/_password.htm", true);'>修改密码</a></li>
+                    <li><a href='javascript:void(0)' onclick="logout()"> 注销登陆</a></li> 
+                </ul>
+            </li>
+            
+        </ul>  
+    </div> 
+</div>
+
+<div id="notice">
+    <div class="container">
+        <div id="s1"></div>
+        <div id="s2"></div>
+    </div>
+</div>
+ 
+</body>
+</html>

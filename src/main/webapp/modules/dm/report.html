@@ -1,0 +1,205 @@
+<!DOCTYPE HTML>
+<HTML xmlns:Tree xmlns:Grid>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>数据报表维护</title>
+
+<link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link href="../../css/css.css" rel="stylesheet">
+<link href="dm.css" rel="stylesheet">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssJS/tssJS.json2Form.js"></script>
+<script src="../../tools/tssJS/tssJS.jsonp.js"></script>
+<script src="../../tools/tssUtils.js"></script>
+
+<script src="reporter_x.js"></script>
+<script src="reporter.js"></script>
+<script src="report.js"></script>
+<script src="dm.js"></script>
+
+<style>
+
+.Formbox { display:none; background-color: #E0ECFF; border-radius: 5px; }
+
+#scheduleFormDiv { 
+	position: absolute; top: 100px; left: 230px; 
+	width: 50%; background-color: #fff; font-size: 13px; color: #555; 
+}
+#scheduleFormDiv h3 { 
+	background-color: #049cdb; color: #fff; 
+	height: 20px; line-height: 20px; padding: 2px 5px; font-size: 14px; 
+}
+#scheduleForm { margin: 5px 0 8px 8px; }
+
+#reportParamsDiv { width: 500px; height: 330px; padding: 5px; }
+#reportParamsDiv Tree, #paramForm { background-color: #fff; display: inline-block; }
+#reportParamsDiv Tree { width:152px; height:295px; overflow-y: auto; }
+#paramForm { width:320px; height:320px; padding:5px; position:absolute; top:5px; left:176px; }
+#reportParamsDiv .required {
+    color: red;
+    width: 10px;
+    display: inline-block;
+ 	text-align: right;
+}
+#reportParamsDiv label {
+	display: inline-block;
+    width: 60px;
+    text-align: right;
+    line-height: 28px;
+    color: #CC99CC;
+}
+#reportParamsDiv input[type=text] {
+    width: 200px;
+    height: 18px;
+    line-height: 18px;
+    border: 1px solid #95B8E7;
+    border-radius: 2px;
+    padding-left: 2px;
+}
+#reportParamsDiv input[type=range] {
+    width: 178px;
+    margin-right: 5px;
+}
+#reportParamsDiv select {
+    border: 1px solid #95B8E7;
+    height: 20px;
+    width: 100px;
+    border-radius: 2px;
+}
+hr { height: 4px; border: none; border-top: 1px dashed #95B8E7; }
+#reportParamsDiv .bts { margin-left:10px; padding-top:3px; position:absolute; top:313px; left:0; }
+
+</style>
+
+</head>
+
+<body>
+
+<table class="panel" >
+  <tr class="header"> <td/><td/><td/><td/> </tr>
+  <tr class="body"> 
+	<td/>
+	<!-- 左栏 开始 -->
+	<td id="palette">
+	  <div>
+	  	<div class="bar">
+			<span class="icon"></span>报表树
+			<span class="search"><input id="searchKey"/><input type="button" value="查 找"/></span>
+			<span class="refreshTreeBT"></span>
+			<span class="paletteSwitch" id="paletteClose"></span>
+		</div>
+		<Tree id="tree" moveable="true"><div class="loading"></div></Tree>
+	  </div> 
+	</td>
+	<td class="groove">
+	  	<table>
+		  <tr>
+			<td id="gridTitle">
+			  <span class="icon"></span><span class="title">查询结果</span><span class="buttonBox" id="gridToolBar"></span>
+			</td>
+		  </tr>
+		  <tr>
+			<td class="hasframe" id="gridContainer">
+			   <Grid id="grid"></Grid>
+			</td>
+		  </tr>
+		</table>	
+        <WorkSpace:Box id="ws" style="display:none;">
+          <WorkSpace:Page id="page1">
+              <div id="reportForm"></div>
+              <WorkSpace:PageStep>
+              	<br/>
+                <input type="button" class="tssbutton medium blue" value="保 存" id="sourceSave"/> &nbsp;&nbsp;
+                <input type="button" class="tssbutton medium blue" value="关 闭" id="sourceClose"/>
+              </WorkSpace:PageStep>
+          </WorkSpace:Page>
+        </WorkSpace:Box>			
+	</td>
+	<td/>
+  </tr>
+  <tr class="footer"> <td/><td/><td/><td/> </tr>
+</table>
+
+<div id="searchFormDiv"></div>
+
+<div id="scheduleFormDiv" class="dialog Formbox">
+	<h3></h3>
+	<div id="scheduleForm"></div>
+	<div class="bts">
+		<input type="button" class="tssbutton small blue" value="保存" id="scheduleSave"/>
+		<input type="button" class="tssbutton small blue" value="关闭" id="closeScheduleForm"/>
+	</div>
+	<br/>
+	<pre>
+	定时规则格式为： [秒] [分] [小时] [日] [月] [周]
+	0 0 12 * * ?     每天12点触发    
+	0 15 10 ? * *    每天10点15分触发    
+	0 15 10 * * ?    每天10点15分触发           
+	0 0/5 14 * * ?   每天下午的 2点到2点59分(整点开始，每隔5分触发)    
+	0 0/5 14,18 * * ? 每天下午的 2点到2点59分、18点到18点59分，每隔5分触发  
+	0 0-5 14 * * ?    每天下午的 2点到2点05分每分触发    
+	0 10,44 14 ? 3 WED     3月分每周三下午的 2点10分和2点44分触发    
+	0 15 10 ? * MON-FRI    从周一到周五每天上午的10点15分触发    
+	0 15 10 15 * ?    每月15号上午10点15分触发    
+	0 15 10 L * ?     每月最后一天的10点15分触发    
+	0 15 10 ? * 6L    每月最后一周的星期五的10点15分触发    
+	0 15 10 ? * 6#3   每月的第三周的星期五开始触发    
+	0 0 12 1/5 * ?    每月的第一个中午开始每隔5天触发一次    
+	0 11 11 11 11 ?   每年的11月11号 11点11分触发   
+	</pre>
+</div>
+
+<div id="reportParamsDiv" class="dialog Formbox">
+	<Tree id="paramTree" moveable="true"></Tree>
+	<div id="paramForm">
+		<label>参数名称：</label><input type="text" id="_label" /><em class="required">*</em>
+		<br><label>参数类型：</label>
+		<select id="_type">
+			<option value="string">字符串</option>
+			<option value="number">数字</option>
+			<option value="date">日期</option>
+			<option value="datetime">日期时间</option>
+            <option value="hidden">隐藏</option>
+		</select> 
+		<br><label>是否必填：</label>
+		<select id="_nullable">
+			<option value="false">是</option>
+			<option value="true">否</option>
+		</select>  
+		<br><label>默认值：</label><input type="text" id="_defaultValue" placeholder="为参数添加一个默认值"/>
+		
+		<div id="optionalBox">
+			<label>校验正则：</label><input type="text" id="_checkReg" />
+            <label>出错提示：</label><input type="text" id="_errorMsg" />
+
+			<br><label>宽度：</label> 
+			<input type="range" id="_width" min="100" max="350" value="250" step="10"/><span id="_width_">250</span>px
+
+			<br><label>高度：</label>
+			<input type="range" id="_height" min="18" max="180" value="18" step="1"/><span id="_height_">18</span>px
+					
+			<hr>
+			<label>下拉列表：</label><input type="text" id="_options" placeholder="格式：1|2, A|B 或 数据服务地址"/>
+			&nbsp;<button class="tssbutton small blue" onclick="checkDataService()">选择</button>
+			<br><label>是否多选：</label>
+			<select id="_multiple">
+				<option value="true">是</option>
+				<option value="false">否</option>
+			</select> 
+			<br><label>联动方法：</label><input type="text" id="_onchange" />
+		</div>
+
+		<input type="hidden" id="_isMacrocode" />
+	</div>
+	<div class="bts">
+		<input type="button" class="tssbutton small blue" value="完 成" onclick="saveConfigParams()"/>
+		<input type="button" class="tssbutton small blue" value="关 闭" onclick="closeConfigParams()"/>
+	</div>
+</div>
+
+<iframe id="downloadFrame" style="display:none"></iframe>
+
+</body>
+</html>

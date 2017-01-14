@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Response> 
+  <ConfigParams> 
+    <xform> 
+      <declare> 
+        <column name="siteId" caption="站点ID"/> 
+      </declare>  
+      <layout> 
+        <TR> 
+          <TD width="50"> 
+            <label binding="siteId"/> 
+          </TD>  
+          <TD> 
+            <input binding="siteId" type="text"/> 
+          </TD> 
+        </TR> 
+      </layout>  
+      <data/> 
+    </xform> 
+  </ConfigParams> 
+</Response>

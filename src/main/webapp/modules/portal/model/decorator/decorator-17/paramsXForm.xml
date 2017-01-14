@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Response> 
+  <ConfigParams> 
+    <xform> 
+      <declare> 
+        <column name="panelWidth" caption="面板宽度" mode="string"/>  
+        <column name="panelHeight" caption="面板高度" mode="string"/>  
+        <column name="panelTitle" caption="面板标题" mode="string"/> 
+      </declare>  
+      <layout> 
+        <TR> 
+          <TD width="80">
+            <label binding="panelWidth"/>
+          </TD>  
+          <TD>
+            <input binding="panelWidth" type="text"/>
+          </TD> 
+        </TR>  
+        <TR> 
+          <TD>
+            <label binding="panelHeight"/>
+          </TD>  
+          <TD>
+            <input binding="panelHeight" type="text"/>
+          </TD> 
+        </TR>  
+        <TR> 
+          <TD>
+            <label binding="panelTitle"/>
+          </TD>  
+          <TD>
+            <input binding="panelTitle" type="text"/>
+          </TD> 
+        </TR> 
+      </layout>  
+      <data/> 
+    </xform> 
+  </ConfigParams> 
+</Response>

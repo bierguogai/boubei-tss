@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<portlet>
+  <property>
+    <name>文章内容（模板引擎）</name>
+    <version>V1.0 by Jon.King</version>
+    <description><![CDATA[负责显示文章内容，文章基本内容显示格式由 文章类型 的修饰代码设定。
+]]></description>
+  </property>
+  <script><![CDATA[function ${id}_onLoad(){
+    document.body.onselectstart = function(){
+        event.returnValue = false;
+    }
+    document.body.oncopy = function(){
+        event.returnValue = false;
+    }
+}
+function comment4Article(articleId){
+	var p = new HttpRequestParams();
+	p.url = "cms/score!saveComments.action";
+	p.setHeader("appCode", "CMS");
+	p.setHeader("anonymous", "true");
+	p.setContent("articleId", articleId);
+
+	var comment = document.all.${id}_searchContent.value;
+	if(comment.length < 1){
+		alert("评分内容不能为空");
+		return;
+	}
+	p.setContent("commentContent", comment);
+
+	var request = new HttpRequest(p);
+	request.onresult = function(){
+	}
+	request.send();
+}
+
+function dafen4Article(articleId){
+	var p = new HttpRequestParams();
+	p.url = "cms/score!saveScoreInfo.action";
+	p.setHeader("appCode", "CMS");
+	p.setHeader("anonymous", "true");
+	p.setContent("articleId", articleId);
+
+	var value = 3;
+	if (document.all.dafen[0].checked){
+		value = document.all.dafen1.value;
+	}
+	if (document.all.dafen[1].checked){
+		value = document.all.dafen2.value;
+	}
+	if (document.all.dafen[2].checked){
+		value = document.all.dafen3.value;
+	}
+	if (document.all.dafen[3].checked){
+		value = document.all.dafen4.value;
+	}
+	if (document.all.dafen[4].checked){
+		value = document.all.dafen5.value;
+	}	
+           p.setContent("score", value);
+
+	var request = new HttpRequest(p);
+	request.onresult = function(){
+	}
+	request.send();
+}]]></script>
+  <style><![CDATA[#${id} {text-align:left}]]></style>
+  <html><![CDATA[<div id="${id}" >
+<#assign testArticleId = "1"/>
+<#assign aId = articleId?default(testArticleId)/>
+<@common.getArticleXML common.Long.valueOf(aId)/>
+<#assign article = common.article/>
+  <div id="artContent" class="article">
+     ${article.content?if_exists}
+  </div>
+  <br/>
+  <form target="" action="about:blank" id="${id}_comment">
+	<table cellSpacing=0 cellPadding=0 border=0>
+	<tr>
+	  <td class="label">评论内容：<TEXTAREA NAME="" ROWS="8" COLS="80" id="${id}_searchContent" class="inputKey"></TEXTAREA></td>
+	</tr>
+	<tr>
+	  <td class="label" align="center"><INPUT TYPE="button" value="提交" onclick="comment4Article(${aId})"/></td>
+	</tr>
+	</table>
+  </form>
+  <form target="" action="about:blank" id="${id}_dafen">
+	<table cellSpacing=0 cellPadding=0 border=0>
+	<tr height="30">
+	  <td class="label">打分：
+		<INPUT TYPE="radio" NAME="dafen" id="dafen1" value="1"> 1分</INPUT>
+		<INPUT TYPE="radio" NAME="dafen" id="dafen2" value="2"> 2分</INPUT>
+		<INPUT TYPE="radio" NAME="dafen" id="dafen3" value="3" checked> 3分</INPUT>
+		<INPUT TYPE="radio" NAME="dafen" id="dafen4" value="4"> 4分</INPUT>
+		<INPUT TYPE="radio" NAME="dafen" id="dafen5" value="5"> 5分</INPUT>
+		<INPUT TYPE="button" value="提交" onclick="dafen4Article(${aId})"/>
+	  </td>
+	</tr>
+	</table>
+  </form>
+</div>]]></html>
+  <events>
+    <attach event="onload" onevent="${id}_onLoad"/>
+  </events>
+  <parameters/>
+</portlet>

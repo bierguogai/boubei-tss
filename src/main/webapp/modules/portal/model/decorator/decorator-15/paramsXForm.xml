@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Response>
+  <ConfigParams>
+    <xform>
+      <declare>
+        <column name="bgIMG" caption="导航背景图片" mode="string"/>
+        <column name="logo" caption="logo图片" mode="string"/>
+		<column name="menuBgColor" caption="菜单行底色" mode="string"/>
+		<column name="subMenuBgColor" caption="子菜单行底色" mode="string"/>
+      </declare>
+      <layout>
+        <TR>
+          <TD width="50"><label binding="bgIMG"/></TD>
+          <TD><input binding="bgIMG" type="text"/></TD>
+        </TR>
+        <TR>
+          <TD width="50"><label binding="logo"/></TD>
+          <TD><input binding="logo" type="text"/></TD>
+        </TR>
+		<TR>
+          <TD width="50"><label binding="menuBgColor"/></TD>
+          <TD><input binding="menuBgColor" type="text"/></TD>
+        </TR>
+	    <TR>
+          <TD width="50"><label binding="subMenuBgColor"/></TD>
+          <TD><input binding="subMenuBgColor" type="text"/></TD>
+        </TR>
+      </layout>
+      <data/>
+    </xform>
+  </ConfigParams>
+</Response>

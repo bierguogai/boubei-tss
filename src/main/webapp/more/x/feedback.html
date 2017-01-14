@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html> 
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>用户反馈一览</title>
+<link rel="shortcut icon" href="images/tss.ico">
+<link rel="Bookmark" href="images/tss.ico">
+
+<link rel="stylesheet" href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link rel="stylesheet" href="../../tools/tssJS/fonts/icons.css">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/portlet.js"></script>
+
+<style>
+
+html, body { height: 100%; }
+
+.container { background-color: #fff; margin-bottom: 10px; border-bottom: 1px dashed #cacaca; color: #555; }
+.container .icon {
+  height: 30px; width: 50px; padding-left: 25px; font-size: 14px; color: #049cdb !important;
+} 
+
+.data-list { line-height: 20px; } 
+.data-list-ul li { 
+    border-bottom: 1px dashed #cacaca;
+    padding: 20px 20px; width: 50%; float: left; height: 220px; overflow: auto;
+}
+.data-list-ul li:nth-child(odd) { 
+    border-right:1px dashed #cacaca; 
+}
+
+.fb-summay, .fb-result { font-size:15px; }
+.fb-result { padding: 10px 0 0 30px; color: #999; }
+.fb-summay p, .fb-result p { text-indent: 0px; }
+.fb-author, .fb-processor { 
+    font-size:14px; margin-bottom:5px;  text-align: right;
+}
+.author { margin-right: 20px; }
+
+#pageInfo { width: 100%; padding: 10px 20px 0 0; text-align: right; }
+
+body>li.template {
+  display: none;
+}
+ 
+</style>
+
+<script type="text/javascript">
+
+var service = tssJS.Query.get("id") || "queryFeedback";
+function query(page) {
+    var url = '/tss/data/json/' + service;
+    // var url = 'data/feedback.json';
+
+    $.ajax({
+      url: url,
+      params: { "pagesize": 200, "page": page||1},
+      type: 'json',
+      waiting: true,
+      ondata: function() {
+        var data = this.getResponseJSON();
+        data.rows.each(function(i, item) {
+          var li = $("body>li.template")[0].cloneNode(true);
+          $(".fb-summay>p", li).html( "【" + item.module + "，" + item.type + "】：" + item.content);
+          $(".fb-summay .fb-author .author", li).html( (item.commiter||"") + "【" + item.username + "】");
+          $(".fb-summay .fb-author time", li).html( item.createtime.split(" ")[0] );
+
+          $(".fb-result>p", li).html( "【" + item.state  + "】：" + (item.processing || "") );
+          $(".fb-result .author", li).html( item.processor || item.updator || "未处理" );
+          $(".fb-processor time", li).html( item.updatetime || "" );
+
+          $("ul.data-list-ul").appendChild(li);
+        });
+      }
+    })
+}
+
+$(function(){
+    query(1);
+});
+
+</script>
+
+</head>
+
+<body>
+ 
+<div class="data-list container">
+ <ul class="data-list-ul"></ul>
+</div>
+
+<li class='template'>
+  <div class="fb-summay">
+      <p></p>
+      <div class="fb-author">
+        <span data-icon="E" class="icon"></span>
+        <span class="author"></span>
+        <time></time>
+      </div>
+  </div>
+  <div class="fb-result">
+    <p></p>
+    <div class="fb-processor">
+        <span data-icon="E" class="icon"></span>
+        <span class="author"></span>
+        <time></time>
+      </div>
+  </div>
+</li>
+
+</body>
+</html>
