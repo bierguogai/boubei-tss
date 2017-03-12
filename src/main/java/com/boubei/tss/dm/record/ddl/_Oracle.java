@@ -4,6 +4,7 @@ import java.util.Map;
 
 import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
 import com.boubei.tss.dm.record.Record;
+import com.boubei.tss.util.EasyUtils;
 
 public class _Oracle extends _Database {
 	
@@ -50,13 +51,13 @@ public class _Oracle extends _Database {
    		createDDL.append("id NUMBER(19) not null");
    		createDDL.append( ")" );
    		
-		try { // 表或sequence可能已经存在
+		try { // 表或sequence可能已经存在，不抛出异常（适用于连接录入到已存在的表）
 			SQLExcutor.excute(createDDL.toString(), datasource);	
 	   		SQLExcutor.excute("alter table " + this.table + " add primary key (id)", datasource);
 			SQLExcutor.excute("create sequence " + getSeq() + " increment by 1 start with 1", datasource); 
 		} 
 		catch(Exception e) {
-			log.warn(this.recordName + "在创建表结构时发生异常", e);
+			log.warn(this.recordName + "在创建表结构时发生异常" + e.getMessage());
 		}
 	}
 	
@@ -73,5 +74,26 @@ public class _Oracle extends _Database {
 		String insertSQL = "insert into " + this.table + "(" + fieldTags + "createtime,creator,version,id) " +
 				" values (" + valueTags + " ?, ?, ?, " + getSeq() + ".nextval)";
 		return insertSQL;
+	}
+	
+	public Long insertRID(Map<String, String> valuesMap) {
+		SQLExcutor ex = new SQLExcutor();
+		ex.excuteQuery("select " + getSeq() + ".nextval as id from dual", this.datasource);
+		Long newID = EasyUtils.obj2Long( ex.getFirstRow("id") );
+		
+		String insertSQL = createInsertSQL();
+		insertSQL = insertSQL.replace(getSeq() + ".nextval", newID.toString());
+		
+		Map<Integer, Object> paramsMap = super.buildInsertParams(valuesMap);
+		SQLExcutor.excute(insertSQL, paramsMap, this.datasource);
+		
+		return newID;
+	}
+	
+	public String toPageQuery(String sql, int page, int pagesize) {
+		int fromRow = pagesize * (page - 1), 
+				toRow = pagesize * page;
+
+		return "SELECT * FROM ( SELECT t.*, ROWNUM RN FROM (\n " + sql + " \n) t WHERE ROWNUM <= " + toRow + ") WHERE RN > " + fromRow;
 	}
 }

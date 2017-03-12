@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html> 
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>Mobile登陆</title>
+<meta name="viewport" content="width=device-width">
+<meta name="apple-mobile-web-app-title" content="北极星登陆" />
+<meta name="keywords" content="卜贝软件，它山石，应用基础平台，门户，应用，内容, 聚合，数据分析，数据挖掘，大数据">
+
+<link rel="shortcut icon" href="../images/favorite.ico">
+<link rel="Bookmark" href="../images/favorite.ico">
+
+<link href="../tools/tssJS/css/boubei.css" rel="stylesheet">
+
+<script src="../tools/tssJS/tssJS.all.js"></script>
+<script src="../tools/tssUtils.js"></script>
+
+<style type="text/css">
+    html, body { height: 100%; }
+
+    body {
+        background-color: #222;
+        background-image: -webkit-linear-gradient(bottom, #222 0%, #424F71 100%);
+        background-image: -moz-linear-gradient(bottom, #222 0%, #424F71 100%);
+        background-image: -o-linear-gradient(bottom, #222 0%, #424F71 100%);
+        background-image: -ms-linear-gradient(bottom, #222 0%, #424F71 100%);
+        background-image: linear-gradient(bottom, #222 0%, #424F71 100%);
+        display: flex;
+        display: -webkit-flex;
+        justify-content:center;
+        -webkit-justify-content:center;
+        align-items: center;
+        -webkit-align-items: center;
+    }
+    #login_box { 
+        /* position:relative; top:200px; width:360px; margin:0 auto; */
+        font-size:16px; padding-left: 10px; 
+        text-align: center;
+    }
+    #login_box h1 { width: 328px; line-height:30px; text-indent: 5px; text-align: left;
+        color: #fff; border-bottom:1px solid #009999; }
+    #login_box span { display: block; margin: 20px 0px; padding: 0px 5px; }
+    #login_box input { 
+        width: 320px; height: 32px; line-height:25px;
+        border: 1px solid #009999; border-radius:3px; background-color: #eee; 
+    }
+    #login_box input:hover, #login_box input:focus { background-color: #fff; }
+
+    #login_box span.bottonBox { margin:10px 0px; }        
+    #bt_login { 
+        width: 320px; height: 32px; font-size: 18px;
+        background-color: #049cdb; color: #fff; cursor: pointer;
+        border-radius: 3px; border: 1px solid #95B8E7; 
+    }
+    #bt_login:hover { background-color: #0064cd; }
+
+    @media screen and (max-width: 400px) {
+        #login_box { width: 100%; }
+        #login_box input, #bt_login, #login_box h1 { width: 75%; }
+        #login_box h1 { margin-left: 12.5%; }
+    }
+
+</style>
+
+<script type="text/javascript">
+
+$( function() {
+    var loginNameEL = $1("loginName");
+    var passwordEL  = $1("password");
+    var zmkm = $.Cookie.getValue("zmkm");
+
+    loginNameEL.value = $.Cookie.getValue("iUserName") || "";
+    passwordEL.value  = zmkm ? $.decode(zmkm, 12) : "";
+
+    if(password.value && !$.Query.get("logout") ) { // 自动完成登录
+        /* 这样退出就有问题了，退出后又会自动登录回来; 用户密码修改后也会有问题 */
+        // doLogin(loginNameEL, passwordEL); 
+    } 
+    else {
+        loginNameEL.focus();
+    }
+    
+    $("#bt_login").click ( function() {
+        doLogin(loginNameEL, passwordEL);
+    } );
+
+    $.Event.addEvent(document, "keydown", function(ev) {
+        if(13 == ev.keyCode) { // enter
+            $.Event.cancel(ev);
+            $("#bt_login").focus();
+
+            setTimeout(function() {
+                doLogin(loginNameEL, passwordEL);
+            }, 10);
+        }
+    });
+});
+
+
+URL_GET_USER_NAME = "../getLoginInfo.in";
+URL_LOGIN = "../auth/login.do";
+
+var excludes = ["BL04981", "BL00211"]; // 此处添加特殊账号
+
+var doLogin = function(loginNameEL, passwordEL) {
+    var loginName  = loginNameEL.value;
+    var password   = passwordEL.value;
+    
+    if( !loginName ) {
+        $(loginNameEL).focus().notice("请输入账号");
+        return;
+    } 
+    else if( !password ) {
+        $(passwordEL).focus().notice("请输入密码");
+        return;
+    }
+
+    $.ajax({
+        url: URL_GET_USER_NAME,
+        params: {"loginName": loginName},
+        waiting: true,
+        onexcption: function() {
+            loginNameEL.focus();
+        },
+        onresult: function(){
+            var identifier = this.getNodeValue("identifier"),
+                username = this.getNodeValue("UserName"),
+                randomKey  = this.getNodeValue("randomKey");
+
+            if( loginName.toUpperCase().indexOf("BLH") < 0 
+                && loginName.indexOf('Admin') < 0 
+                && loginName.toUpperCase().indexOf('TEST_') < 0 
+                && !excludes.contains(loginName) ) {
+
+                identifier = "com.boubei.bfrbi.sso.BILdapIdentifier";
+            }
+            
+            $.ajax({
+                url: URL_LOGIN,
+                waiting: true,
+                headers : {
+                    "loginName": $.encode(loginName, randomKey), 
+                    "password": $.encode(password, randomKey), 
+                    "identifier": identifier
+                },
+                onexception: function(errorMsg) {
+                    passwordEL.focus();
+                },
+                onsuccess: function() {
+                    $.Cookie.setValue("iUserName", loginName);
+                    $.Cookie.setValue("zmkm", $.encode(password, 12) );
+                    $.Cookie.setValue("iUser", username);
+
+                    location.href = "/tss/_mobile/index.html";
+                }
+            });             
+        }
+    });
+}
+
+
+</script>
+</head>
+
+<body>
+    <div id="login_box">
+        <h1 id="sys_title">百世快运 - 北极星</h1>
+        <span><input type="text" id="loginName" placeholder="请输入您的账号"/></span>
+        <span><input type="password" id="password" placeholder="请输入您的密码"/></span>
+        <span class='bottonBox'><button id='bt_login'>登 陆 系 统</button></span>
+    </div>
+</body>
+</html>

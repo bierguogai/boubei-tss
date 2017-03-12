@@ -59,6 +59,7 @@ li.bestuser { display: none; }
 #notice .container>div>a:hover { color: #FEF7A9; text-decoration:none; }
 #notice .container>div>a:active { color: #ff7f24; }
 #noticePanel .title { background-color: rgb(35,60,99); }
+span.max, span.min { display: none; }
 
 </style>
 
@@ -89,7 +90,7 @@ $(function(){
 
 window.onresize = resizeIFrame;
 
-function turn2IFrame(url) {
+function openUrl(url) {
     if (url == "#") return;
 
     var id = "if" + tssJS.hashCode(url);
@@ -108,15 +109,15 @@ function turn2IFrame(url) {
     $iframe.removeClass("hidden").addClass("open");
 }
 function openMsgPage() {
-    turn2IFrame('modules/um/message.html');
+    openUrl('modules/um/message.html');
 }
 var resizeIFrame = function resizeIFrame() {
     $(".tssIFrame").css("height", (document.body.offsetHeight - 33) + "px"); 
 }
 
-function feedback() {
-    var url = encodeURI('modules/dm/record.html?_default=系统使用反馈');
-    turn2IFrame(url);
+function feedback(module) {
+    var url = encodeURI('modules/dm/record.html?_default=系统使用反馈' + (module ? "&udf="+module : ""));
+    openUrl(url);
 }
 
 function showNotice(id, title) {
@@ -208,7 +209,7 @@ function getBIMenu() {
 
 function openReport(id) {
 	globalValiable.list = _menus[id];
-	turn2IFrame('more/bi_menu.html?id=' + id);
+	openUrl('more/bi_menu.html?id=' + id);
 }
 
 </script>
@@ -225,15 +226,16 @@ function openReport(id) {
             	<a href='javascript:void(0)'>BI</a>
             	<ul></ul>
             </li>           
-            <li><a href='javascript:void(0)' onclick="turn2IFrame('modules/dm/record.html')">数据录入</a></li>
+            <li><a href='javascript:void(0)' onclick="openUrl('modules/dm/record.html')">数据录入</a></li>
             <li class="biadmin"><a href='javascript:void(0)'>系统管理</a>    
                 <ul> 
-                    <li><a href='javascript:void(0)' onclick="turn2IFrame('modules/um/group.html')">用户管理</a></li>
-                    <li><a href='javascript:void(0)' onclick="turn2IFrame('modules/um/role.html')">角色授权</a> </li>
-                    <li><a href='javascript:void(0)' onclick="turn2IFrame('modules/_log/log.htm')">系统日志</a></li>
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/um/group.html')">用户管理</a></li>
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/um/role.html')">角色授权</a> </li>
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/cms/channel.html')">栏目内容</a></li>
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/_log/log.htm')">系统日志</a></li>
                 </ul> 
             </li>  
-            <!-- <li id="x1"><a href='javascript:void(0)' onclick="feedback()">使用反馈</a> </li>             -->
+            <li id="x1"><a href='javascript:void(0)' onclick="feedback()">使用反馈</a> </li>            
             <li style="width: 120px;">
                 <a href='javascript:void(0)' 
                     onclick='$.openIframePanel("p1", "个人信息", 760, 320, "modules/um/_userInfo.htm", true);' id="userInfo">个人信息</a>
@@ -243,7 +245,7 @@ function openReport(id) {
                     </li>
                     <li><a href='javascript:void(0)' onclick="logout()">注销登陆</a></li>
                     <li><a href='javascript:void(0)' onclick="openMsgPage()">待办事项</a></li> 
-                    <!-- <li><a href='index.portal' target="_self">返回门户</a></li> -->
+                    <li><a href='index.portal' target="_self">返回门户</a></li>
                 </ul>
             </li>            
         </ul>  

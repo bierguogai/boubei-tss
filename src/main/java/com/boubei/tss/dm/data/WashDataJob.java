@@ -151,7 +151,7 @@ public class WashDataJob extends AbstractJob {
 	
 	void truncate(_Database db) {
 		String sql = "truncate table " + db.table;
-		SQLExcutor.excute(sql, new HashMap<Integer, Object>(), db.datasource);
+		SQLExcutor.excute(sql, db.datasource);
 	}
 	
 	_Database getDB(Long recordId) {

@@ -3,16 +3,13 @@ package com.boubei.tss.dm.report;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,8 +20,6 @@ import com.boubei.tss.PX;
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
 import com.boubei.tss.dm.data.util.DataExport;
-import com.boubei.tss.dm.log.AccessLog;
-import com.boubei.tss.dm.log.AccessLogRecorder;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.pagequery.PageInfo;
@@ -39,9 +34,7 @@ import com.boubei.tss.framework.web.dispaly.grid.IGridNode;
 import com.boubei.tss.framework.web.mvc.BaseActionSupport;
 import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
-import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.param.ParamManager;
-import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.InfoEncoder;
@@ -66,12 +59,17 @@ public class _Reporter extends BaseActionSupport {
     
 	@RequestMapping("/{reportId}/define")
     @ResponseBody
-    public Object getReportParamDefine(@PathVariable("reportId") Long reportId) {
+    public Object getReportDefine(@PathVariable("reportId") Long reportId) {
 		Report report = reportService.getReport(reportId);
 		
-		boolean hasScript = !EasyUtils.isNullOrEmpty(report.getScript());
+		String name = report.getName();
+		String param = report.getParam();
 		String displayUri = report.getDisplayUri();
-		return new Object[] {report.getName(), report.getParam(), displayUri, hasScript};
+		boolean hasScript = !EasyUtils.isNullOrEmpty(report.getScript());
+		Integer mailable  = report.getMailable();
+		String remark = EasyUtils.obj2String( report.getRemark() );
+		
+		return new Object[] {name, param, displayUri, hasScript, mailable, remark};
     }
 	
     /**
@@ -83,9 +81,12 @@ public class _Reporter extends BaseActionSupport {
     	String uName  = requestMap.get("uName"), 
     		   uToken = requestMap.get("uToken");
     	if(uToken != null) {
-    		String tokenList = ParamManager.getValue(PX.API_TOKEN_LIST, uToken); // 如果未启用API令牌发放
-        	String cToken = InfoEncoder.string2MD5(reportId + ":" + uName);
-    		if( cToken.equalsIgnoreCase(uToken) && tokenList.indexOf(uToken) >= 0 ) {
+    		String tokenList = ParamManager.getValue(PX.API_TOKEN_LIST, uToken); // 如果未启用API令牌发放，则默认为uToken
+    		Report report = reportService.getReport(reportId);
+        	String cToken1 = InfoEncoder.string2MD5(reportId + ":" + uName),
+        		   cToken2 = InfoEncoder.string2MD5(report.getName() + ":" + uName);  /* 令牌：md5(id|name:loginName)  */
+    		
+        	if( (cToken1.equals(uToken) || cToken2.equals(uToken)) && tokenList.indexOf(uToken) >= 0 ) {
         		IOperator user = loginService.getOperatorDTOByLoginName(uName);
         		String token = TokenUtil.createToken(uToken, user.getId());
         		IdentityCard card = new IdentityCard(token, user);
@@ -117,25 +118,23 @@ public class _Reporter extends BaseActionSupport {
     	boolean isJetty = "org.eclipse.jetty.server.Request".equals( request.getClass().getName() );
     	for(String key : parameterMap.keySet()) {
     		String[] values = parameterMap.get(key);
-    		if(values != null && values.length > 0) {
-    			String value;
-				if(isGet && !isJetty ) { // tomcat7, (not jetty)
-    				try {
-    					value = new String(values[0].getBytes("ISO-8859-1"), "UTF-8"); 
-    				} catch (UnsupportedEncodingException e) {
-    					value = values[0];
-    				}
-    			}
-    			else {
-    				value = values[0];
-    			}
-				
-    			requestMap.put( key, value );
-    		}
+			String value = null;
+			
+			if(isGet && !isJetty ) { // tomcat7, (not jetty)
+				try {
+					value = new String(values[0].getBytes("ISO-8859-1"), "UTF-8"); 
+				} catch (UnsupportedEncodingException e) {
+				}
+			}
+			
+			value = (String) EasyUtils.checkNull(value, values[0]);
+			requestMap.put( key, value );
     	}
     	
     	requestMap.remove("_time"); // 剔除jsonp为防止url被浏览器缓存而加的时间戳参数
     	requestMap.remove("jsonpCallback"); // jsonp__x,其名也是唯一的
+    	requestMap.remove("appCode"); // 其它系统向当前系统转发请求
+    	requestMap.remove("ac");
     	
     	return requestMap;
     }
@@ -148,9 +147,10 @@ public class _Reporter extends BaseActionSupport {
     	
     	long start = System.currentTimeMillis();
     	Map<String, String> requestMap = getRequestMap(request, false);
-		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, page, pagesize, getLoginUserId(requestMap, reportId));
+		Object loginUserId = getLoginUserId(requestMap, reportId);
+		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, page, pagesize, loginUserId);
     	
-    	outputAccessLog(reportId, "showAsGrid", requestMap, start);
+		DMUtil.outputAccessLog(reportService, reportId, "showAsGrid", requestMap, start);
         
         List<IGridNode> temp = new ArrayList<IGridNode>();
         for(Map<String, Object> item : excutor.result) {
@@ -176,7 +176,8 @@ public class _Reporter extends BaseActionSupport {
         
     	long start = System.currentTimeMillis();
     	Map<String, String> requestMap = getRequestMap(request, true);
-		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, page, pagesize, getLoginUserId(requestMap, reportId));
+		Object loginUserId = getLoginUserId(requestMap, reportId);
+		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, page, pagesize, loginUserId);
 		
 		String fileName = reportId + "-" + start + ".csv";
         String exportPath;
@@ -184,7 +185,7 @@ public class _Reporter extends BaseActionSupport {
         // 如果导出数据超过了pageSize（前台为导出设置的pageSize为50万），则不予导出并给与提示
 		if(pagesize > 0 && excutor.count > pagesize) {
 			List<Object[]> result = new ArrayList<Object[]>();
-			result.add(new Object[] {"您当前查询导出的数据有" + excutor.count + "行, 超过了单次能导出行数的上限【" + pagesize + "行】，请缩短你的查询范围，分批导出。"});
+			result.add(new Object[] {"您当前查询导出的数据有" +excutor.count+ "行, 超过了系统单次导出上限【" +pagesize+ "行】，请缩短查询范围，分批导出。"});
 			
 			exportPath = DataExport.getExportPath() + "/" + fileName;
 			DataExport.exportCSV(exportPath, result, Arrays.asList("result"));
@@ -197,7 +198,7 @@ public class _Reporter extends BaseActionSupport {
         // 下载上一步生成的附件
         DataExport.downloadFileByHttp(response, exportPath);
         
-        outputAccessLog(reportId, "exportAsCSV", requestMap, start);
+        DMUtil.outputAccessLog(reportService, reportId, "exportAsCSV", requestMap, start);
     }
     
     /**
@@ -249,13 +250,17 @@ public class _Reporter extends BaseActionSupport {
     	/* 允许跨域访问。 经测试JQuery.ajax请求可以跨域调用成功，tssJS.ajax不行 */
     	response.addHeader("Access-Control-Allow-Origin", "*"); 
     	
-    	Long reportId;
-    	try {
-    		reportId = Long.valueOf(report);
-    	} catch(Exception e) {
-    		reportId = reportService.getReportIdByName(report);
-    	}
+    	Long reportId = null;
+    	try { // 先假定是报表ID（Long型）
+    		reportId = reportService.getReportId("id", Long.valueOf(report));
+    	} 
+    	catch(Exception e) { }
     	
+    	// 按名字再查一遍
+    	if(reportId == null) {
+    		report = report.replaceFirst("rpn-", ""); // 如果报表的名称为数字，则写法如：rpn-122
+    		reportId = reportService.getReportId("name", report);
+    	}
     	if(reportId == null) {
     		throw new BusinessException("【" + report + "】数据服务不存在。");
     	}
@@ -265,17 +270,14 @@ public class _Reporter extends BaseActionSupport {
     	
     	Object page = requestMap.get("page");
     	Object pagesize = requestMap.get("pagesize");
-    	if(pagesize == null) {
-    		pagesize = requestMap.get("rows");  // easyUI
-    	}
-    	if(pagesize == null) {
-    		pagesize = 10*10000;
-    	}
+    	pagesize = EasyUtils.checkNull(pagesize, requestMap.get("rows"), 10*10000); // easyUI用rows
+    	
     	int _pagesize = EasyUtils.obj2Int(pagesize);
     	int _page = page != null ? EasyUtils.obj2Int(page) : 1;
     			
     	long start = System.currentTimeMillis();
-        SQLExcutor excutor = reportService.queryReport(reportId, requestMap, _page, _pagesize, getLoginUserId(requestMap, reportId));
+        Object loginUserId = getLoginUserId(requestMap, reportId);
+		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, _page, _pagesize, loginUserId);
         
         // 对一些转换为json为报错的类型值进行预处理
         for(Map<String, Object> row : excutor.result ) {
@@ -285,7 +287,7 @@ public class _Reporter extends BaseActionSupport {
         	}
         }
         
-        outputAccessLog(reportId, "showAsJson", requestMap, start);
+        DMUtil.outputAccessLog(reportService, reportId, "showAsJson", requestMap, start);
         
         if(page != null) {
         	Map<String, Object> returlVal = new HashMap<String, Object>();
@@ -298,64 +300,14 @@ public class _Reporter extends BaseActionSupport {
     }
  
     @RequestMapping("/jsonp/{report}")
-    public void showAsJsonp(HttpServletRequest request, HttpServletResponse response, @PathVariable("report") String report) {
+    public void showAsJsonp(HttpServletRequest request, HttpServletResponse response, 
+    		@PathVariable("report") String report) {
+    	
         // 如果定义了jsonpCallback参数，则为jsonp调用。示例参考：boubei-ui/JSONP.html
         String jsonpCallback = request.getParameter("jsonpCallback");
-		if(jsonpCallback != null) {
-			ObjectMapper objectMapper = new ObjectMapper();
-			String jsonString;
-			try {
-				jsonString = objectMapper.writeValueAsString( showAsJson(request, response, report) );
-			} catch (Exception e) {  
-				jsonString = "";
-      	    }  
-			
-        	print(jsonpCallback + "(" + jsonString + ")");
-        }
+        jsonpCallback = (String) EasyUtils.checkNull(jsonpCallback, "console.log");
+        
+		String json = EasyUtils.obj2Json( showAsJson(request, response, report) );
+    	print(jsonpCallback + "(" + json + ")");
     }
-    
-	/**
-	 * 记录下报表的访问信息。
-	 */
-	private void outputAccessLog(Long reportId, String methodName, Map<String, String> requestMap, long start) {
-		Report report = reportService.getReport(reportId);
-		String reportName = report.getName();
-		
-		// 过滤掉定时刷新类型的报表
-		boolean ignoreLog = ParamConstants.FALSE.equals(report.getNeedLog());
-		if( ignoreLog ) return;
-		
-		String params = "";
-		for(Entry<String, String> entry : requestMap.entrySet()) {
-			params += entry.getKey() + "=" + entry.getValue() + ", ";
-		}
-        if (params != null && params.length() > 500) {
-            params = params.substring(0, 500);
-        }
-		
-		// 方法的访问日志记录成败不影响方法的正常访问，所以对记录日志过程中各种可能异常进行try catch
-        try {
-            AccessLog log = new AccessLog();
-            log.setClassName("Report-" + reportId);
-    		log.setMethodName( methodName );
-    		log.setMethodCnName( reportName );
-            log.setAccessTime( new Date(start) );
-            log.setRunningTime( System.currentTimeMillis() - start );
-            log.setParams(params);
-            
-            // 记录访问人，没有则记为匿名访问
-            Long userId = Environment.getUserId();
-            if(userId == null) {
-            	userId = UMConstants.ANONYMOUS_USER_ID;
-            }
-			log.setUserId(userId);
-			log.setIp( Environment.getClientIp() );
-
-            AccessLogRecorder.getInstanse().output(log);
-        } 
-        catch(Exception e) {
-        	log.error("记录报表【" + reportName + "." + methodName + "】访问日志时出错：" + e.getMessage());
-        }
-	}
-
 }

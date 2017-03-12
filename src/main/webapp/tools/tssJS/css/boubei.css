@@ -1189,3 +1189,31 @@ WorkSpace\:Box WorkSpace\:PageStep .tssbutton {
 .leftbar .leftbar-menu span:after {
   bottom: -10px;
 }
+.tss-textarea {
+  position: relative;
+}
+.tss-textarea > div.expanded {
+  position: fixed;
+  top: 0%;
+  left: 0%;
+  width: 100%;
+  height: 100%;
+  z-index: 500;
+}
+.tss-textarea > div.expanded > a {
+  opacity: 1;
+}
+.tss-textarea > div.expanded > textarea {
+  padding-left: 5px;
+}
+.tss-textarea > div > a {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  width: 18px;
+  height: 16px;
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAQCAYAAAAbBi9cAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABV0RVh0Q3JlYXRpb24gVGltZQA4LzE2LzEzspl6ugAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAB7SURBVDiN7ZOxCsAgDESvxXyhi5P/Fif/0i6NGJH2KIUufVOUJB45s6lqw0DOGQylFHfeqSqCYEGMESJCF6aUAAC1Vt9IRPolixtDG1DVxjLnhtVL8yAvlZy8Nuy/0T1L19g1cY3Mavupd9bPWL5T9ERJV2SBrcfn238A3whjoYEPESwAAAAASUVORK5CYII=');
+  cursor: pointer;
+  z-index: 3;
+  opacity: .5;
+}

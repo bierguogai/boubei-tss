@@ -1,14 +1,13 @@
 package com.boubei.tss.dm;
 
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.http.HttpSession;
 
@@ -16,18 +15,22 @@ import org.apache.log4j.Logger;
 
 import com.boubei.tss.PX;
 import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
+import com.boubei.tss.dm.log.AccessLog;
+import com.boubei.tss.dm.log.AccessLogRecorder;
+import com.boubei.tss.dm.report.Report;
+import com.boubei.tss.dm.report.ReportService;
 import com.boubei.tss.dm.report.ScriptParser;
 import com.boubei.tss.dm.report.ScriptParserFactory;
+import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.modules.param.Param;
+import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.param.ParamManager;
+import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
-
-import freemarker.template.Configuration;
-import freemarker.template.Template;
 
 public class DMUtil {
 	
@@ -48,10 +51,8 @@ public class DMUtil {
   		value = value.trim();
   		if(value.startsWith("[") && value.endsWith("]") && value.indexOf(",") > 0) {
   			String[] vals = value.substring(1, value.length() - 1).split(",");
-  			if(vals.length >= 2) {
-  				return new String[] { vals[0], vals[1] };
-  			}
-			return vals;
+  			return new String[] { vals[0], vals[1] };
+
   		}
   		return new String[] { value };
 	}
@@ -77,8 +78,7 @@ public class DMUtil {
 				Date dateObj = DateUtil.parse(value);
 				return new Timestamp(dateObj.getTime());
 			} catch(Exception e) {
-				log.debug("Date type param'value【" + value + "】  is wrong. " + e.getMessage());
-				return null;
+				throw new BusinessException("日期【" + value + "】格式有误，请检查。 " + e.getMessage());
 			}
   		}
   		else {
@@ -86,18 +86,19 @@ public class DMUtil {
   		}
   	} 
   	
-  	// oracle的TIMESTAMP类型的字段，转换为json时会报错，需要先转换为字符串
+  	// oracle的oracle.sql.TIMESTAMP类型的字段，转换为json时会报错，需要先转换为字符串
   	public static Object preTreatValue(Object value) {
   		if(value == null) return null;
   				
   		String valueCN = value.getClass().getName();
-		if(valueCN.indexOf("oracle.sql.TIMESTAMP") >=0 ) {
+		if(valueCN.indexOf("TIMESTAMP") >= 0 ) {
   			return value.toString();
   		}
   		return value;
   	}
   	
-  	public static Map<String, Object> getFreemarkerDataMap() {
+  	@SuppressWarnings("unchecked")
+	public static Map<String, Object> getFreemarkerDataMap() {
     	Map<String, Object> fmDataMap = new HashMap<String, Object>();
         
       	// 加入登陆用户的信息
@@ -108,12 +109,12 @@ public class DMUtil {
 		// 将常用的script片段（权限过滤等）存至param模块，这里取出来加入fmDataMap
 		try {
 			List<Param> macroParams = ParamManager.getComboParam(PX.SCRIPT_MACRO);
-			if(macroParams != null) {
-				for(Param p : macroParams) {
-					String key = p.getText();
-					if( !fmDataMap.containsKey(key) ) {
-						fmDataMap.put(key, p.getValue());
-					}
+			macroParams = (List<Param>) EasyUtils.checkNull(macroParams, new ArrayList<Param>());
+			
+			for(Param p : macroParams) {
+				String key = p.getText();
+				if( !fmDataMap.containsKey(key) ) {
+					fmDataMap.put(key, p.getValue());
 				}
 			}
 		} catch(Exception e) { }
@@ -133,26 +134,18 @@ public class DMUtil {
 
 	/** 用Freemarker引擎解析脚本 */
 	public static String freemarkerParse(String script, Map<String, ?> dataMap) {
-	    try {
-	        Configuration fmCfg = new Configuration();
-			Template temp = new Template("t.ftl", new StringReader(script), fmCfg);
-	        Writer out = new StringWriter();
-	        temp.process(dataMap, out);
-	        script = out.toString();
-	        out.flush();
-	    } 
-	    catch (Exception e) {
-	    	Map<String, Object> paramsMap = new HashMap<String, Object>();
+		String rtScript = EasyUtils.fmParse(script, dataMap);
+		if(rtScript.startsWith("FM-parse-error")) {
+			Map<String, Object> paramsMap = new HashMap<String, Object>();
 	    	for(String key : dataMap.keySet()) {
 	    		if(key.startsWith("param") || key.startsWith("report.")) {
 	    			paramsMap.put(key, dataMap.get(key));
 	    		}
 	    	}
-	    	log.info("FM解析出错: " + e.getMessage() +
-	    			"\n------------ params-----------: " + paramsMap + "\n" );
-	    	log.debug(script);
-	    }
-	    return script;
+	    	log.info("\n------------ params-----------: " + paramsMap + "\n" );
+		}
+
+	    return rtScript;
 	}
 	
 	public static String customizeParse(String script) {
@@ -199,5 +192,53 @@ public class DMUtil {
 		/* - + %号可能做为连接符存在字段值里：2016-10-12, today-1, today+1, %m-%d 
 		 * |\\(|\\) : 东风重卡(17.5), 此类查询条件可能含有括号，先放开
 		 * */
+	}
+	
+	/**
+	 * 记录下报表的访问信息。
+	 */
+	public static void outputAccessLog(ReportService reportService, Long reportId, 
+			String methodName, Map<String, String> requestMap, long start) {
+		
+		Report report = reportService.getReport(reportId);
+		String reportName = report.getName();
+		
+		// 过滤掉定时刷新类型的报表
+		boolean ignoreLog = ParamConstants.FALSE.equals(report.getNeedLog());
+		if( ignoreLog ) return;
+		
+		String params = "";
+		for(Entry<String, String> entry : requestMap.entrySet()) {
+			params += entry.getKey() + "=" + entry.getValue() + ", ";
+		}
+        params = cutParams(params);
+		
+		// 方法的访问日志记录成败不影响方法的正常访问，所以对记录日志过程中各种可能异常进行try catch
+        try {
+            AccessLog log = new AccessLog();
+            log.setClassName("Report-" + reportId);
+    		log.setMethodName( methodName );
+    		log.setMethodCnName( reportName );
+            log.setAccessTime( new Date(start) );
+            log.setRunningTime( System.currentTimeMillis() - start );
+            log.setParams(params);
+            
+            // 记录访问人，没有则记为匿名访问
+            Long userId = (Long) EasyUtils.checkNull(Environment.getUserId(), UMConstants.ANONYMOUS_USER_ID);
+			log.setUserId(userId);
+			log.setIp( Environment.getClientIp() );
+
+            AccessLogRecorder.getInstanse().output(log);
+        } 
+        catch(Exception e) {
+        	log.error("记录报表【" + reportName + "." + methodName + "】访问日志时出错：" + e.getMessage());
+        }
+	}
+	
+	public static String cutParams(String params) {
+		if (params != null && params.length() > 500) {
+            params = params.substring(0, 500);
+        }
+		return params;
 	}
 }

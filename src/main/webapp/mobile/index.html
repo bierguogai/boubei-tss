@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html> 
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/> 
+
+<meta name="viewport" content="width=device-width">  
+<meta name="apple-mobile-web-app-title" content="北极星" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+
+<meta charset="UTF-8">
+<title>卜贝数据-移动端</title>
+
+<link rel="stylesheet" href="../tools/tssJS/css/boubei.css">
+<link rel="stylesheet" href="../tools/tssJS/fonts/icons.css">
+
+<script src="../tools/tssJS/tssJS.all.js"></script>
+<script src="../tools/portlet.js"></script>
+<script src="js/mobile.js"></script>
+
+
+<style type="text/css">
+	
+html, body { height: 100%; }
+body { box-sizing: border-box; }
+
+header { 
+	position: relative; height: 33px; min-height: 33px; 
+	background-color: rgb(35,60,99); box-sizing: border-box; border-bottom: 1px solid #fff; 
+}
+header .logo { 
+    display: inline-block; position: absolute; left: 0; top: 0; width: 320px; height: 32px; 
+    background: url(../images/logo.png) no-repeat center;
+}
+.tssIFrame { border-top: 1px solid rgb(35,60,99); position: absolute; top: 33px; width: 100%; }
+
+.tss-menu { position:absolute; top:1px; right:0; width:150px; font-size:1.1em; z-index:10001; text-align:right; } 
+.tss-menu a { background-color: rgb(35,60,99); color: #b7bac1; }
+.tss-menu a:hover { background-color: #444; color: #fff; text-decoration: none; }
+.tss-menu ul { list-style-type: none; } 
+.tss-menu ul li { float:left; position:relative; width: 150px; text-align:center;  } 
+.tss-menu>ul>li>a { border-bottom: 1px solid rgba(204,204,204,0.2); }
+.tss-menu ul li a, 
+.tss-menu ul li a:visited { display: block; height: 40px; line-height: 40px; 
+    overflow: hidden; text-overflow: ellipsis; word-break: break-all; white-space: nowrap; 
+} 
+.tss-menu ul li ul { display: none; }  
+.tss-menu ul li:hover ul { display: block; position: absolute; right: 150px; top:0; width: 150px; } 
+.tss-menu ul li:hover a { border-bottom: 1px solid rgba(204,204,204,0.2); }
+.tss-menu button.icon { color: #fff; font-size: 2em; border: none; margin: 1px 8px 0 0; }
+
+.hidden { display: none; }
+
+@media screen and (min-width: 600px) {
+    body, .tssIFrame { width: 600px; margin: auto; }
+}
+
+</style>
+
+<script type="text/javascript">
+
+
+window.onresize = resizeIFrame;
+
+function openUrl(ahref) {
+	if (ahref != "#") {
+		openFrame(ahref);
+	}
+	$("#menu1>ul").addClass("hidden");
+}
+var resizeIFrame = function() {
+	$(".tssIFrame").css("height", (document.body.offsetHeight - 34) + "px");
+}
+
+function openFrame(url) {
+	var id = "if" + tssJS.hashCode(url);
+	var $iframe = $("#" + id);
+	if( $iframe.length == 0 ) {
+		var iframe = $.createElement("iframe", "tssIFrame", id);
+		$iframe = $(iframe);
+		$iframe.attr("frameborder", "0").attr("scrolling", "auto");
+		$(document.body).appendChild(iframe);
+
+		resizeIFrame();
+		$iframe.attr("src", url);
+	}
+
+	$(".tssIFrame").addClass("hidden").removeClass("open");
+	$iframe.removeClass("hidden").addClass("open");
+}
+
+
+$(function(){
+	var $menu1 = $("#menu1");
+	$("#menu1>ul").blur( function() { $ul.addClass("hidden"); } );
+
+	$menu1.find("button.switch").click( 
+		function() {
+			var $ul = $("#menu1>ul");
+			if( $ul.hasClass("hidden") ) {
+				$ul.removeClass("hidden");
+
+				setTimeout(function() {
+					$ul.addClass("hidden");
+				}, 5000);
+			}
+			else {
+				$ul.addClass("hidden");
+			}
+		}
+	);
+
+	$menu1.find("button.refresh").click( 
+		function() {
+			var $iframe = $(".tssIFrame.open");
+			$iframe.attr("src", $iframe.attr("src"));
+		}
+	);
+
+	/* 用户信息初始化  */
+	resizeIFrame();
+	init();
+});
+
+
+var global = {};
+function init() {
+	checkLoign();
+
+	$.relogin = null;
+	$.ajax({
+        url : "../auth/user/has",
+        method : "GET",
+        type : "json",
+        ondata : function() {
+            var info = this.getResponseJSON();
+
+            global.groups = info[0];
+            global.roles = info[1];  // array contains
+            global.userId = info[2];
+            global.userCode = info[3];
+
+            global.groupLevel = global.groups.length;
+            if( global.groupLevel ) {
+            	global.directGroupName = global.groups[global.groupLevel - 1][1];
+            }
+        }
+    });
+
+	// 读取用户有浏览权限的菜单列表
+	$.ajax( {
+		url: "/tss/auth/navigator/json/" + MENU_ROOT, 
+		waiting: true,
+		ondata: function() {
+			var _menus = this.getResponseJSON();
+
+			if(_menus.errorMsg) {
+				window.parent.location.href = "login.html";
+			}	  	
+
+			$.each(_menus, function(i, menu1) {
+				var li = $.createElement("li");
+				$("#menu1>ul").appendChild(li);
+
+				var menuHTML = [];
+				menuHTML.push("<a href='javascript:void(0)' onclick='openUrl(\"" +menu1.url+ "\")' >" + menu1.name + "</a>");
+				if(menu1.children && menu1.children.length) {				
+					menuHTML.push('<ul>');
+				    $.each(menu1.children, function(j, menu2) {
+				    	menuHTML.push('<li>');
+				    	menuHTML.push("<a href='javascript:void(0)' onclick='openUrl(\"" +menu2.url+ "\")' >" + menu2.name + "</a>");
+						menuHTML.push('</li>');
+				    });
+					menuHTML.push('</ul>');
+				}			
+				$(li).html(menuHTML.join(" "));
+
+				if( i==0 && menu1.url ) { // 默认打开第一个菜单
+					openUrl( menu1.url );
+				}
+		    });
+
+		}
+	});
+}
+
+function _logout() {
+	$.Cookie.setValue("token", null);
+
+	logout();
+	window.location.href = "login.html?logout=true";
+}
+
+</script>
+
+</head>
+<body>
+
+<header>
+	<span class="logo"></span>
+
+	<div id="menu1" class="tss-menu">
+		<button data-icon="P" class="icon switch"></button>
+		<button data-icon="V" class="icon refresh"></button>
+		<ul class="hidden">
+			<li><a href='javascript:void(0)' onclick="_logout()">注销<span id="userInfo"></span></a></li>
+<!-- 		
+			<li><a href='javascript:void(0)' onclick="openUrl('bi_visit.html')">访问概览</a></li>
+-->
+		</ul>
+	</div>
+</header>
+
+</body>
+</html>

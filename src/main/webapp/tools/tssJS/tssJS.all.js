@@ -180,7 +180,6 @@
 
             // 获取对象的类型
             type: function(obj) {
-                // class2type[ "[object " + name + "]" ] = name.toLowerCase();
                 return obj == null ? String(obj) : class2type[toString.call(obj)] || "object";
             },
 
@@ -506,6 +505,20 @@
             return this;
         },
 
+        height: function(height) {
+            height = /^\+?[1-9][0-9]*$/.test(height) ? height + "px" : height;  // 300/300px/30%
+            return this.css("height", height);
+        },
+
+        width: function(width) {
+            width = /^\+?[1-9][0-9]*$/.test(width) ? width + "px" : width;  // 300/300px/30%
+            return this.css("width", width);
+        },
+
+        is: function(selector) {
+            return $.is(this[0], selector);
+        },
+
         hasClass: function(className) {
             if(this.length == 0) {
                 return false;
@@ -617,21 +630,6 @@
             return this;
         },
 
-        //设置显示
-        show: function(block) {
-            for (var i = 0; i < this.length; i++) {
-                this[i].style.display = block ? 'block' : '';
-            }
-            return this;
-        },
-
-        focus: function() {
-            if ( this.length > 0 ) {
-                this[0].focus();
-            }
-            return this;
-        },
-
         blur: function(fn) {
             this.removeEvent('blur', fn).addEvent('blur', fn);
             return this;
@@ -647,6 +645,21 @@
         removeEvent: function(eventName, fn, capture) {
             for (var i = 0; i < this.length; i++) {
                 $.Event.removeEvent(this[i], eventName, fn, capture);
+            }
+            return this;
+        },
+
+        focus: function() {
+            if ( this.length > 0 ) {
+                this[0].focus();
+            }
+            return this;
+        },
+
+        //设置显示
+        show: function(block) {
+            for (var i = 0; i < this.length; i++) {
+                this[i].style.display = block ? 'block' : '';
             }
             return this;
         },
@@ -717,6 +730,10 @@
         hasClass: function(el, cn) {
             var reg = new RegExp('(\\s|^)' + cn + '(\\s|$)');
             return (' ' + el.className + ' ').match(reg);
+        },
+
+        is: function(el, selector) {
+            return el.tagName.toLowerCase() == selector.toLowerCase();
         },
 
         // 获取视口大小
@@ -810,12 +827,13 @@
             }
         },
 
-        /* 动态创建脚本 */
+        /* 动态添加脚本 */
         createScript: function(script) {
             var scriptNode = $.createElement("script");
             $.XML.setText(scriptNode, script);
             $('head').appendChild(scriptNode);
         },
+        /* 动态添加外挂js文件 */
         createScriptJS: function(jsFile) {
             var scriptNode = $.createElement("script");
             scriptNode.src = jsFile;
@@ -932,6 +950,7 @@
     $.extend({
         Cookie: {
             setValue: function(name, value, expires, path) {
+                value = value||"";
                 if (expires == null) {
                     var exp = new Date();
                     exp.setTime(exp.getTime() + 365 * 24 * 60 * 60 * 1000);
@@ -1110,8 +1129,13 @@
                 return $.parseXML(xml).documentElement;
             },
 
-            toString: function(element) {
-                return $.XML.toXml(element);
+            toXml: function(node) { // xml node、xml doc
+                var xmlSerializer = new XMLSerializer();
+                return xmlSerializer.serializeToString(node.documentElement || node);
+            },
+
+            toString: function(node) {
+                return $.XML.toXml(node);
             },
 
             getText: function(node) {
@@ -1191,11 +1215,6 @@
                     return errorNodes[0].innerHTML;
                 }
                 return "";
-            },
-
-            toXml: function(xml) {
-                var xmlSerializer = new XMLSerializer();
-                return xmlSerializer.serializeToString(xml.documentElement || xml);
             }
         }
     });
@@ -1253,6 +1272,20 @@
             method : method || "POST",
             params : params,
             waiting : waiting || false, 
+            ondata : function() { 
+                var data = this.getResponseJSON();
+                callback(data);
+            }
+        });
+    };
+
+    $.post = function(url, params, callback) {
+        $.ajax({
+            url : url,
+            type : "json",
+            method : "POST",
+            params : params,
+            waiting : true, 
             ondata : function() { 
                 var data = this.getResponseJSON();
                 callback(data);
@@ -1887,15 +1920,15 @@
 
     $.Bubble = $.Balloon = factory($);
 
-    $.notice = function(targetEl, msg) {
+    $.notice = function(targetEl, msg, delay) {
         var balloon = new $.Bubble(msg);
-        balloon.dockTo(targetEl);
+        balloon.dockTo(targetEl, delay);
     };
 
     $.fn.extend({
         notice: function(msg, delay) {
             if(this.length > 0) {
-                $.notice(this[0], msg);
+                $.notice(this[0], msg, delay);
             }
         }
     });
@@ -2029,7 +2062,7 @@
         $("h1", boxEl).html(title).addClass("text2");
         $(".content .message", boxEl).addClass("text1");
 
-        $(boxEl).center(360, 300);   
+        $(boxEl).center();   
         callback && $.showWaitingLayer();
 
         return $box[0];
@@ -2041,7 +2074,7 @@
     };
 
     // content：内容，title：对话框标题  
-    $.tip = function(content, title, callback) {
+    $.tip = function(content, title) {
         var boxEl = popupBox(title || '消息提醒');
         $(".content", boxEl).addClass("tip");
         $(".btbox", boxEl).hide();
@@ -2054,6 +2087,7 @@
         var boxEl = popupBox(title || '提示', callback);
         $(".content", boxEl).addClass("alert");
         $(".content .message", boxEl).html(content);
+        $(boxEl).center(); 
 
         function ok() {
             closeBox();
@@ -2068,6 +2102,7 @@
         $(".content", boxEl).addClass("confirm");
         $(".content .message", boxEl).html(content || '你确认此操作吗?');
         $(".btbox", boxEl).html($(".btbox", boxEl).html() + '<input type="button" value="取 消" class="cancel">');
+        $(boxEl).center(); 
 
         function ok(result) {
             closeBox();
@@ -2087,7 +2122,8 @@
         $(".content", boxEl).addClass("prompt");
         $(".content .message", boxEl).html( (content || "请输入：") + ':<br><input type="text">' );
         $(".content .message input", boxEl).value(deinput || '');
-        $(".btbox", boxEl).html($(".btbox", boxEl).html() + '<input type="button" value="取 消" class="cancel">');       
+        $(".btbox", boxEl).html($(".btbox", boxEl).html() + '<input type="button" value="取 消" class="cancel">');  
+        $(boxEl).center();      
 
         function ok() {
             var value = $(".content .message input", boxEl).value();
@@ -3652,6 +3688,10 @@
             if(form) {
                 $.Event.addEvent(form, "submit", this.checkForm);
             }   
+
+            $(".fullscreenable", form).each(function(i, el){
+                $(el).fullscreen();
+            })
         },
  
         attachEditor: function() {
@@ -3800,7 +3840,7 @@
                         {"name": "mode", "value": "combotree"},
                         {"name": "texts", "value": texts.join('|')},
                         {"name": "values", "value": values.join('|')}
-                     ]);) */
+                     ]) */
         updateField: function(name, attrs) {
             var field = this.template.fieldsMap[name];
             if(!field) {
@@ -3850,7 +3890,7 @@
             this.el.editable = status || $(this.el).attr("editable");
 
             var disabled = (this.el.editable == "false");
-            this.el.className = disabled ? "field_disabled" : "string";
+            $(this.el).addClass( disabled ? "field_disabled" : "string" );
 
             if(this.el.tagName == "textarea") {
                 this.el.readOnly = disabled;  // textarea 禁止状态无法滚动显示所有内容，所以改为只读
@@ -4567,7 +4607,7 @@
         },
 
         /*
-         * 根据页面上的行数，获取相应的Row对象
+         * 根据页面上的行序号，获取相应的Row对象
          * 参数：  index   行序号
          * 返回值： Row对象
          */
@@ -6429,7 +6469,7 @@
 
 
 /*
- *  drag / resize
+ *  drag / resize / fullscreen
  */
 tssJS(function() {
     // 钩子
@@ -6439,7 +6479,11 @@ tssJS(function() {
 
     $(".resizable").each(function(i, el){
         $(el).resize().resize("col").resize("row");
-    })
+    });
+
+    $(".fullscreenable").each(function(i, el){
+        $(el).fullscreen();
+    });
 });
 
 tssJS.fn.extend({
@@ -6562,5 +6606,47 @@ tssJS.fn.extend({
         };
 
         return this;
+    },
+
+    /* Fullscreen text editor plugin */
+    fullscreen: function() {
+        var isFullscreen = false, 
+            $el = this, el = this[0], $ttDiv, $icon;
+
+        if ( !$el.is('textarea') ) {
+            return $el.notice('It can only work on textarea element.');
+        }
+
+        var tt = $.createElement("div", "tss-textarea");
+        el.parentNode.insertBefore(tt, el);
+        $(tt).html('<div style="height:100%;"><a href="#"></a></div>');
+        $ttDiv = $(tt).find('div');
+        $icon  = $ttDiv.find('div>a');
+        $ttDiv.appendChild(el);
+
+        // 设置tt的高、宽为原始textarea的高、宽
+        $(tt).width(el.offsetWidth).height(el.offsetHeight);
+        $el.width('100%').height('100%').css('resize', 'none');
+
+        var expand = function() {
+                $ttDiv.addClass('expanded');
+                $el.focus();
+                isFullscreen = true;
+            },
+            minimize = function() {
+                $ttDiv.removeClass('expanded'); 
+                isFullscreen = false;
+            };
+
+        $.Event.addEvent(window, "keyup", function(e) {
+            if (e.keyCode == 27) {
+                isFullscreen && minimize();
+            }
+        });
+
+        $icon.click(function(ev) {
+            $.Event.cancel(ev);
+            isFullscreen ? minimize(): expand();
+        });
     }
 });

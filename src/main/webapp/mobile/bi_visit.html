@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title> BI访问分析 </title>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+	<meta name="viewport" content="width=device-width">
+
+	<link rel="stylesheet" href="css/mobile.css" />
+
+	<style type="text/css">
+
+body {
+	text-align: center;
+	box-sizing: border-box;
+}
+#header { height: 125px; margin: 5px 0; }
+#header>div { width: 50%; height: 125px; display: inline-block; }
+#header>div:nth-child(1) { border-right: 1px #049cdb solid; }
+#header>div b { display: inline-block; margin-top: 15px; font-size: 3em; }
+#header>div p { font-size: .6em; }
+#header>div span { font-size: .9em; }
+
+#jmld, #jmrw { font-size: 1.2em !important; font-weight: bold; }
+
+.btn-group { margin: 0 auto; width: 80%; }
+.btn-group button {
+	text-align: center;
+	height: 30px; line-height: 30px;  width: 25%; display: inline-block;
+}
+
+#canvasDiv { margin-bottom: 12px; }
+
+#t1 { margin: 10px auto 0; width: 99%; }
+#t1 td { width: 25%; font-size: 90%; }
+#t1 tbody>tr:nth-child(even) { background-color: #E0ECFF; }
+
+#h6 { margin-top: 12px; }
+
+@media screen and (max-width: 480px) {
+    .btn-group button { padding: 0; }
+}
+
+	</style>
+</head>
+<body>
+
+	<div id="header">
+		<div>
+			<h3>本月访问量</h3>
+			<div>
+				<b>....</b><i>次</i>
+			</div>
+			<p> 
+				今日零点 ==> 今日23:59 
+			</p>
+			<span>加盟录单: </span><span id="jmld">....</span><span><i>吨</i></span>
+		</div><div>
+			<h3>新注册用户</h3>
+			<div>
+				<b>....</b><i></i>
+			</div>
+			<p> 
+				今日03:00 ==> 次日02:59
+			</p>
+			<span>加盟入网: </span><span id="jmrw">....</span><span><i>吨</i></span>
+		</div>
+	</div>
+
+	<div id="canvasDiv"></div>
+
+	<span class="btn-group">
+	    <button type="primary" data-v="第一集团">第一集团</button>
+	    <button type="primary" data-v="第二集团" outline>第二集团</button>
+	    <button type="primary" data-v="第三集团" outline>第三集团</button>
+	    <button type="primary" data-v="第四集团" outline>第四集团</button>
+	</span>
+
+	<table id="t1" class="bitable">
+		<thead>
+			<tr>
+				<td>分公司</td>
+				<td>录单货量</td>
+				<td>加盟录单</td>
+				<td>入网货量</td>			
+				<td>加盟入网</td>
+			</tr>
+		</thead>
+		<tbody>
+		</tbody>
+	</table>
+
+	<h6 id="h6">数据最后更新于: <time></time></h6>
+
+<script src="../tools/tssJS/tssJS.all.js"></script>
+<script src="../tools/tssJS/tssJS.jsonp.js"></script>
+<script src="../tools/ichartjs/ichart.1.1.min.js"></script>
+<script src="js/mobile.js"></script>
+
+<script type="text/javascript">
+
+var labels, values, companyLevel = "第一集团", data1, data2;
+
+checkLoign();
+query1();
+query2();
+
+function query1() {
+	var lastTime = new Date().format("yyyy-MM-dd hh:mm:ss");
+	tssJS("#h6 time").html( lastTime );
+
+	$.JSONP.getJSON(
+        BASE_DATA_JSONP + API_IDS[1], 
+        { "pagesize": 0},
+        function(result) { 
+            var lastest = result;
+			if( lastest.length || !data1) { // 如果没有刷新到最新数据，则不更新界面
+				data1 = lastest;
+			}
+
+			var x1 = 0, x2 = 0, x3 = 0, x4 = 0;
+			data1.each(function(item, i) {
+				if(!item.flag) {
+					item.flag = true;
+					item.f3 = Math.round( parseFloat(item.f3||0) ) / 1000;
+					item.f4 = Math.round( parseFloat(item.f4||0) ) / 1000;
+					item.f6 = Math.round( parseFloat(item.f6||0) ) / 1000;
+					item.f7 = Math.round( parseFloat(item.f7||0) ) / 1000;
+					x1 += item.f3;
+					x2 += item.f4;
+					x3 += item.f6;
+					x4 += item.f7;
+
+					lastTime = item.f5;
+				}
+			});
+			tssJS("#h6 time").html( lastTime );
+
+			showTop( Math.round(x1), Math.round(x2), Math.round(x3), Math.round(x4) );
+			showGrid();
+        }
+   );
+}
+function showTop(x1, x2, x3, x4) {
+	tssJS("#header>div:nth-child(1)>div>b").html(x1);
+	tssJS("#header>div:nth-child(2)>div>b").html(x2);
+	// 加盟货量
+	tssJS("#jmld").html(x3);
+	tssJS("#jmrw").html(x4);
+}
+
+function showGrid() {
+	tssJS("#t1>tbody").html("");
+
+	var index = 0;
+	data1 && tssJS.each(data1, function(i, item) {
+		if(companyLevel != item.f1) return;
+
+		var row = tssJS.createElement("tr");
+		tssJS(row).html("<td/><td/><td/><td/><td/><td/>");
+		tssJS("td:nth-child(1)", row).html( item["f2"].replace("分公司", "") );
+		tssJS("td:nth-child(2)", row).html( item["f3"].toFixed(1) );
+		tssJS("td:nth-child(4)", row).html( item["f4"].toFixed(1) );
+		tssJS("td:nth-child(3)", row).html( item["f6"].toFixed(1) );
+		tssJS("td:nth-child(5)", row).html( item["f7"].toFixed(1) );
+
+		tssJS("#t1>tbody").appendChild(row);
+	});
+}
+
+var data3;
+function showByDay(day) {
+
+	$.JSONP.getJSON( BASE_DATA_JSONP + API_IDS[2], {"pagesize": 0}, function(result) { 
+        	data3 = {};
+
+			tssJS.each(result, function(i, item) {
+				item.f3 = Math.round( parseFloat(item.f3||0) / 100 ) / 10 ;
+				item.f4 = Math.round( parseFloat(item.f4||0) / 100 ) / 10;
+				item.f6 = Math.round( parseFloat(item.f6||0) / 100 ) / 10;
+				item.f7 = Math.round( parseFloat(item.f7||0) / 100 ) / 10;
+
+				labels.each( function(label, j) {
+					if( !data3[label] ) {
+						data3[label] = [];
+					}
+
+					if(label === (item.inday||"").substring(5)) {
+						data3[label].push(item);
+					}
+				});
+			});
+			
+			data1 = data3[day];
+			showGrid();
+        }
+   );
+}
+
+function query2() {
+	labels = genLabels(8);
+
+	$.JSONP.getJSON( BASE_DATA_JSONP + API_IDS[3], {"pagesize": 0}, function(result) { 
+        	var data2 = result;
+
+			values = [0, 0, 0, 0, 0, 0, 0, 0];
+
+			tssJS.each(data2, function(i, item) {
+				labels.each( function(label, j) {
+					if(label === item.f1) {
+						values[j] = Math.round(parseFloat(item.f2 || 0) / 1000);
+					}
+				});
+			});
+			
+			showTrend();
+        }
+   );
+}
+
+function showTrend() {
+	var data = [
+        	{
+        		name: '用户访问量',
+        		value: values,
+        		color: '#049cdb',
+        		line_width: 1
+        	}
+       ];
+    var max = 0, min = 10000;
+    values.each(function(item, i) {
+    	max = Math.max(max, item);
+    	min = Math.min(min, item)
+    });
+    max = Math.ceil(max / 1000 + 2) * 1000;
+
+	var chart = new iChart.LineBasic2D({
+			render : 'canvasDiv',
+			data: data,
+			title : '用户访问走势（吨）',
+			width : document.body.offsetWidth,
+			height : 180,
+			border : 0,
+			coordinate: { 
+				height:'95%', 
+				background_color: '#fff',
+				axis: {
+					color:'#fff',
+					width: 0
+				},
+				scale2grid: false,
+				grids:{
+					horizontal: {							
+						value: 1
+					}
+				}, 
+				scale:[{
+					 position: 'left',	
+					 start_scale: min,
+					 end_scale: max,
+					 scale_space: 2000,
+					 scale_size: 0,
+					 label: { color:'#fff'}
+				},{
+					 position:'bottom',	
+					 scale_size: 0,
+					 labels:labels
+				}]
+			},
+			sub_option: {
+				hollow_inside: true,
+				point_size: 9,
+				listeners:{
+					click:function(r, e, m){
+						showByDay( labels[m.i] );
+					}
+				}
+			}
+		});
+
+	chart.draw();
+}
+
+// 按钮切换
+$('.btn-group button').click(function(e) {
+	$('.btn-group button').attr("outline", "");
+	this.removeAttribute("outline");
+    companyLevel = tssJS(this).attr('data-v');
+
+    showGrid();
+ });
+
+// 定时刷新（60秒）
+window.setInterval( function() {
+	query1();
+
+}, 1000 * 60); 
+
+</script>
+
+</body>
+</html>

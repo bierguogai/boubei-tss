@@ -74,7 +74,7 @@ html, body { height: 100%; overflow: hidden; }
 window.onload = function() {
     initUserInfo(function() {
         resizeIFrame();
-        openUrl("modules/dm/report.html");
+        openUrl("modules/_cache/cache.htm");
 
         dbsx();
     });
@@ -114,8 +114,8 @@ var resizeIFrame = function resizeIFrame() {
     $(".tssIFrame").css("height", (document.body.offsetHeight - 30) + "px");
 }
 
-function feedback() {
-    var url = encodeURI('modules/dm/record.html?_default=系统使用反馈');
+function feedback(module) {
+    var url = encodeURI('modules/dm/record.html?_default=系统使用反馈' + (module ? "&udf="+module : ""));
     openUrl(url);
 }
 
@@ -194,7 +194,14 @@ tssJS(function(){
                     <li><a href='javascript:void(0)' onclick="openUrl('modules/um/role.html')">角色授权</a></li> 
                     <li><a href='javascript:void(0)' onclick="openUrl('modules/um/subauth.html')">权限转授</a></li> 
                     <li><a href='javascript:void(0)' onclick="openUrl('modules/um/resource.html')">应用资源</a></li> 
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/portal/navigator.html')">菜单导航</a></li>
+                </ul> 
+            </li> 
+            <li><a href='javascript:void(0)'>门户管理</a>    
+                <ul> 
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/portal/structure.html')">门户结构</a></li> 
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/portal/component.html')">门户组件</a></li> 
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/portal/release.html')">门户发布</a> </li>
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/portal/navigator.html')">菜单导航</a></li> 
                 </ul> 
             </li> 
             <li><a href='javascript:void(0)'>系统辅助</a>    

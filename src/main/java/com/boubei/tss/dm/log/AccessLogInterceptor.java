@@ -10,6 +10,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
+import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.framework.sso.Environment;
 
 @Component("accessLogInterceptor")
@@ -30,19 +31,20 @@ public class AccessLogInterceptor implements MethodInterceptor {
         // 在方法被正式执行前，先把参数转成字符串记录下来（以防在方法里把参数给修改了）
         StringBuffer buffer = new StringBuffer();
         for (Object arg : args) {
+        	if(buffer.length() > 0) {
+        		buffer.append(",");
+        	}
+        	
         	if(arg instanceof String || arg instanceof Number) {
-        		 buffer.append(arg).append(", ");
+        		 buffer.append(arg);
         	}
         	else {
         		String argString = ToStringBuilder.reflectionToString(arg, ToStringStyle.SHORT_PREFIX_STYLE);
-				buffer.append(argString).append(", ");
+				buffer.append(argString);
         	}
         }
 
-        String params = buffer.toString();
-        if (params != null && params.length() > 500) {
-            params = params.substring(0, 500);
-        }
+        String params = DMUtil.cutParams( buffer.toString() );
 
         // 执行方法
         long start = System.currentTimeMillis();
@@ -64,7 +66,7 @@ public class AccessLogInterceptor implements MethodInterceptor {
             AccessLogRecorder.getInstanse().output(log);
         } 
         catch(Exception e) {
-        	log.error("记录方法【" + methodName + "】的访问日志时出错了。错误信息：" + e.getMessage());
+        	// log.error("记录方法【" + methodName + "】的访问日志时出错了。错误信息：" + e.getMessage());
         }
 
         return returnVal;

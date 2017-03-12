@@ -58,6 +58,20 @@
         });
     };
 
+    $.post = function(url, params, callback) {
+        $.ajax({
+            url : url,
+            type : "json",
+            method : "POST",
+            params : params,
+            waiting : true, 
+            ondata : function() { 
+                var data = this.getResponseJSON();
+                callback(data);
+            }
+        });
+    };
+
     $.getXml = $.getXML = function(url, params, callback, method, waiting) {
         $.ajax({
             url : url,

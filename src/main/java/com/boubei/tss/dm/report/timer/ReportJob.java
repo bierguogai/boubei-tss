@@ -13,11 +13,12 @@ import javax.mail.internet.MimeUtility;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
+import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
 import com.boubei.tss.dm.data.util.DataExport;
 import com.boubei.tss.dm.report.ReportService;
 import com.boubei.tss.framework.Global;
-import com.boubei.tss.framework.exception.BusinessException;
+import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.timer.AbstractJob;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.DateUtil;
@@ -51,10 +52,8 @@ public class ReportJob extends AbstractJob {
 		Map<String, ReceiverReports> map = new HashMap<String, ReportJob.ReceiverReports>();
 		
 		// 收件人一致的定时报表合并起来发送
-		for(int i = 0; i < jobConfigs.length; i++) {
-			if(EasyUtils.isNullOrEmpty(jobConfigs[i])) continue;
-			
-			String reportInfo[] = EasyUtils.split(jobConfigs[i], ":");
+		for(String jobX : jobConfigs) {
+			String reportInfo[] = EasyUtils.split(jobX, ":");
 			if(reportInfo.length < 3) continue;
 			
 			String receiverStr = reportInfo[2].trim();
@@ -70,7 +69,7 @@ public class ReportJob extends AbstractJob {
 	        rr.reportIds.add(reportId);
 	        
 	    	Map<String, String> paramsMap = new HashMap<String, String>();
-	    	if(reportInfo.length > 3) {
+	    	if(reportInfo.length > 3) { // 参数信息
 	    		String[] params = reportInfo[3].split(",");
 	    		for(String param : params) {
 	    			String[] keyValue = param.split("=");
@@ -130,7 +129,7 @@ public class ReportJob extends AbstractJob {
 			sender.send(mailMessage);
 		} 
 		catch (Exception e) {
-			throw new BusinessException("发送报表邮件时出错了：", e);
+			log.error("发送报表邮件时出错了：", e);
 		}
 	}
 
@@ -140,9 +139,16 @@ public class ReportJob extends AbstractJob {
 		Long reportId = rr.reportIds.get(index);
 		String title = rr.reportTitles.get(index);
 		Map<String, String> paramsMap = rr.reportParams.get(index);
-		SQLExcutor ex = reportService.queryReport(reportId, paramsMap, 0, 10*10000, System.currentTimeMillis());
+		long start = System.currentTimeMillis();
+		SQLExcutor ex = reportService.queryReport(reportId, paramsMap, 0, 10*10000, start);
+		DMUtil.outputAccessLog(reportService, reportId, "showAsMail", paramsMap, start); // 记录日志
 		
-		String url = "/tss/modules/dm/report_portlet.html?leftBar=true&id=" + reportId;
+		String url = "/tss";
+		try {
+			url = Context.getApplicationContext().getCurrentAppServer().getBaseURL();
+		} catch (Exception e) {}
+
+		url += "/modules/dm/report_portlet.html?leftBar=true&id=" + reportId;
 		for(String paramKey : paramsMap.keySet()) {
 			url += "& " + paramKey + "=" + paramsMap.get(paramKey);
 		}
@@ -154,24 +160,23 @@ public class ReportJob extends AbstractJob {
 		else {
 			html.append("<h1>" + title + "</h1>");
 			html.append("<table>");
-			if(ex.selectFields != null) {
-				html.append("<thead><tr>");
-		    	for(String field : ex.selectFields) {
-		    		html.append("<td>").append("&nbsp;").append(field).append("&nbsp;").append("</td>");
+			// thead
+			html.append("<thead><tr>");
+	    	for(String field : ex.selectFields) {
+	    		html.append("<td>").append("&nbsp;").append(field).append("&nbsp;").append("</td>");
+	    	}
+	    	html.append("</tr></thead>");
+	    	// tbody
+	    	html.append("<tbody>");
+	    	for( Map<String, Object> row : ex.result) {
+				html.append("<tr>");
+				for(String field : ex.selectFields) {
+		    		Object fieldV = row.get(field);
+					html.append("<td>").append(fieldV == null ? "" : fieldV).append("</td>");
 		    	}
-		    	html.append("</tr></thead>");
-		    	
-		    	html.append("<tbody>");
-		    	for( Map<String, Object> row : ex.result) {
-					html.append("<tr>");
-					for(String field : ex.selectFields) {
-			    		Object fieldV = row.get(field);
-						html.append("<td>").append(fieldV == null ? "" : fieldV).append("</td>");
-			    	}
-					html.append("</tr>");
-				}
-		    	html.append("</tbody>");
-		    }
+				html.append("</tr>");
+			}
+	    	html.append("</tbody>");
 			
 			html.append("</table><br>");
 		}

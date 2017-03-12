@@ -180,7 +180,6 @@
 
             // 获取对象的类型
             type: function(obj) {
-                // class2type[ "[object " + name + "]" ] = name.toLowerCase();
                 return obj == null ? String(obj) : class2type[toString.call(obj)] || "object";
             },
 
@@ -506,6 +505,20 @@
             return this;
         },
 
+        height: function(height) {
+            height = /^\+?[1-9][0-9]*$/.test(height) ? height + "px" : height;  // 300/300px/30%
+            return this.css("height", height);
+        },
+
+        width: function(width) {
+            width = /^\+?[1-9][0-9]*$/.test(width) ? width + "px" : width;  // 300/300px/30%
+            return this.css("width", width);
+        },
+
+        is: function(selector) {
+            return $.is(this[0], selector);
+        },
+
         hasClass: function(className) {
             if(this.length == 0) {
                 return false;
@@ -617,21 +630,6 @@
             return this;
         },
 
-        //设置显示
-        show: function(block) {
-            for (var i = 0; i < this.length; i++) {
-                this[i].style.display = block ? 'block' : '';
-            }
-            return this;
-        },
-
-        focus: function() {
-            if ( this.length > 0 ) {
-                this[0].focus();
-            }
-            return this;
-        },
-
         blur: function(fn) {
             this.removeEvent('blur', fn).addEvent('blur', fn);
             return this;
@@ -647,6 +645,21 @@
         removeEvent: function(eventName, fn, capture) {
             for (var i = 0; i < this.length; i++) {
                 $.Event.removeEvent(this[i], eventName, fn, capture);
+            }
+            return this;
+        },
+
+        focus: function() {
+            if ( this.length > 0 ) {
+                this[0].focus();
+            }
+            return this;
+        },
+
+        //设置显示
+        show: function(block) {
+            for (var i = 0; i < this.length; i++) {
+                this[i].style.display = block ? 'block' : '';
             }
             return this;
         },
@@ -717,6 +730,10 @@
         hasClass: function(el, cn) {
             var reg = new RegExp('(\\s|^)' + cn + '(\\s|$)');
             return (' ' + el.className + ' ').match(reg);
+        },
+
+        is: function(el, selector) {
+            return el.tagName.toLowerCase() == selector.toLowerCase();
         },
 
         // 获取视口大小
@@ -810,12 +827,13 @@
             }
         },
 
-        /* 动态创建脚本 */
+        /* 动态添加脚本 */
         createScript: function(script) {
             var scriptNode = $.createElement("script");
             $.XML.setText(scriptNode, script);
             $('head').appendChild(scriptNode);
         },
+        /* 动态添加外挂js文件 */
         createScriptJS: function(jsFile) {
             var scriptNode = $.createElement("script");
             scriptNode.src = jsFile;
@@ -932,6 +950,7 @@
     $.extend({
         Cookie: {
             setValue: function(name, value, expires, path) {
+                value = value||"";
                 if (expires == null) {
                     var exp = new Date();
                     exp.setTime(exp.getTime() + 365 * 24 * 60 * 60 * 1000);
@@ -1110,8 +1129,13 @@
                 return $.parseXML(xml).documentElement;
             },
 
-            toString: function(element) {
-                return $.XML.toXml(element);
+            toXml: function(node) { // xml node、xml doc
+                var xmlSerializer = new XMLSerializer();
+                return xmlSerializer.serializeToString(node.documentElement || node);
+            },
+
+            toString: function(node) {
+                return $.XML.toXml(node);
             },
 
             getText: function(node) {
@@ -1191,11 +1215,6 @@
                     return errorNodes[0].innerHTML;
                 }
                 return "";
-            },
-
-            toXml: function(xml) {
-                var xmlSerializer = new XMLSerializer();
-                return xmlSerializer.serializeToString(xml.documentElement || xml);
             }
         }
     });

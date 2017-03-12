@@ -26,10 +26,9 @@ import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
 import com.boubei.tss.dm.report.permission.ReportPermission;
 import com.boubei.tss.dm.report.permission.ReportResource;
 import com.boubei.tss.dm.report.timer.ReportJob;
-import com.boubei.tss.framework.SecurityUtil;
 import com.boubei.tss.framework.exception.BusinessException;
+import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sso.Environment;
-import com.boubei.tss.framework.sso.IOperator;
 import com.boubei.tss.framework.web.dispaly.tree.DefaultTreeNode;
 import com.boubei.tss.framework.web.dispaly.tree.ITreeNode;
 import com.boubei.tss.framework.web.dispaly.tree.LevelTreeParser;
@@ -41,7 +40,6 @@ import com.boubei.tss.modules.param.Param;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.modules.param.ParamService;
-import com.boubei.tss.um.helper.PasswordRule;
 import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.BeanUtil;
@@ -57,10 +55,11 @@ public class ReportAction extends BaseActionSupport {
     
     @Autowired private ReportService reportService;
     @Autowired private ILoginService loginService;
+    @Autowired private ICommonService commonService;
     
     @RequestMapping("/")
     public void getAllReport(HttpServletResponse response) {
-	    checkPwdSecurity();
+    	loginService.checkPwdSecurity();
     	
         List<?> list = reportService.getAllReport();
         TreeEncoder treeEncoder = new TreeEncoder(list, new StrictLevelTreeParser(Report.DEFAULT_PARENT_ID));
@@ -112,7 +111,7 @@ public class ReportAction extends BaseActionSupport {
      */
     @RequestMapping("/my")
     public void getMyReports(HttpServletResponse response, Long groupId) {
-	    checkPwdSecurity();
+    	loginService.checkPwdSecurity();
 	    
 	    List<Report> list;
 	    if(groupId != null) {
@@ -137,7 +136,7 @@ public class ReportAction extends BaseActionSupport {
 	    }
 	    
 	    result.add(new Report(newGroupId, "近期新出报表", null));
-	    List<Report> latest = new ArrayList<Report>();
+	    List<Report> lastest = new ArrayList<Report>();
     	for(Report report : list) {
     		if( !report.isActive()  || report.getId().equals(groupId) )  continue;
  
@@ -145,17 +144,17 @@ public class ReportAction extends BaseActionSupport {
     				&& report.getCreateTime().after(DateUtil.subDays(DateUtil.today(), 10))
     				&& StringUtil.hasCNChar(report.getName())) {
     			
-    			latest.add(cloneReport(newGroupId, report));
+    			lastest.add(cloneReport(newGroupId, report));
     		}
     		
     		result.add(report); // 此处将list里的所有report及分组放入到result里
     	}
-    	Collections.sort(latest, new Comparator<Report>() {
+    	Collections.sort(lastest, new Comparator<Report>() {
             public int compare(Report r1, Report r2) {
                 return r2.getId().intValue() - r1.getId().intValue();
             }
         });
-    	result.addAll(latest.size() > 3 ? latest.subList(0, 3) : latest);
+    	result.addAll(lastest.size() > 3 ? lastest.subList(0, 3) : lastest);
        
         TreeEncoder treeEncoder = new TreeEncoder(result, new LevelTreeParser());
         treeEncoder.setNeedRootNode(false);
@@ -203,7 +202,7 @@ public class ReportAction extends BaseActionSupport {
 	    	params.put(2, Environment.getUserId());
 	    }
 	    
-	    SQLExcutor ex = new SQLExcutor(false);
+	    SQLExcutor ex = new SQLExcutor();
 		ex.excuteQuery(sql, params , DMConstants.LOCAL_CONN_POOL);
 	    
 	    List<String> tops = new ArrayList<String>();
@@ -219,28 +218,12 @@ public class ReportAction extends BaseActionSupport {
 	    }
 	    return tops;
     }
-
-    // add 2014.12.17 检查用户的密码强度，太弱的话强制要求修改密码
-	private void checkPwdSecurity() {
-    	Object strengthLevel = null;
-    	try {
-    		Long operatorId = Environment.getUserId();
-			IOperator operator = loginService.getOperatorDTOByID(operatorId);
-			strengthLevel = operator.getAttributesMap().get("passwordStrength");
-    	} catch(Exception e) {
-    		// do nothing
-     	}
-    	if(strengthLevel != null && EasyUtils.obj2Int(strengthLevel) <= PasswordRule.LOW_LEVEL
-    			&& SecurityUtil.getSecurityLevel() >= 4 ) {
-			throw new BusinessException("您的密码过于简单，请点右上角【修改密码】菜单重置密码后，再进行访问！");
-		}
-	}
 	
     @RequestMapping("/template")
     public void getReportTLs(HttpServletResponse response) {
     	StringBuffer sb = new StringBuffer("<actionSet>"); 
     	
-    	// modules/btr or modules/wms 等目录下
+    	// /bi or /more/bi4.0 等目录下
     	String rtd = DMConstants.getReportTLDir();
  		File reportTLDir = new File(URLUtil.getWebFileUrl(rtd).getPath());
 		List<File> files = FileHelper.listFilesByTypeDeeply("html", reportTLDir);
@@ -256,13 +239,13 @@ public class ReportAction extends BaseActionSupport {
 			sb.append("<treeNode id=\"").append(index++).append("\" name=\"").append(treeName).append("\"/>");
 		}
  		
- 		// dm/template 下
+ 		// more/bi_template 下
  		File delfaultDir = new File(URLUtil.getWebFileUrl(DMConstants.REPORT_TL_DIR_DEFAULT).getPath());
  		if( !delfaultDir.equals(reportTLDir) ) {
  			files = FileHelper.listFilesByTypeDeeply("html", delfaultDir);
  	 		for (File file : files) {
- 				String treeName = "../../more/bi_template/" + file.getName();
- 				sb.append("<treeNode id=\"").append(index++).append("\" name=\"").append(treeName).append("\"/>");
+ 				sb.append("<treeNode id=\"").append(index++)
+ 				  .append("\" name=\"").append("../../more/bi_template/" + file.getName()).append("\"/>");
  			}
  		}
  		sb.append("</actionSet>");
@@ -353,6 +336,18 @@ public class ReportAction extends BaseActionSupport {
         reportService.startOrStop(id, disabled);
         printSuccessMessage();
     }
+    
+    // 设置报表是否可订阅
+    @RequestMapping(value = "/mailable/{id}/{state}", method = RequestMethod.POST)
+    public void subscribe(HttpServletResponse response, @PathVariable("id") Long id, @PathVariable("state") int state) {
+        Report report = reportService.getReport(id);
+        if( EasyUtils.isNullOrEmpty(report.getScript()) ) {
+        	throw new BusinessException("此报表没有包含任何查询脚本，无法被订阅。");
+        }
+        report.setMailable(state);
+        reportService.saveReport(report);
+        printSuccessMessage();
+    }
  
     @RequestMapping(value = "/sort/{startId}/{targetId}/{direction}", method = RequestMethod.POST)
     public void sort(HttpServletResponse response, 
@@ -394,51 +389,67 @@ public class ReportAction extends BaseActionSupport {
 	@Autowired ParamService paramService;
 	
 	@RequestMapping(value = "/schedule", method = RequestMethod.POST)
-    public void saveJobParam(HttpServletResponse response, Long reportId, String configVal) {
+    public void saveJobParam(HttpServletResponse response, Long reportId, boolean self, String configVal) {
 		Param jobParam = paramService.getParam(PX.TIMER_PARAM_CODE);
 		if(jobParam == null) {
 			jobParam = ParamManager.addComboParam(ParamConstants.DEFAULT_PARENT_ID, 
 	        		PX.TIMER_PARAM_CODE, "定时配置");
     	}
 		
-		Param jobParamItem = null;
-		String jobCode = "ReportJob-" + reportId;
-		List<Param> jobParamItems = paramService.getParamsByParentCode(PX.TIMER_PARAM_CODE);
-		for(Param temp : jobParamItems) {
-			if(jobCode.equals(temp.getUdf1())) {
-				jobParamItem = temp;
-				break;
-			}
-		}
-		
 		String value = ReportJob.class.getName() + " | " + configVal;
+		
+		Param jobParamItem = getJobParam(reportId, self);
 		if(jobParamItem == null) {
-			String text = reportService.getReport(reportId).getName() + "-" + reportId;
+			Report report = reportService.getReport(reportId);
+			String jobCode = "ReportJob-" + reportId + (self ? "-" + Environment.getUserId() : "");
+			String text = report.getName() + (self ? "-" + Environment.getUserCode() : "");
 			jobParamItem = ParamManager.addParamItem(jobParam.getId(), value, text, jobParam.getModality());
 			jobParamItem.setUdf1(jobCode);
+			
+			// 可推送的报表自动设置为允许订阅
+			report.setMailable(ParamConstants.TRUE);
+	        reportService.saveReport(report);
 		}
 		else {
 			jobParamItem.setValue(value);
 		}
 		paramService.saveParam(jobParamItem);
         
-        printSuccessMessage();
+        printSuccessMessage("订阅成功");
     }
 
 	@RequestMapping(value = "/schedule", method = RequestMethod.GET)
 	@ResponseBody
-    public Object[] getJobParam(HttpServletResponse response, Long reportId) {
-		String jobCode = "ReportJob-" + reportId;
+    public Object[] getJobParam(HttpServletResponse response, Long reportId, boolean self) {
+		Param jobParam = getJobParam(reportId, self);
+		if(jobParam != null) {
+			String value = jobParam.getValue();
+			return EasyUtils.split(value, "|");
+		}
+		return null;
+    }
+	
+	private Param getJobParam( Long reportId, boolean self) {
+		String jobCode = "ReportJob-" + reportId + (self ? "-" + Environment.getUserId() : "");
 		List<Param> jobParamItems = paramService.getParamsByParentCode(PX.TIMER_PARAM_CODE);
 		if(jobParamItems != null) {
-			for(Param temp : jobParamItems) {
-				if(jobCode.equals(temp.getUdf1())) {
-					String value = temp.getValue();
-					return EasyUtils.split(value, "|");
+			for(Param param : jobParamItems) {
+				if(jobCode.equals(param.getUdf1())) {
+					return param;
 				}
 			}
 		}
 		return null;
+	}
+	
+	@RequestMapping(value = "/schedule", method = RequestMethod.DELETE)
+	@ResponseBody
+    public void delJobParam(HttpServletResponse response, Long reportId, boolean self) {
+		Param jobParam = getJobParam(reportId, self);
+		if(jobParam != null) {
+			paramService.delete(jobParam.getId());
+		}
+		printSuccessMessage("退订成功");
     }
 	
 	/** 
@@ -446,7 +457,7 @@ public class ReportAction extends BaseActionSupport {
 	 * 所有带script且displayUri为空的report, 后台单独发布的服务（配置到param里）
 	 * */
 	@RequestMapping("/dataservice")
-    public void getDateServiceList(HttpServletResponse response) {
+    public void getDataServiceList(HttpServletResponse response) {
         List<?> list = reportService.getAllReport();
         List<ITreeNode> result = new ArrayList<ITreeNode>();
         
@@ -485,4 +496,48 @@ public class ReportAction extends BaseActionSupport {
         print("DataServiceList", treeEncoder);
     }
 	
+	// 报表收藏
+	@RequestMapping(value = "/collection/{reportId}/{state}", method = RequestMethod.POST)
+	public void collectReport(HttpServletResponse response, 
+			@PathVariable("reportId") Long reportId, @PathVariable("state") boolean state) {
+		
+		String hql = "from ReportUser ru where ru.userId=? and ru.reportId=? and ru.type=1";
+		Long userId = Environment.getUserId();
+		List<?> list = commonService.getList(hql, userId, reportId);
+		ReportUser ru;
+		if(list.isEmpty() && state) { // 收藏
+			ru = new ReportUser(userId, reportId);
+			ru.setType(1);
+			commonService.create(ru);
+		}
+		if( !list.isEmpty() && !state) { // 取消收藏
+			ru = (ReportUser) list.get(0);
+			commonService.delete(ReportUser.class, (Long) ru.getPK());
+		}
+		
+		printSuccessMessage(state ? "已成功收藏" : "已取消收藏");
+	}
+	
+	@RequestMapping(value = "/collection", method = RequestMethod.GET)
+	@ResponseBody
+	public List<?> queryCollectReports() {
+		String hql = "select r.id, r.name from Report r, ReportUser ru " +
+				" where r.id = ru.reportId and ru.userId = ? and ru.type=1";
+		return commonService.getList(hql, Environment.getUserId());
+	}
+	
+	// 报表点赞
+	@RequestMapping(value = "/zan/{reportId}", method = RequestMethod.POST)
+	public void zanReport(HttpServletResponse response, @PathVariable("reportId") Long reportId) {
+		String hql = "from ReportUser ru where ru.userId=? and ru.reportId=? and ru.type=2";
+		Long userId = Environment.getUserId();
+		List<?> list = commonService.getList(hql, userId, reportId);
+		if( list.isEmpty() ) {
+			ReportUser ru = new ReportUser(userId, reportId);
+			ru.setType(2);
+			commonService.create(ru);
+		}
+		
+		printSuccessMessage("点赞成功，您的肯定是我们最大的动力！");
+	}
 }

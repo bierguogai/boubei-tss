@@ -58,9 +58,9 @@ public class ReportServiceImpl implements ReportService {
 		return this.getReport(id, auth);
     }
     
-	public Long getReportIdByName(String name) {
-		String hql = "select o.id from Report o where o.name = ? order by o.decode";
-		List<?> list = reportDao.getEntities(hql, name); 
+	public Long getReportId(String fname, Object idOrName) {
+		String hql = "select o.id from Report o where o." +fname+ " = ? order by o.decode";
+		List<?> list = reportDao.getEntities(hql, idOrName); 
 		if(EasyUtils.isNullOrEmpty(list)) {
 			return null;
 		}
@@ -92,8 +92,6 @@ public class ReportServiceImpl implements ReportService {
             
 			report.setSeqNo(reportDao.getNextSeqNo(parentId));
             reportDao.create(report);
-            
-            
         }
         else {
         	reportDao.refreshEntity(report);
@@ -103,13 +101,8 @@ public class ReportServiceImpl implements ReportService {
     
     public Report delete(Long id) {
     	 Report report = getReport(id);
-         List<Report> list1 = reportDao.getChildrenById(id, Report.OPERATION_DELETE); // 一并删除子节点
-         List<Report> list2 = reportDao.getChildrenById(id);
-         
-         if(list1.size() < list2.size()) {
-         	throw new BusinessException("你的权限不足，无法删除" + report);
-         }
-         return reportDao.deleteReport(report);
+         List<Report> children = reportDao.getChildrenById(id, Report.OPERATION_DELETE); // 一并删除子节点
+         return reportDao.deleteReport(report, children);
     }
 
     public void startOrStop(Long reportId, Integer disabled) {
@@ -129,16 +122,12 @@ public class ReportServiceImpl implements ReportService {
 
     public List<Report> copy(Long reportId, Long groupId) {
         Report report = getReport(reportId);
-        Report reportGroup = getReport(groupId);
         
         reportDao.evict(report);
         report.setId(null);
         report.setParentId(groupId);
         report.setSeqNo(reportDao.getNextSeqNo(groupId));
- 
-        if ( reportGroup != null && !reportGroup.isActive() ) {
-            report.setDisabled(ParamConstants.TRUE); // 如果目标根节点是停用状态，则新复制出来的节点也为停用状态
-        }
+        report.setDisabled(ParamConstants.TRUE); // 新复制出来的节点都为停用状态
         
         report = reportDao.create(report);
         List<Report> list = new ArrayList<Report>();
@@ -194,10 +183,8 @@ public class ReportServiceImpl implements ReportService {
 		if( !EasyUtils.isNullOrEmpty(paramsConfig) ) {
       		List<LinkedHashMap<Object, Object>> list;
       		try {  
-      			ObjectMapper objectMapper = new ObjectMapper();
       			paramsConfig = paramsConfig.replaceAll("'", "\"");
-      			
-  				list = objectMapper.readValue(paramsConfig, List.class);  
+  				list = new ObjectMapper().readValue(paramsConfig, List.class);  
       	        
       	    } catch (Exception e) {  
       	        throw new BusinessException( report + "参数配置JSON格式存在错误：" + e.getMessage() );
@@ -208,14 +195,15 @@ public class ReportServiceImpl implements ReportService {
   	        	
   	        	int index = i + 1;
   	        	String paramKy = "param" + index;
-				if ( !requestMap.containsKey(paramKy) ) {
+  	        	String paramValue = requestMap.get(paramKy);
+				if ( EasyUtils.isNullOrEmpty(paramValue) ) {
 					if( "false".equals(map.get("nullable")) ) {
 						throw new BusinessException("参数【" + map.get("label") + "】不能为空。");
 					}
 					continue;
 				}
 				
-				String paramValue = requestMap.get(paramKy).trim();
+				paramValue = paramValue.trim();
 				Object paramType = map.get("type");
 				Object isMacrocode = map.get("isMacrocode"); // 如一些只用于多级下拉联动的参数，可能并不用于script
 				
@@ -273,7 +261,7 @@ public class ReportServiceImpl implements ReportService {
       	fmDataMap.put("report.info", report.toString()); // 用于解析出错时定位report
       	reportScript = DMUtil.customizeParse(reportScript, fmDataMap);
           
-		SQLExcutor excutor = new SQLExcutor(false);
+		SQLExcutor excutor = new SQLExcutor();
 		String datasource = report.getDatasource();
 		try {
 			excutor.excuteQuery(reportScript, paramsMap, page, pagesize, datasource);

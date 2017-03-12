@@ -16,6 +16,8 @@ URL_SORT_SOURCE    = AUTH_PATH + "rc/sort/";
 URL_MOVE_SOURCE    = AUTH_PATH + "rc/move/";
 URL_GET_OPERATION  = AUTH_PATH + "rc/operations/";  // {id}
 URL_RECORD_CSV_TL  = AUTH_PATH + "xdata/import/tl/";
+URL_EXPORT_RECORD  = AUTH_PATH + "export/record/"
+URL_ROLE_LIST	   = AUTH_PATH + "service/roles";
 
 if(IS_TEST) {
 	URL_SOURCE_TREE    = "data/record_tree.xml?";
@@ -27,10 +29,20 @@ if(IS_TEST) {
 	URL_SORT_SOURCE    = "data/_success.xml?";
 	URL_MOVE_SOURCE    = "data/_success.xml?";
 	URL_GET_OPERATION  = "data/_operation.xml?";
+	URL_EXPORT_RECORD  = "data/_success.xml?";
+	URL_ROLE_LIST	   = "../um/data/role_list.json?";
 }
 
 $(function() {
 	init();
+
+	$.getJSON(URL_ROLE_LIST, {}, function(data) {
+		var el1 = $1("_role1"), el2 = $1("_role2");
+		data.each(function(i, role) {
+			el1.options[i] = $.createOption(role);
+			el2.options[i] = $.createOption(role);
+		});
+	}, "GET");
 });	
 
 /* 页面初始化 */
@@ -116,6 +128,18 @@ function initMenus() {
 		icon: ICON + "icon_up.gif",
 		visible:function() { return isRecord() && getOperation("1") && canBatchImp(); }
 	}
+	var item13 = {
+        label:"导出",
+        callback:exportReport,
+        icon:ICON + "export.gif",
+        visible:function() {return !isTreeRoot() && getOperation("2");}
+    }
+    var item14 = {
+        label:"导入",
+        callback:importReport,
+        icon:ICON + "import.gif",
+        visible:function() {return !isRecord() && getOperation("2");}
+    }
 
 	var menu = new $.Menu();
 	menu.addItem(item1);
@@ -128,6 +152,8 @@ function initMenus() {
 	menu.addItem(item22);
 	menu.addItem(item6);
 	menu.addItem(item9);
+	menu.addItem(item13);
+	menu.addItem(item14);
 	menu.addItem(item10);
 	menu.addItem(item5);
 	menu.addSeparator();
@@ -257,6 +283,29 @@ function deleteRecord()  { delTreeNode(URL_DELETE_SOURCE); }
 function disableRecord() { stopOrStartTreeNode("1", URL_DISABLE_SOURCE); }
 function enableRecord()  { stopOrStartTreeNode("0", URL_DISABLE_SOURCE); }
 
+function exportReport() {
+	var url = URL_EXPORT_RECORD + getTreeNodeId();
+    var frameName = createExportFrame();
+    $1(frameName).setAttribute("src", url);
+}
+
+function importReport() {
+	var params = {"isTree": false};
+	params._title = "请选择相应的数据源";
+
+	popupTree("/tss/param/xml/combo/datasource_list", "ParamTree", params, function(target) {
+	    function checkFileWrong(subfix) {
+			return subfix == ".json";
+		}
+
+		var ds = target.attrs["value"];
+		var url = URL_UPLOAD_FILE + "?groupId=" + getTreeNodeId() + "&dataSource=" + ds;
+		url += "&afterUploadClass=com.boubei.tss.dm.ext.ImportRecord";
+		var importDiv = createImportDiv("只支持json文件格式导入", checkFileWrong, url);
+		$(importDiv).show().center();
+    });	
+}	
+
 function moveRecord() {
 	var tree = $.T("tree");
 	var treeNode = tree.getActiveTreeNode();
@@ -283,6 +332,10 @@ function showRecord() {
 
 	var customizePage = (treeNode.getAttribute("customizePage") || "").trim(); 
 	customizePage = customizePage || 'recorder.html';
+
+	if( $.Query.get("udf") ) {
+		customizePage += "?udf=" + $.Query.get("udf");
+	}
 
 	$("iframe.container").hide();
 	var iframeId = "chatFrame_" + treeNode.id;
@@ -398,7 +451,8 @@ function closeDefine() {
 	$("#recordDefinesDiv").hide();
 }
 
-var RECORD_PARAM_FIELDS = ['label', 'code', 'type', 'nullable', 'defaultValue', 'isparam', 'checkReg', 'errorMsg', 'width', 'height', 'options', 'multiple', 'onchange'];
+var RECORD_PARAM_FIELDS = ['label', 'code', 'type', 'nullable', 'defaultValue', 'isparam', 'role1', 'role2',
+	'calign', 'cwidth', 'checkReg', 'errorMsg', 'width', 'height', 'options', 'multiple', 'onchange'];
 
 function editFieldConfig() {
 	var activeNode = fieldTree.getActiveTreeNode();
@@ -475,7 +529,7 @@ function editFieldConfig() {
     		if(field === 'type') {
     			if(newValue == "date" || newValue == "datetime" || newValue == "hidden") {
     				if(newValue != "hidden") {
-    					$1("_defaultValue").setAttribute("placeholder", "日期类型示例：today-3");
+    					$1("_defaultValue").setAttribute("placeholder", "示例：today-3");
     				}
 					$("#selectRelation").css("display", "none");
     			}

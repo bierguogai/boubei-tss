@@ -71,11 +71,10 @@
             title = '它山石基础平台';       
         }
 
-        /*
         if(document.body.offsetWidth < 768 || $.isMobile ) {
             indexPage = "mobile/index.html";
         }
-        */
+        
         $("#sys_title").html(title);
      });
  }
@@ -175,9 +174,73 @@ var doLogin = function(accoutEl, passwdEl) {
         },
         onsuccess: function() {
             $.Cookie.setValue("iUserName", loginName);
-            location.href = indexPage;
+                       
+            checkPasswdSecurity(loginName, password, function(securityLevel) {
+                if( securityLevel >= 3 ) return gotoIndex(loginName);
+
+                $.prompt("您的密码过于简单，存在安全隐患，请重新设置密码", "输入更安全的新密码", function(newPasswd) {
+                    checkPasswdSecurity(loginName, newPasswd, function(level) {
+                        if(level >= 3) {
+                            setNewPassword(loginName, password, newPasswd);
+                        } else {
+                            $.alert("您的新密码还是过于简单，设置失败，请用原密码登录再次重置密码。");
+                            setTimeout( function() { logout(); }, 2000);
+                        }
+                    });
+                });
+            } );      
         }
     });
+}
+
+function checkPasswdSecurity(loginName, passwd, callback) {
+    $.ajax({
+        url : "/tss/getPasswordStrength.in",
+        params : {"password": passwd, "loginName": loginName}, 
+        onresult : function() {
+            var securityLevel = parseInt(this.getNodeValue("SecurityLevel"));
+            callback(securityLevel);
+        }
+    });
+}
+
+/* 设置新密码 */
+function setNewPassword(loginName, passwd, newPasswd) {
+    $.getJSON("/tss/auth/user/has", {}, function(ui) {
+        var params = {};
+        params.userId = ui[2];
+        params.password = passwd;
+        params.newPassword = newPasswd;
+        $.ajax({
+            url : "/tss/resetPassword.in",
+            params : params,
+            onsuccess : function() { 
+                gotoIndex(loginName);
+            }
+        });
+    }, "GET");  
+}
+
+function logout() {
+    $.ajax({
+        url : "/tss/logout.in",
+        method : "GET",
+        onsuccess : function() { 
+            $.Cookie.del("token", "");
+            $.Cookie.del("token", "/");
+            $.Cookie.del("token", "/tss");
+            $.Cookie.del("token", "/tss/");
+            location.href = "/tss/login.html";
+        }
+    });
+}
+
+function gotoIndex(loginName) {
+    if(window.parent && window.parent != window.self) {
+        window.parent.location.href = indexPage;
+    } else {
+        window.location.href = indexPage;
+    }
 }
 
 /* 找回密码  */

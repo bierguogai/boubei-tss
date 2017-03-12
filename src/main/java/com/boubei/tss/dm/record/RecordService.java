@@ -31,6 +31,8 @@ public interface RecordService {
 	        operation = Record.OPERATION_CDATA
 	)
     List<Record> getAllRecordGroups();
+    
+    List<Record> getRecordsByPID(Long recordId, Long userId);
 
     @PermissionTag(
             resourceType = Record.RESOURCE_TYPE,

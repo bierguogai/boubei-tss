@@ -10,6 +10,8 @@ URL_COPY_SOURCE    = AUTH_PATH + "rp/copy/";
 URL_MOVE_SOURCE    = AUTH_PATH + "rp/move/";
 URL_GET_OPERATION  = AUTH_PATH + "rp/operations/";  // {id}
 URL_REPORT_JOB     = AUTH_PATH + "rp/schedule";
+URL_SUBSCRIBE_SOURCE  = AUTH_PATH + "rp/mailable/";
+URL_EXPORT_REPORT  = AUTH_PATH + "export/report/"
 
 if(IS_TEST) {
 	URL_SOURCE_TREE    = "data/report_tree.xml?";
@@ -23,6 +25,8 @@ if(IS_TEST) {
 	URL_MOVE_SOURCE    = "data/_success.xml?";
 	URL_GET_OPERATION  = "data/_operation.xml?";
 	URL_REPORT_JOB     = "data/report_schedule.json";
+	URL_SUBSCRIBE_SOURCE = "data/_success.xml?";
+	URL_EXPORT_REPORT  = "data/_success.xml?";
 }
 
 /* 页面初始化 */
@@ -122,11 +126,33 @@ function initMenus() {
 		visible:function() {return isReport() && getOperation("2");}
 	}
 	var item12 = {
-		label:"定时邮件",
+		label:"定时邮件推送",
 		callback:scheduleReport,
 		icon: ICON + "schedule.gif",
 		visible:function() {return isReport() && getOperation("2");}
 	}
+	var item13 = {
+        label:"导出报表定义",
+        callback:exportReportDef,
+        icon:ICON + "export.gif",
+        visible:function() {return !isTreeRoot() && getOperation("2");}
+    }
+    var item14 = {
+        label:"导入报表定义",
+        callback:importReportDef,
+        icon:ICON + "import.gif",
+        visible:function() {return !isReport() && getOperation("2");}
+    }
+    var item15 = {
+        label:"允许订阅",
+        callback: subscribe,
+        visible:function() {return isReport() && getTreeAttribute("mailable") != "1" && getOperation("2");}
+    }
+    var item16 = {
+        label:"禁止订阅",
+        callback: subscribe,
+        visible:function() {return isReport() && getTreeAttribute("mailable") == "1" && getOperation("2");}
+    }
 
 	var menu = new $.Menu();
 	menu.addItem(item1);
@@ -137,13 +163,16 @@ function initMenus() {
 	menu.addSeparator();
 	menu.addItem(item6);
 	menu.addItem(item7);
+	menu.addItem(item13);
+	menu.addItem(item14);
 	menu.addItem(item8);
 	menu.addItem(item9);
 	menu.addItem(item5);
 	menu.addSeparator();
 	menu.addItem(item11);
 	menu.addItem(item12);
-	
+	menu.addItem(item15);
+	menu.addItem(item16);	
 	menu.addItem(createPermissionMenuItem("D1"));
 	
 	$1("tree").contextmenu = menu;
@@ -283,6 +312,18 @@ function saveReport(treeNodeID) {
 function deleteReport()  { delTreeNode(URL_DELETE_SOURCE); }
 function disableReport() { stopOrStartTreeNode("1", URL_DISABLE_SOURCE); }
 function enableReport()  { stopOrStartTreeNode("0", URL_DISABLE_SOURCE); }
+
+function subscribe() {
+	var treeNode = getActiveTreeNode();
+	var treeNodeID = treeNode.id;
+	var mailable = Math.abs(parseInt(treeNode.attrs["mailable"]||"0") - 1);
+	$.ajax({
+        url : URL_SUBSCRIBE_SOURCE + treeNodeID + "/" + mailable,
+		onsuccess : function() { 
+			modifyTreeNode(treeNodeID, "mailable", mailable+"" );
+		}
+    });
+}
  
 function copyReportTo() {
 	var treeNode = getActiveTreeNode();
@@ -366,7 +407,7 @@ function scheduleReport() {
 
 	var scheduleForm;
 	$.ajax({
-		url: URL_REPORT_JOB + "?reportId=" + treeNode.id,
+		url: URL_REPORT_JOB + "?reportId=" + treeNode.id + "&self=false",
 		method: "GET",
 		type: "json",
 		ondata: function() {
@@ -402,7 +443,7 @@ function scheduleReport() {
 	$("#scheduleFormDiv").show(true);
 	$("#scheduleFormDiv").find("h3").html("报表【" + treeNode.name + "】定时邮件配置");
 	
-	$1("scheduleSave").onclick = function () { 
+	$("#scheduleSave").click( function () { 
 		if( scheduleForm.checkForm() ) {
 			var scheduleFormXML = $.cache.XmlDatas["scheduleFormXML"];
 			var dataNode = scheduleFormXML.querySelector("data");
@@ -426,17 +467,26 @@ function scheduleReport() {
 
 			$.ajax({
 				url: URL_REPORT_JOB,
-				params: {"reportId": reportId, "configVal": configVal},
+				params: {"reportId": reportId, "configVal": configVal, "self": false},
 				method: "POST",
 				onsuccess: function() {
 					$("#scheduleFormDiv").hide();
 				}
 			});
 		}
-	}
-	$1("closeScheduleForm").onclick = function closeScheduleForm() {
-		$("#scheduleFormDiv").hide();
-	}
+	});
+	$("#cancelSchedule").click( function () { 
+        var params = {"reportId": scheduleForm.reportId, "self": false}
+        $.ajax({
+            url: URL_REPORT_JOB,
+            params: params,
+            method: "DELETE",
+            onsuccess: function() {
+                $("#subscribeV").hide();
+            }
+        });
+    });
+	$("#closeScheduleForm").click( function() { $("#scheduleFormDiv").hide(); });
 }
 
 // -------------------------------------------------   配置报表参数   ------------------------------------------------
@@ -640,6 +690,29 @@ function saveConfigParams() {
 
 	closeConfigParams();
 }
+
+function exportReportDef() {
+	var url = URL_EXPORT_REPORT + getTreeNodeId();
+    var frameName = createExportFrame();
+    $1(frameName).setAttribute("src", url);
+}
+
+function importReportDef() {
+	var params = {"isTree": false};
+	params._title = "请选择相应的数据源";
+
+	popupTree("/tss/param/xml/combo/datasource_list", "ParamTree", params, function(target) {
+	    function checkFileWrong(subfix) {
+			return subfix == ".json";
+		}
+
+		var ds = target.attrs["value"];
+		var url = URL_UPLOAD_FILE + "?groupId=" + getTreeNodeId() + "&dataSource=" + ds;
+		url += "&afterUploadClass=com.boubei.tss.dm.ext.ImportReport";
+		var importDiv = createImportDiv("只支持json文件格式导入", checkFileWrong, url);
+		$(importDiv).show().center();
+    });	
+}	
 
 function selectTL() {
     popupTree(AUTH_PATH + "rp/template", "SourceTree", {"_title": "可选模板列表"}, function(target) {

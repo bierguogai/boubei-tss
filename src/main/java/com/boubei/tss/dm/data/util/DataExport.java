@@ -137,7 +137,7 @@ public class DataExport {
     
     public static void exportCSV(String path, Collection<Object[]> data, List<String> fields, String charSet) {
         try {
-        	File file = getFile(path);
+        	File file = FileHelper.createFile(path);
         	boolean append = fields == null;
             OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(file, append), charSet );
             BufferedWriter fw = new BufferedWriter(write);   
@@ -175,24 +175,10 @@ public class DataExport {
         }
     }
     
-    private static File getFile(String path) throws IOException {
-    	File parent = new File(path).getParentFile();
-        if (!parent.exists()) {
-            parent.mkdirs();
-        }
-
-        File file = new File(path);
-        if (!file.exists()) {
-            file.createNewFile();
-        }
-        
-        return file;
-    }
-    
     // 共Web页面上的表格数据直接导出成csv调用
     public static void exportCSV(String path, String data) {
         try {
-        	File file = getFile(path);
+        	File file = FileHelper.createFile(path);
             OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(file), CSV_CHAR_SET );
             BufferedWriter fw = new BufferedWriter(write);   
             
@@ -237,7 +223,7 @@ public class DataExport {
                 outStream.flush();
             }           
         } catch (IOException e) {
-            throw new BusinessException("导出时发生IO异常!", e);
+//            throw new BusinessException("导出时发生IO异常!", e);
         } finally {
         	sourceFile.delete();  // 删除导出目录下面的临时文件
         	FileHelper.closeSteam(inStream, outStream);        

@@ -16,7 +16,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
@@ -25,6 +24,7 @@ import com.boubei.tss.cache.Cacheable;
 import com.boubei.tss.cache.JCache;
 import com.boubei.tss.cache.Pool;
 import com.boubei.tss.dm.DMConstants;
+import com.boubei.tss.dm.record.ddl._Database;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.XMLDocUtil;
@@ -33,23 +33,10 @@ public class SQLExcutor {
 
     static Logger log = Logger.getLogger(SQLExcutor.class);
     
-    /**
-     * 自己解析SQL语句的select字段。Oracle会自动把字段转成大写，容易混乱
-     */
-    boolean selfParse;
-    
     public List<String> selectFields = new ArrayList<String>();
     
     public int count;
     public List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
-    
-    public SQLExcutor() {
-    	this.selfParse = true;
-    }
-    
-    public SQLExcutor(boolean selfParse) {
-    	this.selfParse = selfParse;
-    }
     
     public Document getGridTemplate() {
     	StringBuffer sb = new StringBuffer();
@@ -67,53 +54,16 @@ public class SQLExcutor {
         
     	return XMLDocUtil.dataXml2Doc(sb.toString());
     }
-    
-    private int getFirstIndex(String script, String keyword) {
-    	// 一个复杂的SQL可能同时有大小写的From
-    	int index1 = script.indexOf(keyword.toLowerCase());
-    	int index2 = script.indexOf(keyword.toUpperCase());
-    	if(index1 > 0 && index2 > 0) {
-    		return Math.min(index1, index2);
-    	}
-    	else{
-    		return Math.max(index1, index2);
-    	}
-    }
-    
-    private void fetchSelectFields(String sql) {
-    	if(selectFields.size() > 0) return;
-    	
-        sql = sql.trim();
-        int selectIndex = getFirstIndex(sql, "select");
-        
-    	// 一个复杂的SQL可能同时有大小写的select/from
-        int fromIndex = getFirstIndex(sql, "from");
-        
-        String fieldsStr = sql.substring(selectIndex + 6, fromIndex);
-        String[] fileds = fieldsStr.split(",");
-        for(String filed : fileds) {
-            StringTokenizer st = new StringTokenizer(filed.trim()); 
-            
-            String displayName = "";
-            while (st.hasMoreElements()) {
-                displayName = st.nextToken().trim(); 
-            }
-            
-            if( !EasyUtils.isNullOrEmpty(displayName) ) {
-            	selectFields.add(displayName);
-            }
-        }
-    }
 
     public Object getFirstRow(String columnName) {
-    	if(result.size() >= 1) {
+    	if(result.size() > 0) {
     		return result.get(0).get(columnName);
     	}
     	return null;
     }
     
     public static List<Map<String, Object>> query(String dataSource, String sql, Object...params) {
-    	SQLExcutor ex = new SQLExcutor(false);
+    	SQLExcutor ex = new SQLExcutor();
 		ex.excuteQuery(sql, dataSource, params);
 		return ex.result;
     }
@@ -136,12 +86,13 @@ public class SQLExcutor {
  
     public void excuteQuery(String sql, String dataSource, Object...params) {
     	Map<Integer, Object> paramsMap = new HashMap<Integer, Object>();
-    	if(params != null) {
-        	int index = 1;
-        	for(Object param : params) {
-        		paramsMap.put(index++, param);
-        	}
-        }
+    	params = (Object[]) EasyUtils.checkNull(params, new Object[]{});
+    	
+    	int index = 1;
+    	for(Object param : params) {
+    		paramsMap.put(index++, param);
+    	}
+        
         excuteQuery(sql, paramsMap, 0, 0, dataSource);
     }
     
@@ -167,10 +118,7 @@ public class SQLExcutor {
     }
 
     public void excuteQuery(String sql, Map<Integer, Object> paramsMap, int page, int pagesize, String datasource) {
-        Pool connpool = JCache.getInstance().getPool(datasource);
-        if(connpool == null) {
-        	throw new BusinessException("数据源【" + datasource + "】不存在。");
-        }
+        Pool connpool = getDSPool(datasource);
         Cacheable connItem = connpool.checkOut(0);
         Connection conn = (Connection) connItem.getValue();
 
@@ -183,6 +131,14 @@ public class SQLExcutor {
             // 返回连接到连接池
             connpool.checkIn(connItem);
         }
+    }
+    
+    private static Pool getDSPool(String datasource) {
+    	Pool connpool = JCache.getInstance().getPool(datasource);
+        if(connpool == null) {
+        	throw new BusinessException("数据源【" + datasource + "】不存在。");
+        }
+        return connpool;
     }
     
     private PreparedStatement prepareStatement(Connection conn, String sql, Map<Integer, Object> paramsMap) throws SQLException {
@@ -230,46 +186,28 @@ public class SQLExcutor {
                     rs.close();
             	}
 
-                int fromRow = pagesize * (page - 1);
-                int toRow = pagesize * page;
-
-                // 各种数据库的分页不一样
-                if (driveName.startsWith("MySQL")) {
-                    queryDataSql = sql + "\n LIMIT " + (fromRow) + ", " + pagesize;
-                } else if (driveName.startsWith("Oracle")) {
-                    queryDataSql = "SELECT * FROM ( SELECT t.*, ROWNUM RN FROM (\n " + sql + " \n) t WHERE ROWNUM <= " + toRow + ") WHERE RN > " + fromRow;
-                } else {
-                    // TODO 支持其他数据源在此扩展
-                } 
+            	// 按不同数据库类型，构建对应的分页查询语句
+                queryDataSql = _Database.getDB(driveName, null).toPageQuery(sql, page, pagesize); 
             }
 
             log.debug(" excute query sql: \n" + queryDataSql);
             pstmt = prepareStatement(conn, queryDataSql, paramsMap);
             rs = pstmt.executeQuery();
             
-            if(selfParse) {
-            	fetchSelectFields(sql);
-            }
+            ResultSetMetaData rsMetaData = rs.getMetaData();
+            int fieldNum = rsMetaData.getColumnCount();
 
             while (rs.next()) {
                 Map<String, Object> rowData = new LinkedHashMap<String, Object>();
 
                 // 从1开始，非0
-                ResultSetMetaData rsMetaData = rs.getMetaData();
-                int fieldNum =  selfParse ? selectFields.size() : rsMetaData.getColumnCount();
 				for(int index = 1; index <= fieldNum; index++) {
-					String columnName;
-	                if(selfParse) {
-	                	columnName = selectFields.get(index - 1);
-	                } 
-	                else {
-	                	columnName = rsMetaData.getColumnLabel(index).toLowerCase();
-	                	if(columnName.equals("rn")) continue;
-	                	
-	                	if( result.isEmpty() && !selectFields.contains(columnName) ) {
-							selectFields.add(columnName);
-						}
-	                }
+					String columnName = rsMetaData.getColumnLabel(index).toLowerCase();
+                	if(columnName.equals("rn")) continue;
+                	
+                	if( result.isEmpty() && !selectFields.contains(columnName) ) {
+						selectFields.add(columnName);
+					}
 	                
 	                Object value = rs.getObject(index);
 					rowData.put(columnName, value);
@@ -288,24 +226,14 @@ public class SQLExcutor {
             throw new BusinessException(exMsg);
         } 
         finally {
-            try { if (pstmt != null) pstmt.close(); } 
-            catch (Exception e) { }
-            
-            try { if (rs != null) rs.close(); } 
-            catch (Exception e) { }
+            try { pstmt.close(); } catch (Exception e) { }
+            try { rs.close();    } catch (Exception e) { }
         }
-    }
-
-    // 执行单条sql，带参数，一般为insert 或 update 语句
-    public static void excute(String sql, Map<Integer, Object> paramsMap, String datasource) {
-        List<Map<Integer, Object>> paramsMapList = new ArrayList<Map<Integer, Object>>();
-        paramsMapList.add(paramsMap);
-        excuteBatch(sql, paramsMapList, datasource);
     }
  
     // 直接执行的sql，不带参数， create table/drop table/insert/delete/update等
     public static void excute(String sql, String datasource) {
-        Pool connpool = JCache.getInstance().getPool(datasource);
+    	Pool connpool = getDSPool(datasource);
         Cacheable connItem = connpool.checkOut(0);
         Connection conn = (Connection) connItem.getValue();
  
@@ -336,17 +264,22 @@ public class SQLExcutor {
 			try { conn.rollback(); } catch (Exception e2) { }
 			
 			String errorMsg = "异常：" +e.getMessage();
-			log.debug(errorMsg + "\n SQL: " + sql);
+			log.info(errorMsg + " ------ SQL: " + sql);
 			throw new BusinessException(errorMsg);
 			
 		} finally {
 			try { conn.setAutoCommit(autoCommit); } 
         	catch (Exception e2) { log.error(e2.getMessage(), e2);  }
 			
-			try {
-				if(statement != null) { statement.close(); }
-            } catch (Exception e) { }
+			try { statement.close(); } catch (Exception e) { }
 		}
+    }
+    
+    // 执行单条sql，带参数，一般为insert 或 update 语句
+    public static void excute(String sql, Map<Integer, Object> paramsMap, String datasource) {
+        List<Map<Integer, Object>> paramsMapList = new ArrayList<Map<Integer, Object>>();
+        paramsMapList.add(paramsMap);
+        excuteBatch(sql, paramsMapList, datasource);
     }
     
     // 批量执行SQL, 每条SQL的参数放在Map里，"key"值为参数序号。
@@ -373,7 +306,7 @@ public class SQLExcutor {
     }
     
     public static void excuteBatchII(String sql, List<Object[]> paramsList, String datasource) {
-    	Pool connpool = JCache.getInstance().getPool(datasource);
+    	Pool connpool = getDSPool(datasource);
         Cacheable connItem = connpool.checkOut(0);
         Connection conn = (Connection) connItem.getValue();
         
@@ -408,7 +341,7 @@ public class SQLExcutor {
      * 注：设定setAutoCommit(false) 没有在catch中进行Connection的rollBack操作，操作的表就会被锁住，造成数据库死锁。
      */
     public static void excuteBatch(String sql, List<Object[]> paramsList, Connection conn) {
-    	if(paramsList == null || paramsList.isEmpty()) return;
+    	if( EasyUtils.isNullOrEmpty(paramsList) ) return;
     	
     	boolean autoCommit = true;
         PreparedStatement pstmt = null;
@@ -436,15 +369,43 @@ public class SQLExcutor {
         	catch (Exception e2) { log.error(e2.getMessage(), e2); }
         	
         	String errorMsg = "异常：" +e.getMessage();
-        	log.debug(errorMsg+ "\n SQL: " + sql);
+        	log.info(errorMsg + " ------ SQL: " + sql);
             throw new BusinessException(errorMsg);
             
         } finally {
         	try { conn.setAutoCommit(autoCommit); } 
         	catch (Exception e2) { log.error(e2.getMessage(), e2);  }
         	
-            try { if (pstmt != null) { pstmt.close(); } } 
-            catch (Exception e) { }
+            try { pstmt.close(); } catch (Exception e) { }
+        }
+    }
+    
+    public static Long excuteInsert(String sql, Object[] params, String datasource) {
+    	Pool connpool = getDSPool(datasource);
+        Cacheable connItem = connpool.checkOut(0);
+        Connection conn = (Connection) connItem.getValue();
+        
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+        	pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS); // 适用于ID自增类型的DB，oracle用sequence不支持
+        	int index = 1;
+            for (Object paramValue : params) {
+                pstmt.setObject(index++, paramValue); // 从1开始，非0
+            }
+    
+            pstmt.executeUpdate();  
+            rs = pstmt.getGeneratedKeys();  
+            rs.next();
+            return EasyUtils.obj2Long( rs.getObject(1) );
+        	
+        } catch (Exception e) {
+        	throw new BusinessException(e.getMessage());
+        } finally {
+        	try { pstmt.close(); } catch (Exception e) { }
+        	try { rs.close();    } catch (Exception e) { }
+        	
+        	connpool.checkIn(connItem);
         }
     }
 }

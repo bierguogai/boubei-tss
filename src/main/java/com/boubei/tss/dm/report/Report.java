@@ -13,6 +13,8 @@ import javax.persistence.Lob;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.report.permission.ReportResource;
 import com.boubei.tss.framework.persistence.entityaop.IDecodable;
@@ -27,6 +29,8 @@ import com.boubei.tss.util.EasyUtils;
 @Entity
 @Table(name = "dm_report")
 @SequenceGenerator(name = "report_sequence", sequenceName = "report_sequence", initialValue = 1, allocationSize = 10)
+@JsonIgnoreProperties(value={"pk", "attributes4XForm", "attributes", "parentClass", "createTime", "creatorName", 
+		"updatorId", "updateTime", "updatorName", "lockVersion", "decode", "seqNo", "levelNo", "active", "group", "resourceType"})
 public class Report extends OperateInfo implements IXForm, IDecodable, IResource {
     
 	public static final int TYPE0 = 0;  // 报表分组
@@ -81,6 +85,7 @@ public class Report extends OperateInfo implements IXForm, IDecodable, IResource
     
     private Integer disabled = ParamConstants.TRUE; // 停用/启用标记。默认为停用，开发完成后再启用
     private Integer needLog  = ParamConstants.TRUE; // 记录修改日志
+    private Integer mailable = ParamConstants.FALSE; // 是否可邮件订阅
     
     public Integer getNeedLog() {
 		return needLog;
@@ -180,6 +185,7 @@ public class Report extends OperateInfo implements IXForm, IDecodable, IResource
         map.put("icon", icon_path);
         map.put("parentId", parentId);
         map.put("disabled", disabled);
+        map.put("mailable", mailable);
         map.put("type", type);
         if(TYPE1 == type) {
             map.put("param", param);
@@ -229,5 +235,13 @@ public class Report extends OperateInfo implements IXForm, IDecodable, IResource
 	
 	public Serializable getPK() {
 		return this.getId();
+	}
+
+	public Integer getMailable() {
+		return mailable;
+	}
+
+	public void setMailable(Integer mailable) {
+		this.mailable = mailable;
 	}
 }

@@ -46,7 +46,8 @@
 XML_SOURCE_LIST = "RecordData";
 
 /* XMLHTTP请求地址汇总 */
-URL_SOURCE_LIST   = AUTH_PATH + "xdata/xml/";
+URL_DATA_XML   = AUTH_PATH + "xdata/xml/";
+URL_DATA_JSON  = AUTH_PATH + "xdata/json/";
 URL_SAVE_SOURCE   = AUTH_PATH + "xdata/";
 URL_BATCH_OPERATE = AUTH_PATH + "xdata/batch/";
 URL_DELETE_SOURCE = AUTH_PATH + "xdata/";
@@ -89,10 +90,11 @@ $(function() {
     }
 
     // just Test
-    URL_SOURCE_LIST   = "data/data_grid.xml?";
+    URL_DATA_XML      = "data/data_grid.xml?";
+    URL_DATA_JSON     = "data/data_list.json?";
     URL_SAVE_SOURCE   = "data/_success.xml?";
-    URL_BATCH_OPERATE = "data/_success.xml?";
     URL_DELETE_SOURCE = "data/_success.xml?";
+    URL_BATCH_OPERATE = "data/_success.xml?";   
     URL_GET_DEFINES   = "data/record_define.json?";
     URL_GET_USER_HAS  = "data/user_has.json?";
 
@@ -112,9 +114,9 @@ function init() {
         ondata: function() {
             var result = this.getResponseJSON();
             userGroups = result[0];
-            userRoles = result[1];
-            userCode = result[3];
-            userName = result[4];
+            userRoles  = result[1];
+            userCode   = result[3];
+            userName   = result[4];
             userAssistGroups = result[5];
 
             // 获取表单定义信息
@@ -206,7 +208,7 @@ function canEditRow(rowID) {
 
 /* grid加载数据  */
 function loadGridData(page) {
-    $.showGrid(URL_SOURCE_LIST + recordId, XML_SOURCE_LIST, showDetail, "grid", page, params);
+    $.showGrid(URL_DATA_XML + recordId, XML_SOURCE_LIST, showDetail, "grid", page, params);
 }
 
 /* 显示资源详细信息 */
@@ -252,6 +254,38 @@ function showDetail(rowID) {
 function loadDetailData(rowID, version) {
     var form, dataNode = $.cache.XmlDatas[rowID];
 
+    function showInForm() {
+        xform = $.json2Form("page1Form", recordDefine, null, customizeJS);
+        xform.template.dataNode.id = rowID;
+        $.cache.XmlDatas[rowID] = xform.template.dataNode;
+        attachReminder(rowID, xform); // 离开提醒
+
+        // 控制字段是否能被编辑和查看（按角色）
+        recordDefine.each(function(i, f){
+            f.role1 && forbid(f.code, f.role1);
+            f.role2 && !checkRole(f.role2) && hideFiled(f.code);
+        });
+
+        // 设置保存/关闭按钮操作
+        if( canEditRow(rowID) && (!disableSave || !disableSave())) {
+            $("#page1BtSave").show().click( function() { saveSource(rowID, version);  } );
+        } else {
+            $("#page1BtSave").hide();
+        }
+        $("#page1BtCancel").click( function() { 
+            ws.closeActiveTab(); 
+        } );
+
+        $('#btnViewAttach').remove();
+        if(needFile && rowID != '_new' && (rowID+"").indexOf('_copy') < 0) {
+            var newBtn = $.createElement('button', 'tssbutton small blue', 'btnViewAttach');
+            $(newBtn).html("管理附件").click( function() {      
+                manageAttach(rowID, "form");
+            } );  
+            $("WorkSpace\\:PageStep").appendChild(newBtn);
+        }  
+    }
+
     // 如果已经在打开的tab页里了
     if(dataNode) {
         var kvMap = {}
@@ -271,37 +305,29 @@ function loadDetailData(rowID, version) {
                 field.defaultValue = field._defaultValue;
             });
         }
-        else {
+        else { // 初次加载从后台获取（Grid上的值无法保留换行符）
+/*
             var grid = $.G("grid");
             recordDefine.each(function(i, field){
                 field.defaultValue = grid.getColumnValue(field.code);
+            }); 
+*/          
+            $.getJSON(URL_DATA_JSON + recordId + "/1", {"id": rowID}, function(data) {
+                if(!data.length) {
+                    return alert("该记录已经不存在，可能已被删除。");
+                }
+                var item = data[0];
+                recordDefine.each(function(i, field){
+                    field.defaultValue = item[field.code];
+                }); 
+
+                showInForm();
             });
+            return;
         }
     }
 
-    xform = $.json2Form("page1Form", recordDefine, null, customizeJS);
-    xform.template.dataNode.id = rowID;
-    $.cache.XmlDatas[rowID] = xform.template.dataNode;
-    attachReminder(rowID, xform); // 离开提醒
-
-    // 设置保存/关闭按钮操作
-    if( canEditRow(rowID) && (!disableSave || !disableSave())) {
-        $("#page1BtSave").show().click( function() { saveSource(rowID, version);  } );
-    } else {
-        $("#page1BtSave").hide();
-    }
-    $("#page1BtCancel").click( function() { 
-        ws.closeActiveTab(); 
-    } );
-
-    $('#btnViewAttach').remove();
-    if(needFile && rowID != '_new' && (rowID+"").indexOf('_copy') < 0) {
-        var newBtn = $.createElement('button', 'tssbutton small blue', 'btnViewAttach');
-        $(newBtn).html("管理附件").click( function() {      
-            manageAttach(rowID, "form");
-        } );  
-        $("WorkSpace\\:PageStep").appendChild(newBtn);
-    }  
+    showInForm();
 }
 
 function saveSource(rowID, version) {

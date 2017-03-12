@@ -13,6 +13,8 @@ import javax.persistence.Lob;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.record.permission.RecordResource;
 import com.boubei.tss.framework.persistence.entityaop.IDecodable;
@@ -36,7 +38,9 @@ import com.boubei.tss.util.BeanUtil;
  */
 @Entity
 @Table(name = "dm_record")
-@SequenceGenerator(name = "record_sequence", sequenceName = "record_sequence", initialValue = 1, allocationSize = 10)
+@SequenceGenerator(name = "record_sequence", sequenceName = "record_sequence", initialValue = 2000, allocationSize = 10)
+@JsonIgnoreProperties(value={"pk", "attributes4XForm", "attributes", "parentClass", "createTime", "creatorName", 
+		"updatorId", "updateTime", "updatorName", "lockVersion", "decode", "seqNo", "levelNo", "active", "resourceType"})
 public class Record extends OperateInfo implements IXForm, IDecodable, IResource {
 	
 	public static final int TYPE0 = 0;  // 数据录入分组
@@ -129,12 +133,7 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
             map.put("define", define);
         }
         map.put("icon", "images/" + (TYPE0 == type ? "folder.gif" : "record_" + getDisabled() + ".png") );
-        
         map.put("disabled", getDisabled());
-        
-        if( this.levelNo < 2 ) {
-        	map.put("_open", "true");
-        }
         map.put("batchImp", this.batchImp);
  
         return map;

@@ -54,4 +54,9 @@ public class _MySQL extends _Database {
 	public void dropTable(String table, String datasource) {
 		SQLExcutor.excute("drop table if exists " + this.table, datasource);
 	}
+	
+	public String toPageQuery(String sql, int page, int pagesize) {
+		int fromRow = pagesize * (page - 1);
+		return sql + "\n LIMIT " + (fromRow) + ", " + pagesize;
+	}
 }

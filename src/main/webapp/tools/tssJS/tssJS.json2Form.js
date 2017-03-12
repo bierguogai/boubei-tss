@@ -10,11 +10,20 @@ var Field = function(info) {
 		this.nullable = (info.nullable == null ? "true" : info.nullable);
 		this.checkReg = info.checkReg;
 		this.errorMsg = info.errorMsg;
-		this.options = info.options;
-		this.jsonUrl = info.jsonUrl;
+		this.options  = info.options;
+		this.jsonUrl  = info.jsonUrl;
 		this.multiple = (info.multiple == "true") || false;
 		this.onchange = info.onchange;
 		this.defaultValue = info.defaultValue;
+
+		if(this.defaultValue) {
+            var dv = (this.defaultValue+"").trim();
+            if( dv.indexOf("#") == 0 ) {
+                var _dvs = (dv+"||").split("||");  // #_day1||today-1  或 #_day1
+                dv = $.Cookie.getValue(_dvs[0].substring(1)) || _dvs[1]; // 通用查询条件写在cookie里
+            }
+            this.defaultValue = (dv == "undefined" ? "" : dv);
+        }
 
 		this.width  = (info.width || "250px").trim();
 		if( !this.jsonUrl ) {

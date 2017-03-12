@@ -45,6 +45,10 @@ public class RecordServiceImpl implements RecordService {
 		String hql = "from Record o where o.type = ? order by o.decode";
 		return (List<Record>) recordDao.getEntities(hql, Record.TYPE0);
 	}
+	
+	public List<Record> getRecordsByPID(Long recordId, Long userId) {
+		return recordDao.getChildrenById(recordId);
+	}
 
 	public Record saveRecord(Record record) {
 		if( EasyUtils.isNullOrEmpty(record.getTable()) ) {
@@ -127,10 +131,7 @@ public class RecordServiceImpl implements RecordService {
 	public Integer getAttachSeqNo(Long recordId, Long itemId) {
 		String hql = "select max(o.seqNo) from RecordAttach o where o.recordId = ? and o.itemId = ?";
         List<?> list = recordDao.getEntities(hql, recordId, itemId);
-        Integer nextSeqNo = (Integer) list.get(0);
-        if (nextSeqNo == null) {
-        	nextSeqNo = 0;
-        }
+        Integer nextSeqNo = (Integer) EasyUtils.checkNull(list.get(0), 0);
         return nextSeqNo + 1;
 	}
 
@@ -155,5 +156,4 @@ public class RecordServiceImpl implements RecordService {
 	public RecordAttach getAttach(Long id) {
 		return (RecordAttach) recordDao.getEntity(RecordAttach.class, id);
 	}
-
 }

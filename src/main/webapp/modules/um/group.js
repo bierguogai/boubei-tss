@@ -627,7 +627,7 @@
                     var groupType = treeNode.getAttribute("groupType");
                     if( groupType == "1" && hasSameAttributeTreeNode(page2Tree2, "groupType", groupType)) {
                         result.error = true;
-                        result.message = "一个用户只能对应一个主用户组。";
+                        result.message = "一个用户只能属于一个主用户组，请先把当前的主用户组移除。";
                         result.stop = true;
                     }
 

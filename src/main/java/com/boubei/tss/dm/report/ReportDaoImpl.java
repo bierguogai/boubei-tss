@@ -13,11 +13,9 @@ public class ReportDaoImpl extends TreeSupportDao<Report> implements ReportDao {
         super(Report.class);
     }
  
-	public Report deleteReport(Report report) {
-		Long id = report.getId();
-        List<Report> list = getChildrenById(id);
-        for(Report entity : list) {
-            delete(entity);
+	public Report deleteReport(Report report, List<Report> children) {
+        for(Report entity : children) {
+        	deleteById(entity.getId());
         }
         return report;
 	}

@@ -14,7 +14,7 @@ public interface ReportDao extends ITreeSupportDao<Report> {
             filter = PermissionFilter4Branch.class)
     List<Report> getChildrenById(Long id, String operationId);
     
-    Report deleteReport(Report report);
+    Report deleteReport(Report report, List<Report> children);
     
     @PermissionTag(
             operation = Report.OPERATION_VIEW, 

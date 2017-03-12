@@ -139,18 +139,35 @@ public class _Recorder extends BaseActionSupport {
     public void create(HttpServletRequest request, HttpServletResponse response, 
     		@PathVariable("recordId") Long recordId) {
     	
-    	Map<String, String> row = getRequestMap(request);
     	_Database _db = getDB(recordId);
     	try {
-    		_db.insert(row);
-            printSuccessMessage();
+    		_db.insert( getRequestMap(request) );
     	}
     	catch(Exception e) {
-    		Throwable firstCause = ExceptionEncoder.getFirstCause(e);
-			String errorMsg = "在" + _db + "里新增数据时出错了：" + (firstCause == null ? e : firstCause).getMessage();
-			log.debug( errorMsg );
-    		throw new BusinessException(errorMsg);
+    		throwEx(e, _db + "里新增");
     	}
+    	printSuccessMessage();
+    }
+    
+    @RequestMapping(value = "/rid/{recordId}", method = RequestMethod.POST)
+    @ResponseBody
+    public Object createAndReturnID(HttpServletRequest request, @PathVariable("recordId") Long recordId) {
+    	_Database _db = getDB(recordId);
+    	Long newID = null;
+    	try {
+    		newID = _db.insertRID( getRequestMap(request) );
+    	}
+    	catch(Exception e) {
+    		throwEx(e, _db + "里新增");
+    	}
+    	return newID;
+    }
+    
+    private void throwEx(Exception e, String op) {
+    	Throwable firstCause = ExceptionEncoder.getFirstCause(e);
+		String errorMsg = "在" + op + "数据时出错了：" + firstCause;
+		log.debug(errorMsg);
+		throw new BusinessException(errorMsg);
     }
     
     @RequestMapping(value = "/{recordId}/{id}", method = RequestMethod.POST)
@@ -158,17 +175,13 @@ public class _Recorder extends BaseActionSupport {
     		@PathVariable("recordId") Long recordId, 
     		@PathVariable("id") Long id) {
     	
-    	Map<String, String> row = getRequestMap(request);
     	_Database _db = getDB(recordId);
     	try {
-			_db.update(id, row);
+			_db.update(id, getRequestMap(request) );
     		printSuccessMessage();
     	}
     	catch(Exception e) {
-    		Throwable firstCause = ExceptionEncoder.getFirstCause(e);
-			String errorMsg = "在" + _db + "里修改数据时出错了：" + (firstCause == null ? e : firstCause).getMessage();
-			log.debug(errorMsg);
-    		throw new BusinessException(errorMsg);
+    		throwEx(e, _db + "里修改");
     	}
     }
     
@@ -184,7 +197,7 @@ public class _Recorder extends BaseActionSupport {
         printSuccessMessage();
     }
     
-    private Map<String, String> getRequestMap(HttpServletRequest request) {
+    Map<String, String> getRequestMap(HttpServletRequest request) {
     	Map<String, String[]> parameterMap = request.getParameterMap();
     	Map<String, String> requestMap = new HashMap<String, String>();
     	for(String key : parameterMap.keySet()) {

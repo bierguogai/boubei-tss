@@ -16,24 +16,32 @@ import com.boubei.tss.util.FileHelper;
 public class CreateAttach implements AfterUpload {
 
 	Logger log = Logger.getLogger(this.getClass());
+	
+	public static int getAttachType(String filepath) {
+		int type; // = Integer.parseInt(request.getParameter("type")); 不用前台传入的文件类型
+		if( FileHelper.isImage(filepath) ) {
+			type = RecordAttach.ATTACH_TYPE_PIC;
+		} else {
+			type = RecordAttach.ATTACH_TYPE_DOC;
+		}
+		return type;
+	}
+	
+	public static String getOrignFileName(String orignFileName) {
+		int separatorIndex = Math.max(orignFileName.lastIndexOf("\\"), orignFileName.lastIndexOf("/"));
+		if( separatorIndex >= 0) {
+			orignFileName = orignFileName.substring(separatorIndex + 1);
+		}
+		return orignFileName;
+	}
 
 	public String processUploadFile(HttpServletRequest request,
 			String filepath, String orignFileName) throws Exception {
 
 		Long recordId  = Long.parseLong(request.getParameter("recordId"));
 		Long itemId = Long.parseLong(request.getParameter("itemId"));
-		
-		int type = Integer.parseInt(request.getParameter("type")); // 不用前台传入的文件类型值
-		if( FileHelper.isImage(filepath) ) {
-			type = RecordAttach.ATTACH_TYPE_PIC;
-		} else {
-			type = RecordAttach.ATTACH_TYPE_DOC;
-		}
-		
-		int separatorIndex = Math.max(orignFileName.lastIndexOf("\\"), orignFileName.lastIndexOf("/"));
-		if( separatorIndex >= 0) {
-			orignFileName = orignFileName.substring(separatorIndex + 1);
-		}
+		int type = getAttachType(filepath);
+		orignFileName = getOrignFileName(orignFileName);
 
 		// 保存附件信息
 		File targetFile = new File(filepath);

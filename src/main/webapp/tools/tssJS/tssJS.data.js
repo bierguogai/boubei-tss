@@ -11,6 +11,30 @@
             return Object.prototype.toString.call(v) === '[object Array]';
         },
 
+        // 按字段排序数组（desc）
+        sortArray: function(arr, field) {
+            arr.sort(function(row1, row2) {
+                return row2[field] - row1[field];  // 注：各个浏览器对排序各自一套实现，两值相减IE、FF、Chrome、Safari都支持
+            });
+        },
+
+        // 按字段排序数组（asc）, 值如果一样支持名次重复
+        sortArray2: function(arr, field, noField) {    
+            arr.sort(function(row1, row2) {
+                return row1[field] - row2[field];
+            });
+
+            var n = 0, v = -9999999;
+            arr.each(function(i, item) {
+                var cv = item[field];
+                if( v != cv ) {
+                    v = cv;
+                    n++;
+                }
+                item[noField] = n; // noField为”名次“字段名
+            });
+        },
+
         /* 
             var a = [
                 {'org': '浙江', 'city': '杭州', 'site': '九堡', 'v1': 1, 'v2': '2.2', 'v3': 3}, 

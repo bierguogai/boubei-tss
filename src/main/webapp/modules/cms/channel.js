@@ -108,7 +108,10 @@
         var subitem4b = {
             label:"完全发布",
             callback:function() { 
-                publishArticle(2);
+                $.confirm("你确定要执行【完全发布】吗？完全发布后栏目下所有文章的发布日期将都被更新成最新日期，建议优先使用【增量发布】", "确认发布", 
+                    function() { publishArticle(2); },
+                    function() { return;}
+                );
             }
         }
 		submenu4.addItem(subitem4a);

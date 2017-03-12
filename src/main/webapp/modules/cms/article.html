@@ -216,8 +216,8 @@
 				deleteAttachment();
 			}
 
-            $1("btSave").onclick  = saveArticle;
-            $1("btSaveAndPublish").onclick  = saveAndPublishArticle;
+            $("#btSave").click( function() { saveArticle(false); } );
+            $("#btSaveAndPublish").click( function() { saveArticle(true); } );
         }
         
 		$.ajax({ url: url, method: "GET", onresult: onresult });
@@ -245,9 +245,7 @@
 		request.addParam("attachList", attachsSeqNos.join(","));
 
 		// 是否保存并发布文章
-		if(isCommit) {
-			request.addParam("isCommit", "true");
-		}
+		request.addParam("isCommit", isCommit ? "true" : "false");
        
 		// 同步按钮状态
         syncButton([$1("btSave")], request);
@@ -259,11 +257,6 @@
         request.send();
     }
 
-     /* 保存并发布文章   */
-    function saveAndPublishArticle() {
-		saveArticle(true);
-	}
- 
 	function uploadAttachment() {
 		var fileValue = $("#sourceFile").value();
 	    if( !fileValue ) {

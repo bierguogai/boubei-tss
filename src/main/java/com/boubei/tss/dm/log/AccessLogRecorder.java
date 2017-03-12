@@ -9,6 +9,7 @@ import java.util.Map;
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
 import com.boubei.tss.dm.data.sqlquery.SqlConfig;
+import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.cache.extension.workqueue.AbstractTask;
 import com.boubei.tss.cache.extension.workqueue.OutputRecordsManager;
 
@@ -60,11 +61,11 @@ public class AccessLogRecorder extends OutputRecordsManager {
             }
 
             String script = SqlConfig.getScript("saveAccessLog", 1);
-            if(script == null) {
-            	script = "insert into dm_access_log " +
-            			"(className, methodName, methodCnName, accessTime, runningTime, params, userId, ip) " +
-            			"values (?, ?, ?, ?, ?, ?, ?, ?)";
-            }
+            String _script = "insert into dm_access_log " +
+        			"(className, methodName, methodCnName, accessTime, runningTime, params, userId, ip) " +
+        			"values (?, ?, ?, ?, ?, ?, ?, ?)";
+            script = (String) EasyUtils.checkNull(script, _script);
+
             SQLExcutor.excuteBatch(script, paramsMapList, DMConstants.LOCAL_CONN_POOL);
         }
     }

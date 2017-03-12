@@ -50,12 +50,17 @@ public abstract class _Database {
 	public List<String> fieldCodes;
 	public List<String> fieldTypes;
 	public List<String> fieldNames;
+	public List<String> fieldAligns;
+	public List<String> fieldWidths;
+	public List<String> fieldRole2s;
 	
 	public String toString() {
 		return "【" + this.datasource + ", " + this.recordName + ", " + this.table + "】";
 	}
-	
+ 	
 	public _Database(Record record) {
+		if(record == null) return;
+		
 		this.recordId = record.getId();
 		this.recordName = record.getName();
 		this.datasource = record.getDatasource();
@@ -72,10 +77,16 @@ public abstract class _Database {
 		this.fieldCodes = new ArrayList<String>();
 		this.fieldTypes = new ArrayList<String>();
 		this.fieldNames = new ArrayList<String>();
+		this.fieldAligns = new ArrayList<String>();
+		this.fieldWidths = new ArrayList<String>();
+		this.fieldRole2s = new ArrayList<String>();
 		for(Map<Object, Object> fDefs : this.fields) {
 			this.fieldCodes.add((String) fDefs.get("code"));
 			this.fieldTypes.add((String) fDefs.get("type"));
 			this.fieldNames.add((String) fDefs.get("label"));
+			this.fieldAligns.add( (String)EasyUtils.checkNull(fDefs.get("calign"), "") ); // 列对齐方式
+			this.fieldWidths.add( (String)EasyUtils.checkNull(fDefs.get("cwidth"), "") ); // 列宽度
+			this.fieldRole2s.add((String) fDefs.get("role2"));
 		}
 	}
 	
@@ -94,7 +105,7 @@ public abstract class _Database {
    	        	int index = i + 1;
    	        	
    				String code = (String) fDefs.get("code");
-   				code = (EasyUtils.isNullOrEmpty(code) ? "f" + index : code);
+   				code = (EasyUtils.isNullOrEmpty(code) ? "f" + index : code).toLowerCase();
    				fDefs.put("code", code);
    			}
    			return list;
@@ -106,6 +117,8 @@ public abstract class _Database {
 	}
 	
 	protected abstract String getFieldType(Map<Object, Object> fDefs);
+	
+	public abstract String toPageQuery(String sql, int page, int pagesize);
 	
 	/**
 	 * 如果相同表名已经存在，直接使用既有表
@@ -134,10 +147,8 @@ public abstract class _Database {
 		List<Map<Object, Object>> newFields = parseJson(_new.getDefine());
 				
 		// 新增加的字段
-		int index = 0;
 		for(Map<Object, Object> fDefs1 : newFields) {
 			String code = (String) fDefs1.get("code");
-			code = (EasyUtils.isNullOrEmpty(code) ? "f" + (++index) : code);
 			fDefs1.put("code", code);
 			
 			boolean exsited = false;
@@ -178,12 +189,22 @@ public abstract class _Database {
 		initFieldCodes();
 	}
 	
+	// 用于单行数据新增
 	public void insert(Map<String, String> valuesMap) {
 		Map<Integer, Object> paramsMap = buildInsertParams(valuesMap);
 		SQLExcutor.excute(createInsertSQL(), paramsMap, this.datasource);
 	}
+	
+	public Long insertRID(Map<String, String> valuesMap) {
+		Map<Integer, Object> paramsMap = buildInsertParams(valuesMap);
+		Object[] params = new Object[ paramsMap.size() ];
+		for(int i = 0; i < params.length; i++) {
+			params[i] = paramsMap.get( i+1 );
+		}
+		return SQLExcutor.excuteInsert(createInsertSQL(), params, this.datasource);
+	}
 
-	private Map<Integer, Object> buildInsertParams(Map<String, String> valuesMap) {
+	protected Map<Integer, Object> buildInsertParams(Map<String, String> valuesMap) {
 		Map<Integer, Object> paramsMap = new HashMap<Integer, Object>();
 		int index = 0;
 		for(String field : this.fieldCodes) {
@@ -196,6 +217,7 @@ public abstract class _Database {
 		return paramsMap;
 	}
 	
+	// 用于数据清洗或批量导入
 	public void insertBatch(Collection<Map<String, String>> valuesMaps) {
 		if(valuesMaps == null || valuesMaps.isEmpty()) return;
 		
@@ -320,8 +342,8 @@ public abstract class _Database {
 	                RecordPermission.class.getName(), RecordResource.class);
 			visible = visible || permissions.contains(Record.OPERATION_VDATA) 
 					|| permissions.contains(Record.OPERATION_EDATA);
-		} catch(Exception e) {
-		}
+		} 
+		catch(Exception e) { }
 		
 		// 设置查询条件
 		String condition;
@@ -333,7 +355,7 @@ public abstract class _Database {
 		
 		for(String key : params.keySet()) {
 			String valueStr = params.get(key);
-			if(EasyUtils.isNullOrEmpty(valueStr)) continue;
+			if( EasyUtils.isNullOrEmpty(valueStr) ) continue;
 			
 			// 对paramValue进行检测，防止SQL注入
 			valueStr = DMUtil.checkSQLInject(valueStr);
@@ -346,6 +368,13 @@ public abstract class _Database {
 			if("updator".equals(key)) {
 				condition += " and updator = ? ";
 				paramsMap.put(paramsMap.size() + 1, valueStr);
+				continue;
+			}
+			
+			if( "id".equals(key) ) {
+				condition += " and id = ? ";
+				valueStr = valueStr.replace("_copy", "");
+				paramsMap.put(paramsMap.size() + 1, EasyUtils.obj2Long(valueStr));
 				continue;
 			}
 			
@@ -366,16 +395,10 @@ public abstract class _Database {
 					}
 					paramsMap.put(paramsMap.size() + 1, val);
 				}
-				else if(vals.length == 2) {
-					String val1 = vals[0], val2 = vals[1];
-					if(!EasyUtils.isNullOrEmpty(val1)) {
-						condition += " and " + key + " >= ? ";
-						paramsMap.put(paramsMap.size() + 1, DMUtil.preTreatValue(val1, paramType));
-					}
-					if(!EasyUtils.isNullOrEmpty(val2)) {
-						condition += " and " + key + " <= ? ";
-						paramsMap.put(paramsMap.size() + 1, DMUtil.preTreatValue(val2, paramType));
-					}
+				else {
+					condition += " and " + key + " >= ?  and " + key + " <= ? ";
+					paramsMap.put(paramsMap.size() + 1, DMUtil.preTreatValue(vals[0], paramType));
+					paramsMap.put(paramsMap.size() + 1, DMUtil.preTreatValue(vals[1], paramType));
 				}
 			}
 		}
@@ -410,7 +433,7 @@ public abstract class _Database {
 					",createtime,creator,updatetime,updator,version,id from " + this.table + 
 					" where " + condition + orderby;
 		
-		SQLExcutor ex = new SQLExcutor(false);
+		SQLExcutor ex = new SQLExcutor();
 		ex.excuteQuery(selectSQL, paramsMap, page, pagesize, this.datasource);
 		
 		return ex;
@@ -418,15 +441,25 @@ public abstract class _Database {
 
 	public Document getGridTemplate() {
 		StringBuffer sb = new StringBuffer();
-        sb.append("<grid><declare sequence=\"true\" header=\"checkbox\">");
+        sb.append("<grid><declare sequence=\"true\" header=\"checkbox\">").append("\n");
         
         int index = 0; 
         for(String filed : fieldNames) {
-            sb.append("<column name=\"" + fieldCodes.get(index++) + "\" mode=\"string\" caption=\"" + filed + "\" />");
+            String fieldCode = fieldCodes.get(index);
+            String fieldAlign = fieldAligns.get(index);
+            String fieldWidth = fieldWidths.get(index);
+            String fieldRole2 = fieldRole2s.get(index);
+            String fieldType  = "string"; // fieldTypes.get(index);==> GridNode里转换异常（date类型要求值也为date）
+            index++;
+            
+            if( PermissionHelper.checkRole(fieldRole2) ) {
+            	sb.append("<column name=\"" + fieldCode + "\" mode=\"" + fieldType + "\" caption=\"" + filed 
+					+ "\" align=\"" + fieldAlign + "\" width=\"" + fieldWidth + "\" />").append("\n");
+            }
         }
         
         if(this.needFile) {
-        	sb.append("<column name=\"fileNum\" mode=\"string\" caption=\"附件数\" />");
+        	sb.append("<column name=\"fileNum\" mode=\"string\" caption=\"附件数\" />").append("\n");
         }
         
         // 判断是否默认隐藏这5列
@@ -434,16 +467,16 @@ public abstract class _Database {
         if( (this.customizeTJ+"").indexOf("hideCUV") >= 0 || !needLog ) {
         	show5C = "display=\"none\"";
         }
-    	sb.append("<column name=\"createtime\" " +show5C+ " caption=\"创建时间\" sortable=\"true\"/>");
-        sb.append("<column name=\"creator\" " +show5C+ " caption=\"创建人\" sortable=\"true\"/>");
-        sb.append("<column name=\"updatetime\" " +show5C+ " caption=\"更新时间\" sortable=\"true\"/>");
-        sb.append("<column name=\"updator\" " +show5C+ " caption=\"更新人\" sortable=\"true\"/>");
-        sb.append("<column name=\"version\" " +show5C+ " caption=\"更新次数\" />");
+    	sb.append("<column name=\"createtime\" " +show5C+ " caption=\"创建时间\" sortable=\"true\"/>").append("\n");
+        sb.append("<column name=\"creator\" " +show5C+ " caption=\"创建人\" sortable=\"true\"/>").append("\n");
+        sb.append("<column name=\"updatetime\" " +show5C+ " caption=\"更新时间\" sortable=\"true\"/>").append("\n");
+        sb.append("<column name=\"updator\" " +show5C+ " caption=\"更新人\" sortable=\"true\"/>").append("\n");
+        sb.append("<column name=\"version\" " +show5C+ " caption=\"更新次数\" />").append("\n");
         
         // ID列默认隐藏
-        sb.append("<column name=\"id\" display=\"none\"/>");
+        sb.append("<column name=\"id\" display=\"none\"/>").append("\n");
         
-        sb.append("</declare><data></data></grid>");
+        sb.append("</declare>\n<data></data></grid>");
         
     	return XMLDocUtil.dataXml2Doc(sb.toString());
 	}
@@ -472,7 +505,6 @@ public abstract class _Database {
 			for(String type : DB_TYPE) {
 				if (driveName.startsWith(type)) {
 					dsMappingType.put(datasource, result = type);
-		            return result;
 		        }
 			}
 		} catch (SQLException e) {
@@ -481,7 +513,7 @@ public abstract class _Database {
             connpool.checkIn(connItem); // 返回连接到连接池
         }
         
-		throw new BusinessException("数据源【" + datasource + "】没有找到匹配的数据库类型");
+		return result;
 	}
 	
 	public static String[] DB_TYPE = new String[] {"MySQL", "Oracle", "H2"};
@@ -492,10 +524,10 @@ public abstract class _Database {
 	}
 	
 	public static _Database getDB(String type, Record record) {
-		if(DB_TYPE[0].equals(type)) {
+		if( type.startsWith( DB_TYPE[0] ) ) {
 			return new _MySQL(record);
 		}
-		else if(DB_TYPE[1].equals(type)) {
+		else if( type.startsWith( DB_TYPE[1] ) ) {
 			return new _Oracle(record);
 		}
 		else {
