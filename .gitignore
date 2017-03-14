@@ -13,5 +13,6 @@ build
 /webapp/src/main/webapp/uploadFile
 
 .DS_Store
+.sh
 
 src/test/resources/passwd
