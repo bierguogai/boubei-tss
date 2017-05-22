@@ -52,7 +52,7 @@ public class _MySQL extends _Database {
 	}
 
 	public void dropTable(String table, String datasource) {
-		SQLExcutor.excute("drop table if exists " + this.table, datasource);
+		SQLExcutor.excute("drop table if exists " + table, datasource);
 	}
 	
 	public String toPageQuery(String sql, int page, int pagesize) {

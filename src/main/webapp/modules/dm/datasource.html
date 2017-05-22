@@ -16,11 +16,11 @@
     /*  XMLHTTP请求地址汇总 */
     
 	GET_DS_1 = NO_AUTH_PATH + "param/json/combo/datasource_list";
-    GET_DS_2 = NO_AUTH_PATH + "ds/param/config";
-    GET_DS_3 = "datasource/connpool.xml";
-    URL_DS_SAVE   = NO_AUTH_PATH + "ds/connpool";
-    URL_DS_DELETE = NO_AUTH_PATH + "ds/connpool/";
-    URL_DS_TEST   = NO_AUTH_PATH + "ds/test";
+    GET_DS_2 = AUTH_PATH + "ds/param/config";
+    GET_DS_XFORM  = "datasource/connpool.xml";
+    URL_DS_SAVE   = AUTH_PATH + "ds/connpool";
+    URL_DS_DELETE = AUTH_PATH + "ds/connpool/";
+    URL_DS_TEST   = AUTH_PATH + "ds/test";
     URL_GET_USER_HAS  = AUTH_PATH + "user/has";
 
 	if(IS_TEST) {		
@@ -172,7 +172,7 @@
         }
 
 		$.ajax({
-			url : GET_DS_3,
+			url : GET_DS_XFORM ,
 			method : "GET",
 			onresult : function() { 
 				xmlNode = this.getNodeValue("TL");

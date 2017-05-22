@@ -18,9 +18,9 @@
 	<layout>
 		<TR>
 			<TD width="100"><label binding="name"/></TD>
-			<TD><input binding="name"/></TD>
+			<TD><input binding="name" style="width:200px;"/></TD>
 			<TD width="100"><label binding="code"/></TD>
-			<TD><input binding="code"/></TD>
+			<TD><input binding="code" style="width:200px;"/></TD>
 		</TR>
 		<TR>
 			<TD><label binding="poolSize"/></TD>
@@ -55,7 +55,7 @@
 			<TD><label binding="connUser"/></TD>
 			<TD><input binding="connUser"/></TD>
 			<TD><label binding="connPwd"/></TD>
-			<TD><input binding="connPwd"/></TD>
+			<TD><input binding="connPwd" style="width:150px;"/></TD>
 		</TR>
 	</layout>
 	<data>

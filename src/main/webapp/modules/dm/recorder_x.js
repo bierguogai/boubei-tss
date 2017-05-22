@@ -71,6 +71,8 @@ function disableForm() {
 
 function updateField(field, value) {
     var xform = $.F("page1Form");
+    if(!xform) return; // queryForm触发
+
     xform.updateDataExternal(field, value);    
     xform.updateData( $1(field) );
 }
@@ -236,7 +238,7 @@ function getNextLevelOption(nextL, serviceID, currParam, currParamValue) {
     // serviceID maybe is ID of record, maybe a serviceUrl
     var url = dreg.test(serviceID) ? '../../data/json/' + serviceID : serviceID;
     
-    if( currParam.indexOf('p_') >= 0 || url.indexOf('p_') >= 0) { // 查询表单的级联下拉
+    if( (currParam+"").indexOf('p_') >= 0 || url.indexOf('p_') >= 0) { // 查询表单的级联下拉
         currParam = currParam.replace('p_', '')
         url = url.replace('p_', '');
         xform = $.F("searchForm");

@@ -69,6 +69,7 @@ public abstract class AbstractContainer implements Container {
 			if (item != null) {
 				sb.append("  key: ").append(item.getKey());
 				sb.append(", value: ").append(item.getValue());
+				sb.append(", life: ").append( item.getHitLong() / Math.max(item.getHit(), 1) );
 				sb.append(", hit: ").append(item.getHit()).append("\n");
 			}
 		}

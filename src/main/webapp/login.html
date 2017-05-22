@@ -59,6 +59,12 @@
 
 <script type="text/javascript">
 
+setTimeout( function() {
+    if(window.parent && window.parent != window.self) {
+        window.parent.location.href = "login.html";
+    }
+}, 300 );
+
 /*********************** 应用配置 开始 **********************************/
  var 
     indexPage = "index.html";    /* 登录成功后跳转到的页面 */
@@ -66,13 +72,9 @@
  function setSysTitle() {
     getParam('sysTitle', function(title) {
         if( title ) {
-            indexPage = "index.portal";
+            indexPage = "tssbi.html";
         } else {
             title = '它山石基础平台';       
-        }
-
-        if(document.body.offsetWidth < 768 || $.isMobile ) {
-            indexPage = "mobile/index.html";
         }
         
         $("#sys_title").html(title);
@@ -89,10 +91,15 @@ window.onresize = function() {
 }
 
 $(function(){
+    if(document.body.offsetWidth < 768 || $.isMobile ) {
+        location.href = "mobile/login.html";
+    }
+
      setSysTitle(); 
      window.onresize();
 
      init();
+     window.onresize();
 });
 
 function init() {
@@ -178,16 +185,24 @@ var doLogin = function(accoutEl, passwdEl) {
             checkPasswdSecurity(loginName, password, function(securityLevel) {
                 if( securityLevel >= 3 ) return gotoIndex(loginName);
 
-                $.prompt("您的密码过于简单，存在安全隐患，请重新设置密码", "输入更安全的新密码", function(newPasswd) {
-                    checkPasswdSecurity(loginName, newPasswd, function(level) {
-                        if(level >= 3) {
-                            setNewPassword(loginName, password, newPasswd);
-                        } else {
-                            $.alert("您的新密码还是过于简单，设置失败，请用原密码登录再次重置密码。");
+                $.prompt("您的密码过于简单，存在安全隐患，请重新设置密码", "输入更安全密码(8位以上大小写字母和数字组合)", function(newPasswd) {
+                    $.prompt("请再次输入新密码", "请再次输入新密码", function(newPasswd2) {
+                        if( newPasswd !== newPasswd2) {
+                            $.alert("两次密码输入不一致，设置失败，请用原密码登录再次重置密码。");
                             setTimeout( function() { logout(); }, 2000);
+                            return;
                         }
-                    });
-                });
+
+                        checkPasswdSecurity(loginName, newPasswd, function(level) {
+                            if(level >= 3) {
+                                setNewPassword(loginName, password, newPasswd);
+                            } else {
+                                $.alert("您的新密码还是过于简单，设置失败，请用原密码登录再次重置密码。");
+                                setTimeout( function() { logout(); }, 2000);
+                            }
+                        });
+                    }, "", true);
+                }, "", true);
             } );      
         }
     });

@@ -69,7 +69,7 @@ body { width:100%; overflow: hidden; }
 .rbar>ul>li.item>a:hover .tip { display:block; }
 .rbar>ul>li.item>a>.tip>div { position:absolute; right:-6px; top:0; color:#c81623; }
 
-#tip1 { width:599px; min-height:320px; top:-18px; left:-601px; background:#fff; border-radius: 5px 0 0 5px; }
+#tip1 { width:599px; min-height:320px; top:-18px; left:-601px; background:#fff; border-radius: 5px 0 0 5px; z-index: 9999; }
 #tip1>div, #tip2>div, #tip3>div { top: 30px; color: #E4F0F8; }
 #tip1>iframe { border:solid 1px #E0ECFF; width: 600px; height: 320px; border-radius: 5px 0 0 5px; }
 #x6 { display: none; }
@@ -106,18 +106,19 @@ body { width:100%; overflow: hidden; }
 
 <div class="rbar">
   <ul>     
-    <li class="item"> 
-      <a href="#"> 
+    <li class="item" id="li1"> 
+      <!-- <a href="#" onclick="tssJS('#tip1').show(true)">  -->
+      <a href="#" onmouseover="$('#tip1').show(true)" onmouseout="$('#tip1').hide()"> 
         <div class="icon icon-graph"></div>
         <div class="tip" id="tip1">
-          <iframe src="../../more/bi_condition.html"  frameborder="no" scrolling="no"></iframe>
+          <iframe src="../../more/bi_condition.html" frameborder="no" scrolling="no"></iframe>
           <div>◆</div>
         </div> 
       </a> 
     </li>
     <li class="line"></li>
-    <li class="item"> 
-      <a href="javascript:void(0)" onclick="showReportManual()"> 
+    <li class="item" id="li2"> 
+      <a href="javascript:void(0)"> 
         <div class="icon icon-file-text"></div>
         <div class="tip" id="tip3">
           <h3>报表说明</h3>
@@ -158,7 +159,7 @@ body { width:100%; overflow: hidden; }
     <li class="item"> 
       <a href="javascript:void(0)" onclick="dianzan()"> 
         <div class="icon icon-heart"></div>
-        <div class="tip"><span>点个赞</span><div>◆</div></div> 
+        <div class="tip"><span>点个赞 ( <i id="dznum">0</i> )</span><div>◆</div></div> 
       </a>
     </li>
     <li class="item"> 
@@ -243,6 +244,8 @@ else {
 
 function init() {
     $("body").css("width", (document.body.offsetWidth - 28) + "px" );
+    getZanNum();
+    
     $.ajax({
         url: report_info_url,
         method: 'get',
@@ -254,11 +257,30 @@ function init() {
             globalValiable._url   = defines[2];
             globalValiable.hasScript = defines[3];
             globalValiable.remark = defines[5];
+
+            // if recorder.html 
+            if( (globalValiable._url||"").indexOf("dm/recorder.html?id=") >= 0 ) {
+                location.href = globalValiable._url;
+                return;
+            }
+            // 是否允许订阅
             if( defines[4] == 1) {
                 $("#x6").show(true);
             }
+            // 报表说明
             if( defines[5]) {
                 $("#tip3 pre").html( defines[5] );
+            }
+
+            // 自定义的通用查询条件界面
+            if( defines[6] && defines[6].trim() ) { 
+                if(defines[6].indexOf("no-need") >= 0) {
+                    $("#li1").hide();
+                    return initPortlet();
+                } 
+                else {
+                    $("#tip1>iframe").attr("src", defines[6]);
+                }               
             }
 
             if( !parent.conditionReady ) {
@@ -578,13 +600,15 @@ function queryCollected() {
 // 点赞
 function dianzan() {
     $.ajax({
-        url: "/tss/auth/rp/zan/" + reportId
+        url: "/tss/auth/rp/zan/" + reportId,
+        onsuccess: function() {
+            getZanNum();
+        }
     });
 }
 
-// 显示报表使用手册
-function showReportManual() {
-    
+function getZanNum() {
+    $.getJSON( "/tss/auth/rp/zan/"+reportId, {}, function(data) { $("#dznum").text(data); }, "GET" );
 }
 
 function openReport(id, name) {

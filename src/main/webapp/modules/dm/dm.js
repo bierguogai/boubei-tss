@@ -26,3 +26,16 @@ function checkDataService() {
         $("#_options").focus().value(ds);
     });
 }
+
+function selectTL( isRecord ) {
+    popupTree(AUTH_PATH + "rp/template", "SourceTree", {"_title": "可选展示页面列表"}, function(target) {
+    	var formName  = isRecord ? "recordForm" : "reportForm",
+    		pageField = isRecord ? "customizePage" : "displayUri";
+    		
+        $.F(formName).updateDataExternal(pageField, target.name);
+    });
+}
+
+function uploadTL() {
+	fileManage("type=reportTL&useOrignName=true", "管理报表/录入页面文件");
+}

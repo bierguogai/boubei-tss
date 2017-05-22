@@ -82,6 +82,7 @@ function initMenus() {
 		callback: function() {
 			loadRecordDetail(true, "1");
 		},
+		icon: ICON + "record_0.png",
 		visible:function() {return (isRecordGroup() || isTreeRoot()) && getOperation("2");}
 	}
 	var item4 = {
@@ -129,14 +130,14 @@ function initMenus() {
 		visible:function() { return isRecord() && getOperation("1") && canBatchImp(); }
 	}
 	var item13 = {
-        label:"导出",
-        callback:exportReport,
+        label:"导出录入表定义",
+        callback:exportRecordDef,
         icon:ICON + "export.gif",
         visible:function() {return !isTreeRoot() && getOperation("2");}
     }
     var item14 = {
-        label:"导入",
-        callback:importReport,
+        label:"导入录入表定义",
+        callback:importRecordDef,
         icon:ICON + "import.gif",
         visible:function() {return !isRecord() && getOperation("2");}
     }
@@ -283,13 +284,13 @@ function deleteRecord()  { delTreeNode(URL_DELETE_SOURCE); }
 function disableRecord() { stopOrStartTreeNode("1", URL_DISABLE_SOURCE); }
 function enableRecord()  { stopOrStartTreeNode("0", URL_DISABLE_SOURCE); }
 
-function exportReport() {
+function exportRecordDef() {
 	var url = URL_EXPORT_RECORD + getTreeNodeId();
     var frameName = createExportFrame();
     $1(frameName).setAttribute("src", url);
 }
 
-function importReport() {
+function importRecordDef() {
 	var params = {"isTree": false};
 	params._title = "请选择相应的数据源";
 

@@ -33,9 +33,9 @@
         }
     }
 
-    function getAttachs() {
+    function getAttachs(itemId) {
         tssJS.ajax({ 
-            url: "/tss/auth/xdata/attach/json/" + tableId, 
+            url: "/tss/auth/xdata/attach/json/" + tableId + "/" + itemId, 
             method: "GET", 
             ondata: function(){
                 var data  = this.getResponseJSON();
@@ -80,7 +80,14 @@ function manageAttach(lineId) {
             var attachNode  = this.getNodeValue("RecordAttach");
 
             $("#attach").show(true);
-            $("#uploadForm span").show();               
+
+            if( $.Query.get("readonly") == 'true' ) {
+                $("#uploadForm span").hide();  // 隐藏上传附件操作
+                $("column[name='delOpt']", attachNode).attr("display", "none");  // 隐藏删除附件操作      
+            }
+            else {               
+                $("#uploadForm span").show(); 
+            }           
 
             $.G("attachGrid", attachNode);
         } 

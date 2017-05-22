@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <title>Mobile登陆</title>
 <meta name="viewport" content="width=device-width">
-<meta name="apple-mobile-web-app-title" content="北极星登陆" />
+<meta name="apple-mobile-web-app-title" content="卜贝数据" />
 <meta name="keywords" content="卜贝软件，它山石，应用基础平台，门户，应用，内容, 聚合，数据分析，数据挖掘，大数据">
 
 <link rel="shortcut icon" href="../images/favorite.ico">
@@ -34,7 +34,6 @@
         -webkit-align-items: center;
     }
     #login_box { 
-        /* position:relative; top:200px; width:360px; margin:0 auto; */
         font-size:16px; padding-left: 10px; 
         text-align: center;
     }
@@ -74,8 +73,7 @@ $( function() {
     passwordEL.value  = zmkm ? $.decode(zmkm, 12) : "";
 
     if(password.value && !$.Query.get("logout") ) { // 自动完成登录
-        /* 这样退出就有问题了，退出后又会自动登录回来; 用户密码修改后也会有问题 */
-        // doLogin(loginNameEL, passwordEL); 
+        doLogin(loginNameEL, passwordEL); 
     } 
     else {
         loginNameEL.focus();
@@ -84,36 +82,21 @@ $( function() {
     $("#bt_login").click ( function() {
         doLogin(loginNameEL, passwordEL);
     } );
-
-    $.Event.addEvent(document, "keydown", function(ev) {
-        if(13 == ev.keyCode) { // enter
-            $.Event.cancel(ev);
-            $("#bt_login").focus();
-
-            setTimeout(function() {
-                doLogin(loginNameEL, passwordEL);
-            }, 10);
-        }
-    });
 });
 
 
 URL_GET_USER_NAME = "../getLoginInfo.in";
 URL_LOGIN = "../auth/login.do";
 
-var excludes = ["BL04981", "BL00211"]; // 此处添加特殊账号
-
 var doLogin = function(loginNameEL, passwordEL) {
     var loginName  = loginNameEL.value;
     var password   = passwordEL.value;
     
     if( !loginName ) {
-        $(loginNameEL).focus().notice("请输入账号");
-        return;
+        return $(loginNameEL).focus().notice("请输入账号");
     } 
     else if( !password ) {
-        $(passwordEL).focus().notice("请输入密码");
-        return;
+        return $(passwordEL).focus().notice("请输入密码");
     }
 
     $.ajax({
@@ -125,23 +108,15 @@ var doLogin = function(loginNameEL, passwordEL) {
         },
         onresult: function(){
             var identifier = this.getNodeValue("identifier"),
-                username = this.getNodeValue("UserName"),
+                username   = this.getNodeValue("UserName"),
                 randomKey  = this.getNodeValue("randomKey");
-
-            if( loginName.toUpperCase().indexOf("BLH") < 0 
-                && loginName.indexOf('Admin') < 0 
-                && loginName.toUpperCase().indexOf('TEST_') < 0 
-                && !excludes.contains(loginName) ) {
-
-                identifier = "com.boubei.bfrbi.sso.BILdapIdentifier";
-            }
             
             $.ajax({
                 url: URL_LOGIN,
                 waiting: true,
                 headers : {
                     "loginName": $.encode(loginName, randomKey), 
-                    "password": $.encode(password, randomKey), 
+                    "password":  $.encode(password, randomKey), 
                     "identifier": identifier
                 },
                 onexception: function(errorMsg) {
@@ -152,7 +127,7 @@ var doLogin = function(loginNameEL, passwordEL) {
                     $.Cookie.setValue("zmkm", $.encode(password, 12) );
                     $.Cookie.setValue("iUser", username);
 
-                    location.href = "/tss/_mobile/index.html";
+                    location.href = "/tss/mobile/index.html";
                 }
             });             
         }
@@ -165,7 +140,7 @@ var doLogin = function(loginNameEL, passwordEL) {
 
 <body>
     <div id="login_box">
-        <h1 id="sys_title">百世快运 - 北极星</h1>
+        <h1 id="sys_title">卜贝数据 - Mobile</h1>
         <span><input type="text" id="loginName" placeholder="请输入您的账号"/></span>
         <span><input type="password" id="password" placeholder="请输入您的密码"/></span>
         <span class='bottonBox'><button id='bt_login'>登 陆 系 统</button></span>

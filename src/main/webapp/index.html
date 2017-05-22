@@ -24,13 +24,9 @@ html, body { height: 100%; overflow: hidden; }
     background: linear-gradient(180deg, #323232 0px, #555 100%) repeat-x; 
 }
 .top .logo { 
-    display: inline-block; text-decoration: none; padding: 0px 12px; color: #fff; position: absolute; left: 0;
-    line-height: 30px;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale; 
+    display: inline-block; position: absolute; left: 0; height: 30px; width: 241px;
+    background-image: url(images/tss.jpg)
 }
-.top .logo .forename { font-weight: bold; font-size: 20px; color: #4ecdc4; }
-.top .logo .surname  { font-weight: normal; font-size: 18px; color: #fff; }
 
 .menu { position: absolute; top:0; right: 0; font-size: 1.1em; z-index: 10001; } 
 .menu a { background-color: #323232; color: #b7bac1; 
@@ -108,6 +104,7 @@ function openUrl(url) {
     $iframe.removeClass("hidden").addClass("open");
 }
 
+// 
 function openMsgPage() {
     openUrl('modules/um/message.html');
 }
@@ -125,10 +122,9 @@ function showNotice(id, title) {
     $.openIframePanel("noticePanel", title, 800, 480, "/tss/notice.html?articleId=" + id);
 }
 
-var channelId = 13;
 tssJS(function(){
     var request = new $.HttpRequest();
-    request.url =  "/tss/auth/article/list/xml/" +channelId+ "/1/5/false";
+    request.url =  "/tss/auth/article/list/xml/" +notice_channel+ "/1/5/false";
     request.method = "GET";
     request.onresult = function(){
         var articleList = this.getNodeValue("ArticleList");
@@ -176,9 +172,7 @@ tssJS(function(){
 <body>
  
 <div class="top">
-    <div class="logo">
-        <b class="forename">它山石</b><b class="surname">&nbsp;基础平台</b>
-    </div>
+    <div class="logo"></div>
     <div class="menu"> 
         <ul> 
             <li><a href='javascript:void(0)' onclick="openMsgPage()">待办事项</a></li> 

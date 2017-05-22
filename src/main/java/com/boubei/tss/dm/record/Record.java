@@ -19,11 +19,12 @@ import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.record.permission.RecordResource;
 import com.boubei.tss.framework.persistence.entityaop.IDecodable;
 import com.boubei.tss.framework.persistence.entityaop.OperateInfo;
-import com.boubei.tss.framework.web.dispaly.tree.TreeAttributesMap;
-import com.boubei.tss.framework.web.dispaly.xform.IXForm;
+import com.boubei.tss.framework.web.display.tree.TreeAttributesMap;
+import com.boubei.tss.framework.web.display.xform.IXForm;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.um.permission.IResource;
 import com.boubei.tss.util.BeanUtil;
+import com.boubei.tss.util.EasyUtils;
 
 /**
  * 说明：
@@ -91,6 +92,7 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
     @Column(length = 1000)  
     private String customizeTJ;
    
+    @Column(length = 2000)
     private String  remark; 
     
     private Long    parentId;  // 父节点
@@ -135,6 +137,10 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
         map.put("icon", "images/" + (TYPE0 == type ? "folder.gif" : "record_" + getDisabled() + ".png") );
         map.put("disabled", getDisabled());
         map.put("batchImp", this.batchImp);
+        
+        if( EasyUtils.obj2String(this.remark).indexOf("open") >= 0 ) {
+        	map.put("_open", "true");
+        }
  
         return map;
     }

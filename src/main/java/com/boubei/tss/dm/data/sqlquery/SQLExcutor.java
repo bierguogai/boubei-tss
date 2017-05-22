@@ -23,7 +23,6 @@ import org.dom4j.Document;
 import com.boubei.tss.cache.Cacheable;
 import com.boubei.tss.cache.JCache;
 import com.boubei.tss.cache.Pool;
-import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.record.ddl._Database;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.util.EasyUtils;
@@ -71,19 +70,11 @@ public class SQLExcutor {
     public void excuteQuery(String sql, String datasource) {
         excuteQuery(sql, new HashMap<Integer, Object>(), datasource);
     }
-
-    public void excuteQuery(String sql, AbstractSO so) {
-        excuteQuery(sql, SOUtil.generateQueryParametersMap(so));
-    }
     
     public void excuteQuery(String sql, AbstractSO so, String datasource) {
         excuteQuery(sql, SOUtil.generateQueryParametersMap(so), datasource);
     }
-    
-    public void excuteQuery(String sql) {
-        excuteQuery(sql, new HashMap<Integer, Object>(), 0, 0);
-    }
- 
+
     public void excuteQuery(String sql, String dataSource, Object...params) {
     	Map<Integer, Object> paramsMap = new HashMap<Integer, Object>();
     	params = (Object[]) EasyUtils.checkNull(params, new Object[]{});
@@ -95,20 +86,7 @@ public class SQLExcutor {
         
         excuteQuery(sql, paramsMap, 0, 0, dataSource);
     }
-    
-    public void excuteQuery(String sqlCollection, int index, Map<Integer, Object> paramsMap) {
-    	String sql = SqlConfig.getScript(sqlCollection, index);
-        excuteQuery(sql, paramsMap, 0, 0);
-    }
-
-    public void excuteQuery(String sql, Map<Integer, Object> paramsMap) {
-        excuteQuery(sql, paramsMap, 0, 0);
-    }
  
-    public void excuteQuery(String sql, Map<Integer, Object> paramsMap, int page, int pagesize) {
-        excuteQuery(sql, paramsMap, page, pagesize, DMConstants.getDefaultDS());
-    }
-
     public void excuteQuery(String sql, Map<Integer, Object> paramsMap, String datasource) {
         excuteQuery(sql, paramsMap, 0, 0, datasource);
     }
@@ -178,9 +156,8 @@ public class SQLExcutor {
                     
                     pstmt = prepareStatement(conn, queryCountSql, paramsMap);
                     rs = pstmt.executeQuery();
-                    if (rs.next()) {
-                        count = rs.getInt(1);
-                    }
+                    rs.next();
+                    count = rs.getInt(1);
                     
                     pstmt.close();
                     rs.close();

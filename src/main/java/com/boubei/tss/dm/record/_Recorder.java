@@ -3,6 +3,7 @@ package com.boubei.tss.dm.record;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,32 +22,45 @@ import com.boubei.tss.cache.Cacheable;
 import com.boubei.tss.cache.Pool;
 import com.boubei.tss.cache.extension.CacheHelper;
 import com.boubei.tss.dm.DMConstants;
+import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
 import com.boubei.tss.dm.data.util.DataExport;
 import com.boubei.tss.dm.record.ddl._Database;
 import com.boubei.tss.dm.record.file.RecordAttach;
+import com.boubei.tss.dm.record.permission.RecordPermission;
+import com.boubei.tss.dm.record.permission.RecordResource;
+import com.boubei.tss.framework.SecurityUtil;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.exception.ExceptionEncoder;
 import com.boubei.tss.framework.persistence.pagequery.PageInfo;
-import com.boubei.tss.framework.web.dispaly.grid.DefaultGridNode;
-import com.boubei.tss.framework.web.dispaly.grid.GridDataEncoder;
-import com.boubei.tss.framework.web.dispaly.grid.IGridNode;
+import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.framework.web.display.grid.DefaultGridNode;
+import com.boubei.tss.framework.web.display.grid.GridDataEncoder;
+import com.boubei.tss.framework.web.display.grid.IGridNode;
 import com.boubei.tss.framework.web.mvc.BaseActionSupport;
+import com.boubei.tss.um.permission.PermissionHelper;
+import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
 
-/**
- * 小技巧：
- * 1、隐藏创建人、创建时间、修改人、修改时间、修改次数这5列，在过滤条件里加：1=1<#if 1=0>hideCUV</#if>
- *   needLog = false 时，也将自动隐藏这5列
- */
 @Controller
-@RequestMapping("/auth/xdata")
+@RequestMapping( {"/auth/xdata", "/xdata/api"})
 public class _Recorder extends BaseActionSupport {
+	
+	public static final int PAGE_SIZE = 50;
 	
 	@Autowired RecordService recordService;
 	
-	_Database getDB(Long recordId) {
+	_Database getDB(Long recordId, String... permitOptions) {
+		// 检测当前用户对当前录入表是否有指定的操作权限
+		boolean flag = permitOptions.length == 0;
+		for(String permitOption : permitOptions) {
+			flag = flag || checkPermission( recordId, permitOption );
+		}
+		if(!flag) {
+			throw new BusinessException("权限不足，操作失败。");
+		}
+		
 		Pool cache = CacheHelper.getLongCache();
 		
 		String cacheKey = "_db_record_" + recordId;
@@ -73,25 +87,40 @@ public class _Recorder extends BaseActionSupport {
 			throw new BusinessException("该数据录入已被停用，无法再录入数据！");
 		}
 		
-        return 
-        	new Object[] { 
-        		getDB(recordId).getFields(), 
+        return new Object[] { 
+        		getDB(recordId, Record.OPERATION_VDATA).getFields(), 
         		record.getCustomizeJS(), 
         		record.getCustomizeGrid(),
-        		record.getNeedFile()
+        		record.getNeedFile(),
+        		record.getBatchImp(),
+        		record.getName()
         	};
     }
 	
-	public static final int PAGE_SIZE = 50;
+	public Map<String, String> prepareParams(HttpServletRequest request, Long recordId) {
+		Map<String, String> requestMap = DMUtil.getRequestMap(request, false);
+		
+		/* 其它系统调用接口时，传入其在TSS注册的用户ID; 检查令牌，令牌有效则自动完成登陆 */
+    	String uName  = requestMap.get("uName"), uToken = requestMap.get("uToken");
+    	if( !EasyUtils.isNullOrEmpty(uToken) && !EasyUtils.isNullOrEmpty(uName) ) {
+    		Record record = recordService.getRecord(recordId);
+        	if( !DMUtil.checkAPIToken(record, uName, uToken) ) {
+    			throw new BusinessException("令牌验证未获通过，调用接口失败。");
+    		}
+    	} 
+		                                                                                                                                                                                                                                                 
+    	return requestMap;
+    }
 	
     @RequestMapping("/xml/{recordId}/{page}")
     public void showAsGrid(HttpServletRequest request, HttpServletResponse response, 
             @PathVariable("recordId") Long recordId, 
             @PathVariable("page") int page) {
  
+    	Map<String, String> requestMap = prepareParams(request, recordId);
         _Database _db = getDB(recordId);
         
-        SQLExcutor ex = _db.select(page, PAGE_SIZE, getRequestMap(request));
+        SQLExcutor ex = _db.select(page, PAGE_SIZE, requestMap); // db.select 里已经包含权限控制
         
         // 读取记录的附件信息
         Map<Object, Object> itemAttach = new HashMap<Object, Object>();
@@ -131,34 +160,77 @@ public class _Recorder extends BaseActionSupport {
     public List<Map<String, Object>> showAsJSON(HttpServletRequest request, 
     		@PathVariable("recordId") Long recordId, @PathVariable("page") int page) {
     	
+    	Map<String, String> requestMap = prepareParams(request, recordId);
+    	int _pagesize = getPageSize(requestMap, PAGE_SIZE);
+    	
         _Database _db = getDB(recordId);
-        return _db.select(page, PAGE_SIZE, getRequestMap(request)).result;
+        return _db.select( page, _pagesize, requestMap ).result;
+    }
+    
+    private int getPageSize(Map<String, String> m, int defaultSize) {
+    	Object pagesize = EasyUtils.checkNull(m.get("pagesize"), m.get("rows"), defaultSize);
+    	return EasyUtils.obj2Int(pagesize);
+    }
+    
+    @RequestMapping("/export/{recordId}")
+    public void exportAsCSV(HttpServletRequest request, HttpServletResponse response, 
+    		@PathVariable("recordId") Long recordId) {
+        
+    	long start = System.currentTimeMillis();
+    	
+    	Map<String, String> requestMap = DMUtil.getRequestMap(request, true);  // GET Method Request
+    	_Database _db = getDB(recordId);
+        
+    	int _page = EasyUtils.obj2Int( EasyUtils.checkNull(requestMap.get("page"), "1") );
+    	int _pagesize = getPageSize(requestMap, 10*10000);
+    	
+		SQLExcutor ex = _db.select(_page, _pagesize, requestMap);
+
+		String fileName = DateUtil.format(new Date()) +"_"+ recordId + Environment.getUserId() + ".csv";
+        for (Map<String, Object> row : ex.result) { // 剔除
+        	row.remove("createtime");
+        	row.remove("creator");
+        	row.remove("updatetime");
+        	row.remove("updator");
+        	row.remove("version");
+        	row.remove("id");
+        }
+		String exportPath = DataExport.exportCSV(fileName, ex.result, _db.fieldNames);
+        DataExport.downloadFileByHttp(response, exportPath);
+
+        DMUtil.outputAccessLog("record-" + recordId, _db.recordName, "exportAsCSV", requestMap, start);
     }
 	
     @RequestMapping(value = "/{recordId}", method = RequestMethod.POST)
     public void create(HttpServletRequest request, HttpServletResponse response, 
     		@PathVariable("recordId") Long recordId) {
     	
-    	_Database _db = getDB(recordId);
+    	Map<String, String> requestMap = prepareParams(request, recordId);
+    	
+    	_Database _db = getDB(recordId, Record.OPERATION_CDATA);
     	try {
-    		_db.insert( getRequestMap(request) );
+    		_db.insert( requestMap );
     	}
     	catch(Exception e) {
-    		throwEx(e, _db + "里新增");
+    		throwEx(e, _db + "表里新增");
     	}
     	printSuccessMessage();
     }
     
     @RequestMapping(value = "/rid/{recordId}", method = RequestMethod.POST)
     @ResponseBody
-    public Object createAndReturnID(HttpServletRequest request, @PathVariable("recordId") Long recordId) {
-    	_Database _db = getDB(recordId);
+    public Object createAndReturnID(HttpServletRequest request, 
+    		@PathVariable("recordId") Long recordId) {
+    	
+    	Map<String, String> requestMap = prepareParams(request, recordId);
+    	
+    	_Database _db = getDB(recordId, Record.OPERATION_CDATA);
     	Long newID = null;
     	try {
-    		newID = _db.insertRID( getRequestMap(request) );
+    		newID = _db.insertRID( requestMap );
     	}
     	catch(Exception e) {
-    		throwEx(e, _db + "里新增");
+    		throwEx(e, _db + "表里新增");
     	}
     	return newID;
     }
@@ -175,13 +247,20 @@ public class _Recorder extends BaseActionSupport {
     		@PathVariable("recordId") Long recordId, 
     		@PathVariable("id") Long id) {
     	
+    	Map<String, String> requestMap = prepareParams(request, recordId);
+    	
+    	// 检查用户对当前记录是否有编辑权限，防止篡改别人创建的记录
+		if( !checkRowEditable(recordId, id) ) {
+			throw new BusinessException("您对此数据记录没有维护权限");
+		}
+    	
     	_Database _db = getDB(recordId);
     	try {
-			_db.update(id, getRequestMap(request) );
+			_db.update(id, requestMap );
     		printSuccessMessage();
     	}
     	catch(Exception e) {
-    		throwEx(e, _db + "里修改");
+    		throwEx(e, _db + "表里修改");
     	}
     }
     
@@ -189,52 +268,56 @@ public class _Recorder extends BaseActionSupport {
      * 批量更新选中记录行的某个字段值，用在批量审批等场景
      */
     @RequestMapping(value = "/batch/{recordId}", method = RequestMethod.POST)
-    public void updateBatch(HttpServletResponse response, 
+    public void updateBatch(HttpServletRequest request, HttpServletResponse response, 
     		@PathVariable("recordId") Long recordId, 
     		String ids, String field, String value) {
+    	
+    	prepareParams(request, recordId);
+    	
+    	// 检查用户对当前记录是否有编辑权限，防止篡改别人创建的记录
+		if( !checkPermission(recordId, Record.OPERATION_EDATA) && !checkPermission(recordId, Record.OPERATION_CDATA) ) {
+			throw new BusinessException("您对此录入表没有维护权限");
+		}
     	
 		getDB(recordId).updateBatch(ids, field, value);
         printSuccessMessage();
     }
-    
-    Map<String, String> getRequestMap(HttpServletRequest request) {
-    	Map<String, String[]> parameterMap = request.getParameterMap();
-    	Map<String, String> requestMap = new HashMap<String, String>();
-    	for(String key : parameterMap.keySet()) {
-    		String[] values = parameterMap.get(key);
-    		if(values != null && values.length > 0) {
-    			requestMap.put( key, values[0] );
-    		}
-    	}
-    	
-    	return requestMap;
-    }
+ 
     
     @RequestMapping(value = "/{recordId}/{id}", method = RequestMethod.DELETE)
-    public void delete(HttpServletResponse response, 
+    public void delete(HttpServletRequest request, HttpServletResponse response, 
     		@PathVariable("recordId") Long recordId, 
     		@PathVariable("id") Long id) {
+    	
+    	prepareParams(request, recordId);
     	
     	exeDelete(recordId, id);
         printSuccessMessage();
     }
     
     private void exeDelete(Long recordId, Long id) {
+		// 检查用户对当前记录是否有编辑权限
+		if( !checkRowEditable(recordId, id) ) {
+			throw new BusinessException("您没有权限删除该记录！");
+		}
+    	
     	_Database db = getDB(recordId);
 		db.delete(id);
     	
-		if(db.needFile) { // 删除附件
-	    	List<?> attachs = recordService.getAttachList(recordId, id);
-	    	for(Object attach : attachs) {
-	    		Long attachId = ((RecordAttach)attach).getId();
-	    		this.deleteAttach(null, attachId);
-	    	}
-		}
+	    // 删除附件
+    	List<?> attachs = recordService.getAttachList(recordId, id);
+    	for(Object obj : attachs) {
+    		RecordAttach attach = (RecordAttach)obj;
+    		recordService.deleteAttach( attach.getId() );
+    		FileHelper.deleteFile(new File(attach.getAttachPath()));
+    	}
     }
     
     @RequestMapping(value = "/batch/{recordId}", method = RequestMethod.DELETE)
-    public void deleteBatch(HttpServletResponse response, 
+    public void deleteBatch(HttpServletRequest request, HttpServletResponse response, 
     		@PathVariable("recordId") Long recordId, String ids) {
+    	
+    	prepareParams(request, recordId);
     	
     	String[] idArray = ids.split(",");
     	for(String id : idArray) {
@@ -250,7 +333,7 @@ public class _Recorder extends BaseActionSupport {
      */
     @RequestMapping("/import/tl/{recordId}")
     public void getImportTL(HttpServletResponse response, @PathVariable("recordId") Long recordId) {
-    	 _Database _db = getDB(recordId);
+    	 _Database _db = getDB(recordId, Record.OPERATION_CDATA, Record.OPERATION_EDATA, Record.OPERATION_VDATA);
 		
 		String fileName = _db.recordName + "-导入模板.csv";
         String exportPath = DataExport.getExportPath() + "/" + fileName;
@@ -264,21 +347,29 @@ public class _Recorder extends BaseActionSupport {
     
 	@RequestMapping("/attach/json/{recordId}/{itemId}")
     @ResponseBody
-    public List<?> getAttachList(@PathVariable("recordId") Long recordId, 
+    public List<?> getAttachList(HttpServletRequest request, @PathVariable("recordId") Long recordId, 
     		@PathVariable("itemId") Long itemId) {
+		
+		prepareParams(request, recordId);
+		
+		// 检查用户对当前记录是否有查看权限
+		if( !checkRowVisible(recordId, itemId) ) {
+			throw new BusinessException("您对此记录没有浏览权限");
+		}
 		
 		return recordService.getAttachList(recordId, itemId);
     }
-	
-	@RequestMapping("/attach/json/{recordId}")
-    @ResponseBody
-    public List<?> getAttachList(@PathVariable("recordId") Long recordId) {
-		return recordService.getAttachList(recordId, null);
-    }
-	
+
 	@RequestMapping("/attach/xml/{recordId}/{itemId}")
-    public void getAttachListXML(HttpServletResponse response, 
+    public void getAttachListXML(HttpServletRequest request, HttpServletResponse response, 
     		@PathVariable("recordId") Long recordId, @PathVariable("itemId") Long itemId) {
+		
+		prepareParams(request, recordId);
+		
+		// 检查用户对当前记录是否有查看权限
+		if( !checkRowVisible(recordId, itemId) ) {
+			throw new BusinessException("您对此记录没有浏览权限");
+		}
 		
 		List<?> list = recordService.getAttachList(recordId, itemId);
         GridDataEncoder attachGrid = new GridDataEncoder(list, DMConstants.GRID_RECORD_ATTACH);
@@ -286,21 +377,86 @@ public class _Recorder extends BaseActionSupport {
     }
 	
 	@RequestMapping(value = "/attach/{id}", method = RequestMethod.DELETE)
-    public void deleteAttach(HttpServletResponse response, @PathVariable("id") Long id) {
+    public void deleteAttach(HttpServletRequest request, HttpServletResponse response, @PathVariable("id") Long id) {
+		prepareParams(request, EasyUtils.obj2Long(request.getParameter("recordId")));
+		
 		RecordAttach attach = recordService.getAttach(id);
+		if(attach == null) {
+			throw new BusinessException("该附件不存在，可能已被删除!");
+		}
+		
+		// 检查用户对当前附件所属记录是否有编辑权限
+		if( !checkRowEditable(attach.getRecordId(), attach.getItemId()) ) {
+			throw new BusinessException("您对此附件没有删除权限");
+		}
+		
 		recordService.deleteAttach(id);
 		FileHelper.deleteFile(new File(attach.getAttachPath()));
-		if(response != null) {
-			printSuccessMessage();
-		}
+		
+		printSuccessMessage();
     }
 	
 	@RequestMapping("/attach/download/{id}")
-	public void downloadAttach(HttpServletResponse response, @PathVariable("id") Long id) throws IOException {
+	public void downloadAttach(HttpServletRequest request, HttpServletResponse response, @PathVariable("id") Long id) throws IOException {
+		prepareParams(request, EasyUtils.obj2Long(request.getParameter("recordId")));
+		
 		RecordAttach attach = recordService.getAttach(id);
 		if(attach == null) {
-			throw new BusinessException("该附件找不到了，可能已被删除!");
+			throw new BusinessException("该附件不存在，可能已被删除!");
 		}
-        FileHelper.downloadFile(response, attach.getAttachPath(), attach.getName());
+		
+		// 检查用户对当前附件所属记录是否有查看权限
+		if( !checkRowVisible(attach.getRecordId(), attach.getItemId()) ) {
+			throw new BusinessException("您对此附件没有查看权限");
+		} 
+		
+		FileHelper.downloadFile(response, attach.getAttachPath(), attach.getName());
+	}
+	
+	/************************************* check permissions：安全级别 > 5 才启用 **************************************/
+	
+	public static int SAFETY_LEVEL = 6;
+	
+	private boolean checkPermission(Long recordId, String permitOption) {
+		PermissionHelper helper = PermissionHelper.getInstance();
+		String permissionTable = RecordPermission.class.getName();
+		List<String> permissions = helper.getOperationsByResource(recordId, permissionTable, RecordResource.class);
+		
+		return permissions.contains( permitOption );
+	}
+	
+	private boolean checkRowEditable(Long recordId, Long itemId) {
+		if(SecurityUtil.getLevel() < SAFETY_LEVEL ) return true;
+		
+		boolean flag = false;
+		if( checkPermission(recordId, Record.OPERATION_EDATA) ) {
+			flag = checkRowVisible(recordId, itemId); // 如果有【维护数据】权限，则只要可见就能编辑
+		}
+		if( !flag && checkPermission(recordId, Record.OPERATION_CDATA) ) {
+			flag = checkRowAuthor(recordId, itemId); // 如果没有【维护数据】只有【新建】权限，则只能编辑自己创建的记录
+		}
+		return flag;
+	}
+	
+	/**
+	 * 因db.select方法里对数据进行了权限过滤，所以能按ID查询出来的都是有权限查看的
+	 */
+	private boolean checkRowVisible(Long recordId, Long itemId) {
+		if(SecurityUtil.getLevel() < SAFETY_LEVEL ) return true;
+		
+		Map<String, String> requestMap = new HashMap<String, String>();
+		requestMap.put("id", EasyUtils.obj2String(itemId));
+		
+        SQLExcutor ex = getDB(recordId).select( 1, 1, requestMap );
+		return !ex.result.isEmpty();
+	}
+	
+	private boolean checkRowAuthor(Long recordId, Long itemId) {
+		Map<String, String> requestMap = new HashMap<String, String>();
+		requestMap.put("id", EasyUtils.obj2String(itemId));
+		requestMap.put("creator", Environment.getUserCode());
+		
+        SQLExcutor ex = getDB(recordId).select( 1, 1, requestMap );
+        return !ex.result.isEmpty();
 	}
 }

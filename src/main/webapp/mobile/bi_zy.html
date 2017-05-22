@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title> BI资源统计 </title>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+	<meta name="viewport" content="width=device-width">
+
+	<link rel="stylesheet" href="css/mobile.css" />
+
+	<style type="text/css">
+
+body {
+	text-align: center;
+	box-sizing: border-box;
+	overflow-x: hidden;
+}
+
+.btn-group { margin: 0 auto; width: 80%; }
+.btn-group button {
+	text-align: center;
+	height: 30px; line-height: 30px;  width: 25%; display: inline-block;
+}
+
+#t1 { margin: 10px auto 0; width: 99%; }
+#t1 td { width: 25%; font-size: 90%; }
+#t1 tbody>tr:nth-child(even) { background-color: #E0ECFF; }
+
+#h6 { margin-top: 12px; }
+
+@media screen and (max-width: 480px) {
+    .btn-group button { padding: 0; }
+}
+
+	</style>
+</head>
+<body>
+
+	<h6 id="h6">数据最后更新于: <time></time></h6>
+
+	<span class="btn-group">
+	    <button type="primary" data-v="um_user">用户</button>
+	    <button type="primary" data-v="dm_report" outline>报表</button>
+	    <button type="primary" data-v="dm_record" outline>录入</button>
+	    <button type="primary" data-v="cms_article" outline>文章</button>
+	</span>
+
+	<table id="t1" class="bitable">
+		<thead>
+			<tr>
+				<td>月份</td>
+				<td>新增数量</td>
+				<td>参与人数</td>
+			</tr>
+		</thead>
+		<tbody>
+		</tbody>
+	</table>
+
+<script src="../tools/tssJS/tssJS.all.js"></script>
+<script src="../tools/tssJS/tssJS.data.js"></script>
+<script src="../tools/util_date.js"></script>
+<script src="js/mobile.js"></script>
+
+<script type="text/javascript">
+
+var types = ["dm_report", "dm_record", "um_user", "cms_article"], datas = {};
+
+checkLoign();
+query1();
+
+function query1() {
+	var lastTime = new Date().format("yyyy-MM-dd hh:mm:ss");
+	tssJS("#h6 time").html( lastTime );
+
+	var params = { "param3": 'today-365', "param4": 'today+1', "param1": '2'};
+	types.each(function(i, type) {
+		params.param2 = type;
+
+		$.getJSON( json_url(505), params,	        
+	        function(result) { 
+				datas[type] = result;
+				if(type == 'um_user') {
+					showGrid('um_user');
+				}
+	        }
+	    );
+	});
+}
+
+function showGrid(type) {
+	tssJS("#t1>tbody").html("");
+
+	var index = 0, data1 = datas[type];
+
+	data1 && tssJS.each(data1, function(i, item) {
+
+		var row = tssJS.createElement("tr");
+		tssJS(row).html("<td/><td/><td/>");
+		tssJS("td:nth-child(1)", row).html( item["name"] );
+		tssJS("td:nth-child(2)", row).html( item["value"] );
+		tssJS("td:nth-child(3)", row).html( item["v2"] );
+
+		tssJS("#t1>tbody").appendChild(row);
+	});
+}
+
+// 按钮切换
+$('.btn-group button').click(function(e) {
+	$('.btn-group button').attr("outline", "");
+	this.removeAttribute("outline");
+
+    var type = tssJS(this).attr('data-v');
+    showGrid(type);
+ });
+
+</script>
+
+</body>
+</html>

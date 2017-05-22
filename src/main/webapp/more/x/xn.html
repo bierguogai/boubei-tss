@@ -5,6 +5,8 @@
 <meta charset="UTF-8">
 <title>报表查询性能监控</title>
 
+<link rel="stylesheet" href="../../tools/tssJS/css/boubei.css">
+
 <link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
 <link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
 
@@ -152,11 +154,40 @@ function showChart(serviceName, type) {
     }
 
     tssJS.getJSON(json_url('visit-trend'), params, function(data){
-        var data2 = [], title = "【" + (serviceName||'数据服务') + "】访问走势图";
+        var data2 = [], labels = [];
         data.each( function(i, item) {
             data2.push( {"name": item.name, "value": item["访问次数"] } );
+            labels.push(item.name);
         } );
-        tssJS.Echart.line2D(canvas, serviceName||" ", {"访问速度": data, "访问次数": data2});  
+        // tssJS.Echart.line2D(canvas, serviceName||" ", {"访问速度": data, "访问次数": data2});  
+
+        var chartObj = echarts.init($1(canvas));
+        var option = {
+            title:   { text: serviceName||" " },
+            tooltip : {
+                trigger: 'axis'
+            },
+            calculable : false,
+            legend: {
+                data:['访问速度', '访问次数']
+            },
+            xAxis : [
+                {
+                    type : 'category',
+                    data : labels
+                }
+            ],
+            yAxis : [
+                { type : 'value', name : '秒/次', splitNumber: 3 },
+                { type : 'value', name : '次', splitNumber: 3 },
+            ],
+            series : [
+                { name:'访问速度', type:'line', data: data,  yAxisIndex: 0, smooth: true, symbolSize: 2, itemStyle : { normal: {label : {show: true, position: 'top'}}},},
+                { name:'访问次数', type:'line', data: data2, yAxisIndex: 1, smooth: true, symbolSize: 2, itemStyle : { normal: {label : {show: true, position: 'top'}}},}
+            ]
+        };
+        chartObj.setOption(option);             
+
         $("#main").layout("expand", "west");  
         setTimeout(function() {
             $("#main").layout("collapse", "west");  

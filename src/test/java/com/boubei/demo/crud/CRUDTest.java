@@ -8,9 +8,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.boubei.demo.crud.DemoAction;
-import com.boubei.demo.crud.DemoEntity;
-import com.boubei.demo.crud.DemoSO;
 import com.boubei.tss.AbstractTest4;
 import com.boubei.tss.ext.EasyUIDataGrid;
 import com.boubei.tss.modules.param.Param;

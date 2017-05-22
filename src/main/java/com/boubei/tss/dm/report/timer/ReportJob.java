@@ -35,6 +35,8 @@ import com.boubei.tss.util.MailUtil;
  */
 public class ReportJob extends AbstractJob {
 	
+	public static int MAX_ROWS = 200;
+	
 	ReportService reportService = (ReportService) Global.getBean("ReportService");
 	ILoginService loginService  = (ILoginService) Global.getBean("LoginService");
 	
@@ -154,7 +156,7 @@ public class ReportJob extends AbstractJob {
 		}
 		html.append("<h4>点击链接可以看到更详细的图表：<a href='" + url + "'>" + url + "<a></h4><br>");
 		
-		if(ex.result.size() > 1000) {
+		if(ex.result.size() > MAX_ROWS) {
 			html.append("<h1>报表【" + title + "】的内容详细请参见附件。</h1>");
 		} 
 		else {

@@ -70,18 +70,14 @@ $(function(){
     initUserInfo(function() {
         resizeIFrame();
 
-        $.ajax({
-            url : "/tss/auth/user/has",
-            method : "GET",
-            type : "json",
-            ondata : function() {
-                var info = this.getResponseJSON();
+        tssJS.getJSON("/tss/auth/user/has", {}, 
+            function(info) {
                 if( info && info[1] ) {
                     var roles = info[1];
-                    ( info[1].contains(1) || info[1].contains(-1) ) && $("li.biadmin").show(true);  // BI管理员
+                    ( roles.contains(59) || roles.contains(-1) ) && $("li.biadmin").show(true);  // BI管理员
                 }
-            }
-        });
+            }, 
+        "GET");
 
         dbsx();
         getBIMenu();
@@ -126,7 +122,7 @@ function showNotice(id, title) {
 
 tssJS(function(){
     var request = new $.HttpRequest();
-    request.url =  "/tss/auth/article/list/xml/2/1/5/false";
+    request.url =  "/tss/auth/article/list/xml/" +notice_channel+ "/1/5/false";
     request.method = "GET";
     request.onresult = function(){
         var articleList = this.getNodeValue("ArticleList");
@@ -168,17 +164,14 @@ tssJS(function(){
 
 
 // ----------------------------------- 获取BI报表一级菜单 -----------------------------------
-var _menus = {}, items = {}, rootId = 669;
-MENU_URL = "/tss/auth/rp/my/" + rootId;
-
-var globalValiable = {};
+var globalValiable = {},
+    _menus = {}, items = {}, rootId = 669,
+    fisrtGroup, 
+    fisrtReport;
 
 function getBIMenu() {
-	tssJS.ajax({
-		url: MENU_URL,
-		type: "json",
-		ondata: function() {
-			var data = this.getResponseJSON();
+	tssJS.getJSON( "/tss/auth/rp/my/" + rootId, {},
+		function(data) {
 
 			data.each( function(i, item) {
 				var id = item[0], pid = item[2], name = item[1], isReport = item[3];
@@ -188,10 +181,11 @@ function getBIMenu() {
 
 				if( pid == rootId ) { // 一级目录
 					var li = tssJS.createElement("li");
-					$(li).html("<a href='javascript:void(0)' onclick='openReport(" +id+ ")'>" +name+ "</a>");
+					$(li).html("<a href='javascript:void(0)' onclick='openLevelOne(" +id+ ")'>" +name+ "</a>");
 					$("#_bi>ul").appendChild(li);
 
 					_menus[id] = [];
+                    fisrtGroup = fisrtGroup || id;
 				}
 				else if( !isReport ) { // 二级目录
 					_menus[pid] && _menus[pid].push(item);
@@ -199,17 +193,18 @@ function getBIMenu() {
 				}
 				else if( isReport ) {  // 报表
 					items[pid] && items[pid].children && items[pid].children.push(item);
+                    fisrtReport = fisrtReport || id;
 				}
 			} );
 
-            openReport(685); // 默认打开BI首页
+            openLevelOne(fisrtGroup); // 默认打开第一个报表
 		}
-	})
+	);
 }
 
-function openReport(id) {
+function openLevelOne(id) {
 	globalValiable.list = _menus[id];
-	openUrl('more/bi_menu.html?id=' + id);
+	openUrl('more/bi_menu.html?id=' + id + (fisrtReport ? "&_default="+fisrtReport : "") );
 }
 
 </script>

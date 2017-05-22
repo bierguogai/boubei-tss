@@ -14,17 +14,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.boubei.tss.PX;
 import com.boubei.tss.cache.extension.CacheHelper;
 import com.boubei.tss.dm.DMConstants;
+import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.record.permission.RecordPermission;
 import com.boubei.tss.dm.record.permission.RecordResource;
-import com.boubei.tss.framework.web.dispaly.tree.LevelTreeParser;
-import com.boubei.tss.framework.web.dispaly.tree.TreeEncoder;
-import com.boubei.tss.framework.web.dispaly.xform.XFormEncoder;
+import com.boubei.tss.framework.web.display.tree.LevelTreeParser;
+import com.boubei.tss.framework.web.display.tree.TreeEncoder;
+import com.boubei.tss.framework.web.display.xform.XFormEncoder;
 import com.boubei.tss.framework.web.mvc.BaseActionSupport;
-import com.boubei.tss.modules.param.Param;
-import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.EasyUtils;
@@ -92,11 +90,7 @@ public class RecordAction extends BaseActionSupport {
         }
         
         if( Record.TYPE1 == type ) {
-            try {
-            	List<Param> datasources = ParamManager.getComboParam(PX.DATASOURCE_LIST);
-                xformEncoder.fixCombo("datasource", datasources);	
-            } catch (Exception e) {
-            }
+        	DMUtil.setDSList(xformEncoder);
         }
  
         print("SourceInfo", xformEncoder);

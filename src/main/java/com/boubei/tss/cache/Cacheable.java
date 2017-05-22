@@ -68,7 +68,7 @@ public interface Cacheable {
 	long addHitLong();
 	
 	/**
-	 * 获取对象的点击次数
+	 * 获取对象的命中占用时间
 	 * 
 	 * @return
 	 */

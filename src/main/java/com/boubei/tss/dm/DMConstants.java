@@ -37,11 +37,4 @@ public final class DMConstants {
         }
 		return ds;
 	}
-	
-	public static String getDefaultDS() {
-    	// ParamManager.getValue 有缓存，不宜用。（单元测试环节或自动切换数据源时容易出问题）
-        // String datasource = ParamManager.getValue(PX.DEFAULT_CONN_POOL).trim();
-        String datasource = ParamManager.getValueNoSpring(PX.DEFAULT_CONN_POOL).trim();
-        return datasource;
-    }
 }

@@ -1,14 +1,18 @@
 package com.boubei.tss.dm;
 
+import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
@@ -21,13 +25,20 @@ import com.boubei.tss.dm.report.Report;
 import com.boubei.tss.dm.report.ReportService;
 import com.boubei.tss.dm.report.ScriptParser;
 import com.boubei.tss.dm.report.ScriptParserFactory;
+import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.framework.sso.IOperator;
+import com.boubei.tss.framework.sso.IdentityCard;
+import com.boubei.tss.framework.sso.TokenUtil;
 import com.boubei.tss.framework.sso.context.Context;
+import com.boubei.tss.framework.web.display.xform.XFormEncoder;
 import com.boubei.tss.modules.param.Param;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.um.UMConstants;
+import com.boubei.tss.um.permission.IResource;
+import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
@@ -36,12 +47,92 @@ public class DMUtil {
 	
 	static Logger log = Logger.getLogger(DMUtil.class);
 	
-	public static String getExportPath() {
+	/**
+	 * 按角色控制数据源下拉列表，角色信息配置在数据源参数项的备注里，多个角色逗号分隔。
+	 */
+	public static void setDSList(XFormEncoder xformEncoder) {
 		try {
-			return ParamManager.getValue(PX.TEMP_EXPORT_PATH);
+        	List<Param> dsItems = ParamManager.getComboParam(PX.DATASOURCE_LIST);
+        	List<Param> _dsItems = new ArrayList<Param>();
+        	for(Param ds : dsItems) {
+        		boolean flag = false;
+        		String permissions = ds.getDescription();
+				if( !EasyUtils.isNullOrEmpty(permissions) ) {
+					List<Long> ownRoles = Environment.getOwnRoles();
+					List<String> permitedRoles = Arrays.asList( permissions.split(",") );
+					for(Long ownRole: ownRoles) {
+						if( permitedRoles.contains(ownRole.toString()) ) {
+							flag = true;
+						}
+					}
+        		} else {
+        			flag = true;
+        		}
+				
+				if(flag) {
+					_dsItems.add(ds);
+				}
+        	}
+        	
+            xformEncoder.fixCombo("datasource", _dsItems);	
+        } catch (Exception e) {
+        }
+	}
+	
+	/**
+	 * 通过uToken令牌，检查指定资源是否被授权给第三方系统访问。
+	 */
+	public static boolean checkAPIToken(IResource r, String uName, String uToken) {
+		ILoginService loginService = (ILoginService) Global.getBean("LoginService");
+		
+		List<String> tokenList = loginService.searchTokes(uName, r.getId().toString(), r.getResourceType()); 
+		tokenList.addAll( loginService.searchTokes(uName, r.getName(), r.getResourceType()) );
+ 
+    	if( tokenList.contains(uToken) ) {
+    		IOperator user = loginService.getOperatorDTOByLoginName(uName);
+    		String token = TokenUtil.createToken(uToken, user.getId());
+    		IdentityCard card = new IdentityCard(token, user);
+    		Context.initIdentityInfo(card); 
+    		return true;
+    	}
+    	return false;
+	}
+	
+	// 注：通过tssJS.ajax能自动过滤params里的空值，jQuery发送的ajax请求则不能
+    public static Map<String, String> getRequestMap(HttpServletRequest request, boolean isGet) {
+    	Map<String, String[]> parameterMap = request.getParameterMap();
+    	Map<String, String> requestMap = new LinkedHashMap<String, String>();
+    	boolean isJetty = "org.eclipse.jetty.server.Request".equals( request.getClass().getName() );
+    	for(String key : parameterMap.keySet()) {
+    		String[] values = parameterMap.get(key);
+			String value = null;
+			
+			if(isGet && !isJetty ) { // tomcat7, (not jetty)
+				try {
+					value = new String(values[0].getBytes("ISO-8859-1"), "UTF-8"); 
+				} catch (UnsupportedEncodingException e) {
+				}
+			}
+			
+			value = (String) EasyUtils.checkNull(value, values[0]);
+			requestMap.put( key, value );
+    	}
+    	
+    	requestMap.remove("_time");          // 剔除jsonp为防止url被浏览器缓存而加的时间戳参数
+    	requestMap.remove("jsonpCallback"); // jsonp__x,其名也是唯一的
+    	requestMap.remove("appCode");      // 其它系统向当前系统转发请求
+    	requestMap.remove("ac");
+    	
+    	return requestMap;
+    }
+	
+	public static String getExportPath() {
+		String exportPath = FileHelper.ioTmpDir();
+		try {
+			exportPath = ParamManager.getValue(PX.TEMP_EXPORT_PATH);
 		} catch(Exception e) {
-			return FileHelper.ioTmpDir();
 		}
+		return exportPath;
 	}
 	
 	// 判断是否为区间查询（从 。。。 到 。。。）
@@ -74,15 +165,16 @@ public class DMUtil {
 			}
   		}
   		else if("date".equals(type) || "datetime".equals(type)) {
-			try {
-				Date dateObj = DateUtil.parse(value);
-				return new Timestamp(dateObj.getTime());
-			} catch(Exception e) {
-				throw new BusinessException("日期【" + value + "】格式有误，请检查。 " + e.getMessage());
-			}
+  			if( EasyUtils.isNullOrEmpty(value) ) return null;
+  			
+  			Date dateObj = DateUtil.parse(value);
+  			if(dateObj == null) {
+  				throw new BusinessException("日期【" + value + "】格式有误，请检查。");
+  			} 
+  			return new Timestamp(dateObj.getTime());
   		}
   		else {
-  			return value;
+  			return value.trim();
   		}
   	} 
   	
@@ -102,7 +194,7 @@ public class DMUtil {
     	Map<String, Object> fmDataMap = new HashMap<String, Object>();
         
       	// 加入登陆用户的信息
-      	fmDataMap.put(DMConstants.USER_ID, Environment.getUserId());
+      	fmDataMap.put(DMConstants.USER_ID, EasyUtils.obj2String(Environment.getUserId()));
       	fmDataMap.put(DMConstants.USER_CODE, Environment.getUserCode());
 		fmDataMap.put(DMConstants.FROM_USER_ID, Environment.getUserInfo("fromUserId"));
 		
@@ -113,9 +205,8 @@ public class DMUtil {
 			
 			for(Param p : macroParams) {
 				String key = p.getText();
-				if( !fmDataMap.containsKey(key) ) {
-					fmDataMap.put(key, p.getValue());
-				}
+				String val = (String) EasyUtils.checkNull( fmDataMap.get(key), p.getValue() );
+				fmDataMap.put(key, val);
 			}
 		} catch(Exception e) { }
 		
@@ -205,7 +296,13 @@ public class DMUtil {
 		
 		// 过滤掉定时刷新类型的报表
 		boolean ignoreLog = ParamConstants.FALSE.equals(report.getNeedLog());
-		if( ignoreLog ) return;
+		if( !ignoreLog ) {
+			outputAccessLog("Report-"+reportId, reportName, methodName, requestMap, start);
+		}
+	}
+	
+	public static void outputAccessLog(String cnName, String name, 
+			String methodName, Map<String, String> requestMap, long start) {
 		
 		String params = "";
 		for(Entry<String, String> entry : requestMap.entrySet()) {
@@ -216,9 +313,9 @@ public class DMUtil {
 		// 方法的访问日志记录成败不影响方法的正常访问，所以对记录日志过程中各种可能异常进行try catch
         try {
             AccessLog log = new AccessLog();
-            log.setClassName("Report-" + reportId);
+            log.setClassName(cnName);
     		log.setMethodName( methodName );
-    		log.setMethodCnName( reportName );
+    		log.setMethodCnName( name );
             log.setAccessTime( new Date(start) );
             log.setRunningTime( System.currentTimeMillis() - start );
             log.setParams(params);
@@ -231,7 +328,7 @@ public class DMUtil {
             AccessLogRecorder.getInstanse().output(log);
         } 
         catch(Exception e) {
-        	log.error("记录报表【" + reportName + "." + methodName + "】访问日志时出错：" + e.getMessage());
+        	log.error("记录报表/录入【" + name + "." + methodName + "】访问日志时出错：" + e.getMessage());
         }
 	}
 	

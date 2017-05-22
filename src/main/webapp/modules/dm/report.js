@@ -713,13 +713,3 @@ function importReportDef() {
 		$(importDiv).show().center();
     });	
 }	
-
-function selectTL() {
-    popupTree(AUTH_PATH + "rp/template", "SourceTree", {"_title": "可选模板列表"}, function(target) {
-        $.F("reportForm").updateDataExternal("displayUri", target.name);
-    });
-}
-
-function uploadTL() {
-	fileManage("type=reportTL&useOrignName=true", "管理报表模板文件");
-}

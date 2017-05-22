@@ -360,6 +360,7 @@ Grid table {
   width: 100%;
   height: auto;
   table-layout: fixed;
+  margin-bottom: 10px;
 }
 Grid table tr {
   height: 25px;
@@ -511,7 +512,7 @@ Grid .sorting {
   position: relative;
   width: 20px;
   height: 30px;
-  text-indent: -2000px;
+  text-indent: -10000px;
   white-space: nowrap;
   opacity: .5;
   background-color: transparent;

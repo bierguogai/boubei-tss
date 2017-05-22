@@ -112,7 +112,7 @@ var Field = function(info) {
 		},		
 
 		createDataNode: function() {
-		 	if(this.defaultValue) {
+		 	if(this.defaultValue || this.defaultValue === 0) {
 		 		return "<" + this.name + "><![CDATA[" + this.defaultValue + "]]></" + this.name + ">";
 		 	}
 			return "";

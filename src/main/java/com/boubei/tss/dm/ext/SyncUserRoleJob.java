@@ -50,19 +50,15 @@ public class SyncUserRoleJob extends AbstractJob {
 			String[] role2 = EasyUtils.obj2String(item.get("role2")).split(","); // 需要删除的用户角色关系
 			
 			for(String role : role1) {
-				if( !EasyUtils.isNullOrEmpty(role) ) {
-					Long _role = EasyUtils.obj2Long(role);
-					if( getCount(user, _role) == 0 ) {
-						addList.add(new Object[]{ user, _role });
-					}
+				Long _role = EasyUtils.obj2Long(role);
+				if( getCount(user, _role) == 0 ) {
+					addList.add(new Object[]{ user, _role });
 				}
 			}
 			
 			for(String role : role2) {
-				if( !EasyUtils.isNullOrEmpty(role) ) {
-					Long _role = EasyUtils.obj2Long(role);
-					delList.add(new Object[]{ user, _role });
-				}
+				Long _role = EasyUtils.obj2Long(role);
+				delList.add(new Object[]{ user, _role });
 			}
 		}
 		

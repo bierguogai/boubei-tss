@@ -1,6 +1,7 @@
 package com.boubei.tss.cache.aop;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
 
 import org.aopalliance.intercept.MethodInterceptor;
@@ -17,6 +18,7 @@ import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.util.EasyUtils;
+import com.boubei.tss.util.MailUtil;
  
 /**
  * 将耗时查询（如report）的执行中的查询缓存起来。
@@ -34,6 +36,9 @@ public class QueryCacheInterceptor implements MethodInterceptor {
 
     protected Logger log = Logger.getLogger(this.getClass());
     
+    public static int MAX_QUERY_TIME = 10*60*1000; // 10分钟
+    public static boolean IS_BUSY = false;
+    
     public Object invoke(MethodInvocation invocation) throws Throwable {
         Method targetMethod = invocation.getMethod(); /* 获取目标方法 */
         Object[] args = invocation.getArguments();    /* 获取目标方法的参数 */
@@ -50,7 +55,16 @@ public class QueryCacheInterceptor implements MethodInterceptor {
 		int X = countThread(qCache), 
 			V = EasyUtils.obj2Int( ParamManager.getValue(PX.MAX_QUERY_REQUEST, "100") );
 		if( X > V ) {
+			if( !IS_BUSY ) { // 第一次出现时，已经紧张了无需提醒
+				IS_BUSY = true;
+				String qCacheInfo = qCache.getUsing().toString();
+				log.info( "当前应用服务器资源紧张：" + qCacheInfo);
+				MailUtil.send("当前应用服务器资源紧张，请速登陆系统查看。", qCacheInfo);
+			}
 			throw new BusinessException("当前应用服务器资源紧张，请稍后再查询。" + X + ">" + V);
+		} 
+		else {
+			IS_BUSY = false;
 		}
 		
 		/* 检查当前查询服务（报表服务等）在等待队列中是否超过了阈值（X）25%，超过则不再接受新的查询请求，
@@ -60,7 +74,7 @@ public class QueryCacheInterceptor implements MethodInterceptor {
 			Object limitArg = (args.length > limit ? args[limit] : "" );
 			int count = countService(qCache, targetMethod.getName(), limitArg);
 			if(count > V*0.25) {
-				throw new BusinessException("当前您查询的数据服务响应缓慢，前面还有" + count + "个人在等待，请稍后再查询。");
+				throw new BusinessException("当前您查询的数据服务[" +limitArg+ "]响应缓慢，前面还有" +count+ "个人在等待，请稍后再查询。");
 			}
 		}
         
@@ -72,18 +86,22 @@ public class QueryCacheInterceptor implements MethodInterceptor {
 		String visitor = Environment.getUserName();
 		
 		if (qcItem != null) {
-			String visitors = qcItem.getValue() + "," +  visitor;
-			qcItem.update( visitors ); // 记录是哪几个人、及第几个到访
+			String _visitors = EasyUtils.obj2String(qcItem.getValue());
+			if( Arrays.asList( _visitors.split(",") ).contains(visitor) ) {
+				throw new BusinessException("您当前点击的查询正在处理中，请您耐心等待，不要反复查询。" + Arrays.asList(args));
+			}
+			
+			qcItem.update( _visitors + "," + visitor ); // 记录是哪几个人、及第几个到访
 			log.debug( currentThread + " QueryCache【"+qKey+"】= " + qcItem.getHit() );
 			
 			// 等待执行中的上一次请求先执行完成； 
 			long start = System.currentTimeMillis();
 			while( qCache.contains(qKey) ) { // 说明NO.1 Query还在执行中
 				log.debug(currentThread + " QueryCache waiting...");
-				Thread.sleep( 500 * Math.min(20, qcItem.getHit()) );  // 等待的线程越多，则sleep时间越长
+				Thread.sleep( 3000 * Math.min(Math.max(1, qcItem.getHit()), 10) ); //等待的线程越多，则sleep时间越长
 				
 				// 超过10分钟，说明执行非常缓慢，则不再继续等待，同时抛错提示用户。
-				if(System.currentTimeMillis() - start > 10*60*1000) {
+				if(System.currentTimeMillis() - start > MAX_QUERY_TIME) {
 					throw new BusinessException("本次请求执行缓慢，请稍后再查询。");
 				}
 			}
@@ -121,7 +139,7 @@ public class QueryCacheInterceptor implements MethodInterceptor {
     		String key = item.getKey().toString();
 			if( key.startsWith("QC_") ) {
 				I++;
-	    		H += item.getHit();
+	    		H += item.getHit(); // 第一次生成hit = 0
 			}
     	}
     	return I + H;

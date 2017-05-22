@@ -151,7 +151,7 @@ $(document).ready(function(){
     		case '2':
     			$('#_week1').combobox('setValue', cweek);
     			$('#_week2').combobox('setValue', cweek);
-                $('#_day1').datebox('setValue', subDateS(now, now.getDay()-1));
+                $('#_day1').datebox('setValue', subDateS(now, (now.getDay()||7)-1));
                 $('#_day2').datebox('setValue', cday);
     			break;
     		case '3':
@@ -321,13 +321,12 @@ function initGroupParams(callback) {
 	            data: [ {"value": 1, "text": "张三"}, 
 		        		{"value": 2, "text": "李四"}, 
 		        		{"value": 3, "text": "王五"}, 
-		        		{"value": 4, "text": "马六"}
 		        	],
 	            queryParams: {"param1": newOrg}
 	        });
         }
     });
-    $("#_g1").combobox("setValue", "1");
+    // $("#_g1").combobox("setValue", "1");
 
     /* 待Groups加载完成后，再 updateParams by cookie
        TODO 如果组织是通过Ajax异步获取回来的，则updateParams(false)需要在组织下拉项加载完成后再执行一次 */
@@ -343,25 +342,31 @@ function beginQuery() {
     hideQueryForm();
 
 	// 设置查询条件到cookie
-	tssJS.Cookie.setValue("_time_", tssJS.now());
-	tssJS.Cookie.setValue("_day1", $("#_day1").textbox("getValue"));
-	tssJS.Cookie.setValue("_day2", $("#_day2").textbox("getValue"));
-	tssJS.Cookie.setValue("_week1", $("#_week1").textbox("getValue"));
-	tssJS.Cookie.setValue("_week2", $("#_week2").textbox("getValue"));
-	tssJS.Cookie.setValue("_month1", $("#_month1").textbox("getValue"));
-	tssJS.Cookie.setValue("_month2", $("#_month2").textbox("getValue"));
-	tssJS.Cookie.setValue("_season1", $("#_season1").textbox("getValue"));
-	tssJS.Cookie.setValue("_season2", $("#_season2").textbox("getValue"));
-	tssJS.Cookie.setValue("_year1", $("#_year1").textbox("getValue"));
-	tssJS.Cookie.setValue("_year2", $("#_year2").textbox("getValue"));
+    var d = new Date();
+    d.setHours(d.getHours() + 12); // 保存12个小时
+    var expires = d.toGMTString();
 
-    tssJS.Cookie.setValue("_wd", tssJS.radioValue("_wd"));
+    function setToCookie(key) {
+        tssJS.Cookie.setValue(key, $("#"+key).textbox("getValue"), expires);
+    }
 
-	tssJS.Cookie.setValue("_g1", $("#_g1").textbox("getValue"));
-	tssJS.Cookie.setValue("_g2", $("#_g2").textbox("getValue"));
-	tssJS.Cookie.setValue("_g3", $("#_g3").textbox("getValue"));
-	tssJS.Cookie.setValue("_g4", $("#_g4").textbox("getValue"));
-	tssJS.Cookie.setValue("_g5", $("#_g5").textbox("getValue"));
+	tssJS.Cookie.setValue("_time_", tssJS.now(), expires);
+	setToCookie("_day1");
+	setToCookie("_day2");
+	setToCookie("_week1");
+	setToCookie("_week2");
+	setToCookie("_month1");
+	setToCookie("_month2");
+	setToCookie("_season1");
+	setToCookie("_season2");
+	setToCookie("_year1");
+	setToCookie("_year2");
+    tssJS.Cookie.setValue("_wd", tssJS.radioValue("_wd"), expires);
+	setToCookie("_g1");
+	setToCookie("_g2");
+	setToCookie("_g3");
+	setToCookie("_g4");
+	setToCookie("_g5");
 
 	parent.tssJS("#searchFormDiv").hide();
 	parent.initPortlet(); // 打开报表

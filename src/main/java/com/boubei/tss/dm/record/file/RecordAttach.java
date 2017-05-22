@@ -13,8 +13,8 @@ import javax.persistence.Table;
 
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.framework.persistence.IEntity;
-import com.boubei.tss.framework.web.dispaly.grid.GridAttributesMap;
-import com.boubei.tss.framework.web.dispaly.grid.IGridNode;
+import com.boubei.tss.framework.web.display.grid.GridAttributesMap;
+import com.boubei.tss.framework.web.display.grid.IGridNode;
 import com.boubei.tss.util.DateUtil;
 
 /**

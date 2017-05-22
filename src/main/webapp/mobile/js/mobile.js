@@ -1,32 +1,22 @@
-tssJS && tssJS(function() {
-    var scriptNode = tssJS.createElement("script");
-    scriptNode.src = "http://s95.cnzz.com/z_stat.php?id=1259158241&web_id=1259158241";
-    scriptNode.async = false;
-    tssJS('head').appendChild(scriptNode);
-});
-
-// BASE_DATA_URL = 'http://btrbi.800best.com/tss/data/';
-// BASE_DATA_URL = 'http://10.9.44.68:8080/tss/data/'; 
-BASE_DATA_URL = 'http://polaris.800best.com/tss/data/'
-
-var
-	IS_TEST = (location.protocol === 'file:'),
-	API_IDS = [2099, 2101, 2103, 2102, 2100, 2104, 2106, 2107, 2105],
-    MENU_ROOT = 77;
-
-if(IS_TEST) {
-	// API_IDS = [2088, 1937, 2096, 1938, 2083, 2089, 2107, 2112, 2098];
-    // MENU_ROOT = 76;
-    BASE_DATA_URL = 'http://btrbi.800best.com/tss/data/';
+if( location.hostname == 'www.boubei.com' ) {
+    tssJS && tssJS(function() {
+        var scriptNode = document.createElement("script");
+        scriptNode.src = "http://s11.cnzz.com/z_stat.php?id=1256153120&web_id=1256153120";
+        scriptNode.async = false;
+        tssJS('head').appendChild(scriptNode);
+    });
 }
 
-BASE_DATA_JSON  = BASE_DATA_URL + 'json/';
-BASE_DATA_JSONP = BASE_DATA_URL + 'jsonp/';
+BASE_URL = 'http://www.boubei.com/tss/'
+
+BASE_JSON_URL  = BASE_URL + '/data/json/';
+BASE_JSONP_URL = BASE_URL + '/data/jsonp/';
+
+function json_url(id, appCode)  { return BASE_JSON_URL  + id + (appCode ? "?appCode="+appCode : ""); }
+function jsonp_url(id, appCode) { return BASE_JSONP_URL + id + (appCode ? "?appCode="+appCode : ""); }
 
 
 function checkLoign() {
-	if(IS_TEST) return;
-
 	var iUser = $.Cookie.getValue("iUser");
 	if( !iUser || iUser == 'null'  ) {		
 		window.location.href = "login.html";
@@ -36,47 +26,17 @@ function checkLoign() {
 	}
 }
 
-function toDate(dataStr) {
-    if(!dataStr) return dataStr;
-
-    var d = new Date(dataStr.replace(/-/g, "/"));
-    return d;
-}
-function subDate(day, x) {
-    return new Date(day.getTime() - x*1000*60*60*24);
-}
-function subDateS(day, x) {
-    return new Date(day.getTime() - x*1000*60*60*24).format("MM-dd");
-}
-function getFirstMDay(day) {
-    return day.format("yyyy-MM") + "-01";
-}
-function getLastMDay(day) {
-    return getLastDateOfMonth(day).format("yyyy-MM-dd");
-}
-function getLastMDate(day) {
-    var year = day.getFullYear();
-    var month = (day.getMonth() + 1);
-    if(month > 12) {
-        month = 1;
-        year ++;
-    }
-    if(month < 10) {
-        month = '0' + month;
-    }
-    var tempDay = new Date(year, month, 1);
-    var lastDay = (new Date(tempDay.getTime() - 1000*60*60*24));
-
-    return lastDay.getDate();
-}
-
 function genLabels(x) {
 	var labels = [];
 	for(var i = x; i > 0; i--) {
-		labels.push( subDateS(new Date(), i) );
+		labels.push( _subDateS(new Date(), i) );
 	}
 
 	return labels;
+}
+
+function _subDateS(day, x) {
+    return new Date(day.getTime() - x*1000*60*60*24).format("MM-dd");
 }
 
 // 格式化金额数据

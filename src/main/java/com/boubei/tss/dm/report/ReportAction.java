@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.boubei.tss.PX;
 import com.boubei.tss.dm.DMConstants;
+import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
 import com.boubei.tss.dm.report.permission.ReportPermission;
 import com.boubei.tss.dm.report.permission.ReportResource;
@@ -29,12 +30,12 @@ import com.boubei.tss.dm.report.timer.ReportJob;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sso.Environment;
-import com.boubei.tss.framework.web.dispaly.tree.DefaultTreeNode;
-import com.boubei.tss.framework.web.dispaly.tree.ITreeNode;
-import com.boubei.tss.framework.web.dispaly.tree.LevelTreeParser;
-import com.boubei.tss.framework.web.dispaly.tree.StrictLevelTreeParser;
-import com.boubei.tss.framework.web.dispaly.tree.TreeEncoder;
-import com.boubei.tss.framework.web.dispaly.xform.XFormEncoder;
+import com.boubei.tss.framework.web.display.tree.DefaultTreeNode;
+import com.boubei.tss.framework.web.display.tree.ITreeNode;
+import com.boubei.tss.framework.web.display.tree.LevelTreeParser;
+import com.boubei.tss.framework.web.display.tree.StrictLevelTreeParser;
+import com.boubei.tss.framework.web.display.tree.TreeEncoder;
+import com.boubei.tss.framework.web.display.xform.XFormEncoder;
 import com.boubei.tss.framework.web.mvc.BaseActionSupport;
 import com.boubei.tss.modules.param.Param;
 import com.boubei.tss.modules.param.ParamConstants;
@@ -49,6 +50,9 @@ import com.boubei.tss.util.FileHelper;
 import com.boubei.tss.util.StringUtil;
 import com.boubei.tss.util.URLUtil;
 
+/**
+ * [ {'label':'不要缓存','type':'hidden','name':'noCache','defaultValue':'true'} ]
+ */
 @Controller
 @RequestMapping("/auth/rp")
 public class ReportAction extends BaseActionSupport {
@@ -126,14 +130,11 @@ public class ReportAction extends BaseActionSupport {
 	    Long selfGroupId = -2L, topGroupId = -3L, newGroupId = -4L;
 	    		
 	    List<Report> result = new ArrayList<Report>();
-	    if(topSelf.size() > 0) {
-	    	result.add(new Report(selfGroupId, "您最近访问报表", null));
-	    	result.addAll( cloneTops(selfGroupId, topSelf, list) );
-	    }
-	    if(topX.size() > 0) {
-	    	result.add(new Report(topGroupId, "近期热门报表", null));
-	    	result.addAll( cloneTops(topGroupId, topX, list) );
-	    }
+    	result.add(new Report(selfGroupId, "您最近访问报表", null));
+    	result.addAll( cloneTops(selfGroupId, topSelf, list) );
+
+    	result.add(new Report(topGroupId, "近期热门报表", null));
+    	result.addAll( cloneTops(topGroupId, topX, list) );
 	    
 	    result.add(new Report(newGroupId, "近期新出报表", null));
 	    List<Report> lastest = new ArrayList<Report>();
@@ -149,17 +150,21 @@ public class ReportAction extends BaseActionSupport {
     		
     		result.add(report); // 此处将list里的所有report及分组放入到result里
     	}
-    	Collections.sort(lastest, new Comparator<Report>() {
-            public int compare(Report r1, Report r2) {
-                return r2.getId().intValue() - r1.getId().intValue();
-            }
-        });
-    	result.addAll(lastest.size() > 3 ? lastest.subList(0, 3) : lastest);
+    	sortLastest(result, lastest);
        
         TreeEncoder treeEncoder = new TreeEncoder(result, new LevelTreeParser());
         treeEncoder.setNeedRootNode(false);
         print("SourceTree", treeEncoder);
     }
+
+	void sortLastest(List<Report> result, List<Report> lastest) {
+		Collections.sort(lastest, new Comparator<Report>() {
+            public int compare(Report r1, Report r2) {
+                return r2.getId().intValue() - r1.getId().intValue();
+            }
+        });
+    	result.addAll(lastest.size() > 3 ? lastest.subList(0, 3) : lastest);
+	}
     
     private List<Report> cloneTops(Long topGroupId, List<String> topX, List<Report> list) {
     	List<Report> result = new ArrayList<Report>();
@@ -222,20 +227,16 @@ public class ReportAction extends BaseActionSupport {
     @RequestMapping("/template")
     public void getReportTLs(HttpServletResponse response) {
     	StringBuffer sb = new StringBuffer("<actionSet>"); 
+    	sb.append("<treeNode id=\"0\" name=\"").append("/tss/modules/dm/recorder.html?id=录入表ID").append("\"/>");
     	
-    	// /bi or /more/bi4.0 等目录下
+    	// bi or more/bi4.0 等目录下
     	String rtd = DMConstants.getReportTLDir();
  		File reportTLDir = new File(URLUtil.getWebFileUrl(rtd).getPath());
 		List<File> files = FileHelper.listFilesByTypeDeeply("html", reportTLDir);
 		int index = 1;
  		for (File file : files) {
-			String treeName = "../../" + rtd;
-			File parentFile = file.getParentFile();
-			if( !parentFile.equals(reportTLDir) ) {
-				treeName +=  "/" + parentFile.getName();
-			}
-			treeName +=  "/" + file.getName();
-			
+			String filePath = file.getPath();
+			String treeName = filePath.substring( Math.max(0, filePath.indexOf("/tss/" + rtd)) );
 			sb.append("<treeNode id=\"").append(index++).append("\" name=\"").append(treeName).append("\"/>");
 		}
  		
@@ -245,11 +246,11 @@ public class ReportAction extends BaseActionSupport {
  			files = FileHelper.listFilesByTypeDeeply("html", delfaultDir);
  	 		for (File file : files) {
  				sb.append("<treeNode id=\"").append(index++)
- 				  .append("\" name=\"").append("../../more/bi_template/" + file.getName()).append("\"/>");
+ 				  .append("\" name=\"").append("/tss/more/bi_template/" + file.getName()).append("\"/>");
  			}
  		}
+ 		
  		sb.append("</actionSet>");
-		
         print("SourceTree", sb);
     }
     
@@ -284,7 +285,6 @@ public class ReportAction extends BaseActionSupport {
             Long parentId = parentIdValue == null ? Report.DEFAULT_PARENT_ID : EasyUtils.obj2Long(parentIdValue);
             map.put("parentId", parentId);
             map.put("type", type);
-            map.put("param", "[\n{'label':'不要缓存','type':'hidden','name':'noCache','defaultValue':'true'}\n]");
             xformEncoder = new XFormEncoder(uri, map);
         } 
         else {
@@ -294,11 +294,7 @@ public class ReportAction extends BaseActionSupport {
         }
         
         if( Report.TYPE1 == type ) {
-            try {
-            	List<Param> datasources = ParamManager.getComboParam(PX.DATASOURCE_LIST);
-                xformEncoder.fixCombo("datasource", datasources);	
-            } catch (Exception e) {
-            }
+        	DMUtil.setDSList(xformEncoder);
         }
  
         print("SourceInfo", xformEncoder);
@@ -467,16 +463,16 @@ public class ReportAction extends BaseActionSupport {
         	if( EasyUtils.isNullOrEmpty(script) ) continue;
         	if( !EasyUtils.isNullOrEmpty(report.getDisplayUri()) ) continue;
         		
-        	// 检查参数，数据服务的参数配置需要为空;
-        	String param = report.getParam();
-        	if( !EasyUtils.isNullOrEmpty(param) ) continue;
+        	// 检查参数，数据服务的参数不超过一个;
+        	String param = EasyUtils.obj2String( report.getParam() );
+        	if( param.indexOf("label") != param.lastIndexOf("label") ) continue;
         	
         	// 检查是否包含了必要的关键字
         	Pattern p = Pattern.compile("text|name|pk", Pattern.CASE_INSENSITIVE); // 忽略大小写
     		Matcher m = p.matcher(script);
-        	if( !m.find() ) continue;
-    		
-        	result.add( new DefaultTreeNode(report.getId(), report.getName()) );
+        	if( m.find() ) {
+        		result.add( new DefaultTreeNode(report.getId(), report.getName()) );
+        	}
         }
         
         // 后台Action单独发布的数据服务（配置在param里）
@@ -539,5 +535,12 @@ public class ReportAction extends BaseActionSupport {
 		}
 		
 		printSuccessMessage("点赞成功，您的肯定是我们最大的动力！");
+	}
+	
+	@RequestMapping(value = "/zan/{reportId}", method = RequestMethod.GET)
+	@ResponseBody
+	public Object countZan(@PathVariable("reportId") Long reportId) {
+		String hql = "select count(*) from ReportUser ru where ru.reportId=? and ru.type=2";
+		return commonService.getList(hql, reportId).get(0);
 	}
 }

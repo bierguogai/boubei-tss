@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import com.boubei.tss.PX;
 import com.boubei.tss.cache.CacheStrategy;
 import com.boubei.tss.cache.JCache;
 import com.boubei.tss.cache.Pool;
@@ -30,7 +31,7 @@ public class PCache implements ParamListener {
 		
 		// 为第一次初始化，由ParamServiceImpl初始化完成后触发
 		if(param == null) {
-			List<Param> list = paramService.getParamsByParentCode(CacheHelper.CACHE_PARAM);
+			List<Param> list = paramService.getParamsByParentCode(PX.CACHE_PARAM);
 			if(list != null) {
 				for(Param item : list) {
 					if( ParamConstants.FALSE.equals(item.getDisabled()) ){
@@ -47,7 +48,7 @@ public class PCache implements ParamListener {
 		if(parentId == null) return;
 		
 		Param parent = paramService.getParam(parentId);
-		if( parent != null && CacheHelper.CACHE_PARAM.equals(parent.getCode()) ){
+		if( parent != null && PX.CACHE_PARAM.equals(parent.getCode()) ){
 			String cacheCode   = param.getCode();
     		String cacheConfig = param.getValue();
     		rebuildCache(cacheCode, cacheConfig);

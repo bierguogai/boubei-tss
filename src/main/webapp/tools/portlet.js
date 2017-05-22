@@ -3,6 +3,8 @@ APP_CODE    = "TSS";
 APPLICATION = APP_CODE.toLowerCase();
 CONTEXTPATH = APPLICATION + "/";
 
+var notice_channel = 26;  // 顶部通知跑马灯
+
 function initUserInfo(callback) {
 	$.ajax({
 		url : "/tss/auth/user/operatorInfo",

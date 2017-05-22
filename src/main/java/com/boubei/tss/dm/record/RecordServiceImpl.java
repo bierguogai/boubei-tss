@@ -85,9 +85,7 @@ public class RecordServiceImpl implements RecordService {
 
 	public Record delete(Long id) {
 		Record record = getRecord(id);
-        if ( !checkOpPermission(id, Record.OPERATION_DELETE) ) {
-            throw new BusinessException("没有" +record+ "的权限，删除失败！");
-        }
+		checkOpPermission(id, Record.OPERATION_DELETE);
 		
         return recordDao.deleteRecord(record);
 	}
@@ -136,12 +134,8 @@ public class RecordServiceImpl implements RecordService {
 	}
 
 	public List<?> getAttachList(Long recordId, Long itemId) {
-		String hql = "from RecordAttach o where o.recordId = ? ";
-		if(itemId != null) {
-			hql += "and o.itemId = ?";
-			return recordDao.getEntities(hql, recordId, itemId);
-		}
-        return recordDao.getEntities(hql, recordId);
+		String hql = "from RecordAttach o where o.recordId = ? and o.itemId = ?";
+		return recordDao.getEntities(hql, recordId, itemId);
 	}
 
 	public void deleteAttach(Long id) {

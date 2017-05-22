@@ -1288,7 +1288,7 @@
             waiting : true, 
             ondata : function() { 
                 var data = this.getResponseJSON();
-                callback(data);
+                callback && callback(data);
             }
         });
     };
@@ -1838,10 +1838,14 @@
             var graph = $(".progressBar")[0];
             if(graph == null) {
                 graph = $.createElement("div", "progressBar");
-                $(graph).center(500, 50).css("width", "600px").css("color", "#fff").css("fontSize", "16px").css("fontWeight", "bold");
+                $(graph).center(500, 50)
+                    .css("width", "600px")
+                    .css("color", "#fff").css("backgroundColor", "#fff")
+                    .css("fontSize", "20px").css("fontWeight", "bold")
+                    .css("box-shadow", "1px 3px 19px 5px #a6a6a6");
 
                 var bar = $.createElement("div", "bar");
-                $(bar).css("backgroundColor", "#e0f6c8").css("border", "1px solid #F8B3D0") ;  
+                $(bar).css("backgroundColor", "#e0f6c8");  
 
                 var passBar = $.createElement("div", "passBar");
                 $(passBar).css("backgroundColor", "#009966").html("1212").css("textAlign", "center");    
@@ -1850,10 +1854,10 @@
                 bar.appendChild(passBar);  
 
                 var info = $.createElement("span", "info");
-                $(info).html("剩余时间: <span>1</span>秒").css("padding", "5px 0 0 120px").css("color", "grey").css("fontSize", "14px");
+                $(info).html("剩余时间: <span>1</span> 秒").css("padding", "5px 0 0 120px").css("color", "#666").css("fontSize", "14px");
 
                 var cancel = $.createElement("span");
-                $(cancel).html("<a href='#'>取 消</a>").css("padding", "5px 0 0 80px").css("fontSize", "14px")
+                $(cancel).html("<a href='#'>取 消</a>").css("padding", "5px 0 0 100px").css("fontSize", "14px")
                     .click(function() { pThis.stop(); });
 
                 graph.appendChild(info);
@@ -2117,10 +2121,11 @@
     };
 
     // content：内容，deinput：输入框的默认值，title：对话框标题，callback：回调函数
-    $.prompt = function(content, title, callback, deinput){
+    $.prompt = function(content, title, callback, deinput, isPasswd){
+        var type = isPasswd ? "password" : "type";
         var boxEl = popupBox(title || '输入框', callback);
         $(".content", boxEl).addClass("prompt");
-        $(".content .message", boxEl).html( (content || "请输入：") + ':<br><input type="text">' );
+        $(".content .message", boxEl).html( (content || "请输入：") + ':<br><input type="' +type+ '">' );
         $(".content .message input", boxEl).value(deinput || '');
         $(".btbox", boxEl).html($(".btbox", boxEl).html() + '<input type="button" value="取 消" class="cancel">');  
         $(boxEl).center();      
@@ -2780,8 +2785,8 @@
 
         // internationalization
         i18n: {
-            previousMonth : 'Previous Month',
-            nextMonth     : 'Next Month',
+            previousMonth : ' ',
+            nextMonth     : ' ',
             months        : ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
             weekdays      : ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
             weekdaysShort : ['日','一','二','三','四','五','六']
@@ -3384,9 +3389,7 @@
     };
 
     return JCalendar;
-});
-
-/* Form组件 */
+});/* Form组件 */
 ;(function ($, factory) {
 
     $.Form = factory($);
@@ -3434,14 +3437,19 @@
     },
 
     validate = function() {
+        var name     = this.el.getAttribute("id");
         var empty    = this.el.getAttribute("empty");
-        var caption  = this.el.getAttribute("caption").replace(/\s/g, "");
+        var caption  = (this.el.getAttribute("caption")||"").replace(/\s/g, "");
         var checkReg = this.el.getAttribute("checkReg") || this.el.getAttribute("inputReg");
         
-        var errorMsg;
-        var value = this.el.value;
-        if(value == "" && empty == "false") {
-            errorMsg = "[" + caption.replace(/\s/g, "") + "] 不允许为空。";
+        var errorMsg = "";
+        var value = this.form ? this.form.getData(name) : this.el.value;
+        if(!value && this.el.value && this.tree) {
+            errorMsg = "[" + caption + "]手输无效，要求必须选中不少于一个下拉节点。";
+        }
+
+        if( !value && empty == "false") {
+            errorMsg += "[" + caption + "] 不允许为空。";
         }
         else if(checkReg && value && !(new RegExp(checkReg)).test(value)) {
             errorMsg = this.el.getAttribute("errorMsg");
@@ -3555,7 +3563,7 @@
 
         toHTML: function() {
             var htmls = [], oThis = this;
-            htmls.push("<form class='tssForm' method='post' onsubmit='return false;''>");
+            htmls.push("<form class='tssForm' method='post' onsubmit='return false;' autocomplete='off'>");
             htmls.push('<table>');
 
             // 添加隐藏字段           
@@ -3971,8 +3979,8 @@
         this.multiple = $el.attr("multiple") != null;
         this.required = $el.attr('empty') == "false";
 
-        var valueList = ($el.attr("values") || "");
-        var textList  = ($el.attr("texts")  || "");   
+        var valueList = ($el.attr("values") || "").trim();
+        var textList  = ($el.attr("texts")  || "").trim();   
         
         var valueNode = this.el.attributes["value"];
         this.el._value = valueNode ? valueNode.value : "";
@@ -3984,8 +3992,8 @@
             valueList = ("|" + valueList);
             textList = ("|" + textList);
         }
-        valueList = valueList.split('|');
-        textList  = textList.split('|');
+        valueList = valueList.length > 1 ? valueList.split('|') : [];
+        textList  = textList.length > 1 ? textList.split('|') : [];
         this.el.options.length = 0; // 先清空
         for(var i=0; i < valueList.length; i++) {
             var value = valueList[i];
@@ -4005,7 +4013,7 @@
             var oldVal = this.el._value; 
 
             // 原值为空，或当前的下拉列表已经不包含原值，则重新设值
-            if( !oldVal || !valueList.contains(oldVal) ) {
+            if( !oldVal || (valueList.length && !valueList.contains(oldVal)) ) {
                 this.setValue(valueList[0]);
                 form.setFieldValue(this.el.id, valueList[0]);
             }            
@@ -4052,6 +4060,7 @@
     };
 
     var ComboTreeField = function($el, form) {
+        this.form = form;
         this.el = $el[0];
         this.multiple = $el.attr("multiple") != null;
         
@@ -5649,7 +5658,7 @@
 
             if( !checkedIds ) return;
 
-            checkedIds = checkedIds.length ? checkedIds : checkedIds.split(',');
+            checkedIds = $.isArray(checkedIds) ? checkedIds : checkedIds.split(',');
             for(var i = 0; i < checkedIds.length; i++) {
                 var li = this.el.querySelector("li[nodeId='" + checkedIds[i] + "']");
                 if(li) {
@@ -6279,7 +6288,7 @@
             document.body.appendChild(panel);
             
             $panel = $(panel);
-            $panel.css("width", width + "px").css("height", height + "px").center();
+            $panel.css("width", width + "px").css("height", height + "px").center().css("position", "fixed");
             $panel.panel(title, '<iframe frameborder="0"></iframe>', false);
 
             if(hideMaxMin) {

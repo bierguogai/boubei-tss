@@ -6,7 +6,7 @@
  */
 ;(function($) {
 
-    $.COLORS = ["#FFD700", "#90EE90", "#9370DB", "#9ACD32", "#AFEEEE", "#FF6347", "#00BFFF", "#228B22", 
+    $.COLORS = ["#FF6347", "#FFD700", "#90EE90", "#9370DB", "#9ACD32", "#AFEEEE", "#FF6347", "#00BFFF", "#228B22", 
                 "gray", "green", "red", "blue", "yellow", "silver", "orange", "olive"];
 
     /* 
@@ -216,7 +216,7 @@
                 series.push({
                     name: title,
                     type: 'line',
-                    itemStyle : { normal: {label : {show: true, position: 'top'}}},
+                    itemStyle : { normal: {label : {show: true, position: 'top'}, color: $.COLORS[0]}},
                     data: serieData,
                     smooth: true,
                     symbolSize: 3
@@ -336,7 +336,7 @@
                         name:title,
                         type:'bar',
                         barWidth: config.barWidth || 18, 
-                        itemStyle : { normal: {label : {show: true, position: 'top'}}},
+                        itemStyle : { normal: {label : {show: true, position: 'top'}, color: $.COLORS[0]}},
                         data: _data
                     }
                 ]

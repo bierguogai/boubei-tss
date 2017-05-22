@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 
 <meta charset="UTF-8">
-<title>卜贝数据-移动端</title>
+<title>卜贝数据-Mobile</title>
 
 <link rel="stylesheet" href="../tools/tssJS/css/boubei.css">
 <link rel="stylesheet" href="../tools/tssJS/fonts/icons.css">
@@ -25,7 +25,7 @@ body { box-sizing: border-box; }
 
 header { 
 	position: relative; height: 33px; min-height: 33px; 
-	background-color: rgb(35,60,99); box-sizing: border-box; border-bottom: 1px solid #fff; 
+	background-color: rgb(35,60,99); border-bottom: 1px solid #fff; 
 }
 header .logo { 
     display: inline-block; position: absolute; left: 0; top: 0; width: 320px; height: 32px; 
@@ -58,36 +58,10 @@ header .logo {
 
 <script type="text/javascript">
 
-
-window.onresize = resizeIFrame;
-
-function openUrl(ahref) {
-	if (ahref != "#") {
-		openFrame(ahref);
-	}
-	$("#menu1>ul").addClass("hidden");
-}
 var resizeIFrame = function() {
 	$(".tssIFrame").css("height", (document.body.offsetHeight - 34) + "px");
 }
-
-function openFrame(url) {
-	var id = "if" + tssJS.hashCode(url);
-	var $iframe = $("#" + id);
-	if( $iframe.length == 0 ) {
-		var iframe = $.createElement("iframe", "tssIFrame", id);
-		$iframe = $(iframe);
-		$iframe.attr("frameborder", "0").attr("scrolling", "auto");
-		$(document.body).appendChild(iframe);
-
-		resizeIFrame();
-		$iframe.attr("src", url);
-	}
-
-	$(".tssIFrame").addClass("hidden").removeClass("open");
-	$iframe.removeClass("hidden").addClass("open");
-}
-
+window.onresize = resizeIFrame;
 
 $(function(){
 	var $menu1 = $("#menu1");
@@ -101,7 +75,7 @@ $(function(){
 
 				setTimeout(function() {
 					$ul.addClass("hidden");
-				}, 5000);
+				}, 4000);
 			}
 			else {
 				$ul.addClass("hidden");
@@ -125,15 +99,10 @@ $(function(){
 var global = {};
 function init() {
 	checkLoign();
-
 	$.relogin = null;
-	$.ajax({
-        url : "../auth/user/has",
-        method : "GET",
-        type : "json",
-        ondata : function() {
-            var info = this.getResponseJSON();
 
+	$.getJSON("../auth/user/has", {}, 
+		function(info) {
             global.groups = info[0];
             global.roles = info[1];  // array contains
             global.userId = info[2];
@@ -143,20 +112,16 @@ function init() {
             if( global.groupLevel ) {
             	global.directGroupName = global.groups[global.groupLevel - 1][1];
             }
-        }
-    });
+        }, "GET");
 
 	// 读取用户有浏览权限的菜单列表
-	$.ajax( {
-		url: "/tss/auth/navigator/json/" + MENU_ROOT, 
-		waiting: true,
-		ondata: function() {
-			var _menus = this.getResponseJSON();
-
+	$.getJSON("/tss/auth/navigator/json/" + 72, {},
+		function(_menus) {
 			if(_menus.errorMsg) {
 				window.parent.location.href = "login.html";
 			}	  	
 
+			var li0 = $("#menu1>ul>li")[0];
 			$.each(_menus, function(i, menu1) {
 				var li = $.createElement("li");
 				$("#menu1>ul").appendChild(li);
@@ -174,13 +139,33 @@ function init() {
 				}			
 				$(li).html(menuHTML.join(" "));
 
-				if( i==0 && menu1.url ) { // 默认打开第一个菜单
+				if( i == 0 && menu1.url ) { // 默认打开第一个菜单
 					openUrl( menu1.url );
 				}
 		    });
+		    $("#menu1>ul").appendChild(li0);
 
+		}, "POST", true);
+}
+
+function openUrl(url) {
+	if(url != "#") {
+		var id = "if" + tssJS.hashCode(url);
+		var $iframe = $("#" + id);
+		if( $iframe.length == 0 ) {
+			var iframe = $.createElement("iframe", "tssIFrame", id);
+			$iframe = $(iframe);
+			$iframe.attr("frameborder", "0").attr("scrolling", "auto");
+			$(document.body).appendChild(iframe);
+
+			resizeIFrame();
+			$iframe.attr("src", url);
 		}
-	});
+
+		$(".tssIFrame").addClass("hidden").removeClass("open");
+		$iframe.removeClass("hidden").addClass("open");
+	}
+	$("#menu1>ul").addClass("hidden");
 }
 
 function _logout() {
@@ -203,9 +188,7 @@ function _logout() {
 		<button data-icon="V" class="icon refresh"></button>
 		<ul class="hidden">
 			<li><a href='javascript:void(0)' onclick="_logout()">注销<span id="userInfo"></span></a></li>
-<!-- 		
-			<li><a href='javascript:void(0)' onclick="openUrl('bi_visit.html')">访问概览</a></li>
--->
+			<!-- <li><a href='javascript:void(0)' onclick="openUrl('bi_visit.html')">访问概览</a></li> -->
 		</ul>
 	</div>
 </header>

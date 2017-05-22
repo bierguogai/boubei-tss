@@ -18,18 +18,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.boubei.tss.PX;
 import com.boubei.tss.cache.AbstractPool;
 import com.boubei.tss.cache.CacheStrategy;
 import com.boubei.tss.cache.Cacheable;
 import com.boubei.tss.cache.JCache;
 import com.boubei.tss.cache.Pool;
-import com.boubei.tss.framework.web.dispaly.grid.DefaultGridNode;
-import com.boubei.tss.framework.web.dispaly.grid.GridDataEncoder;
-import com.boubei.tss.framework.web.dispaly.grid.IGridNode;
-import com.boubei.tss.framework.web.dispaly.tree.DefaultTreeNode;
-import com.boubei.tss.framework.web.dispaly.tree.ITreeNode;
-import com.boubei.tss.framework.web.dispaly.tree.TreeEncoder;
-import com.boubei.tss.framework.web.dispaly.xform.XFormEncoder;
+import com.boubei.tss.framework.web.display.grid.DefaultGridNode;
+import com.boubei.tss.framework.web.display.grid.GridDataEncoder;
+import com.boubei.tss.framework.web.display.grid.IGridNode;
+import com.boubei.tss.framework.web.display.tree.DefaultTreeNode;
+import com.boubei.tss.framework.web.display.tree.ITreeNode;
+import com.boubei.tss.framework.web.display.tree.TreeEncoder;
+import com.boubei.tss.framework.web.display.xform.XFormEncoder;
 import com.boubei.tss.framework.web.mvc.BaseActionSupport;
 import com.boubei.tss.modules.param.Param;
 import com.boubei.tss.modules.param.ParamManager;
@@ -62,7 +63,7 @@ public class CacheAction extends BaseActionSupport {
 		Param cacheGroup = CacheHelper.getCacheParamGroup(paramService);
 		
 		Param cacheParam = null;
-		List<Param> cacheParams = paramService.getParamsByParentCode(CacheHelper.CACHE_PARAM);
+		List<Param> cacheParams = paramService.getParamsByParentCode(PX.CACHE_PARAM);
 		for(Param temp : cacheParams) {
 			if(temp.getCode().equals(cacheCode)) {
 				cacheParam = temp;

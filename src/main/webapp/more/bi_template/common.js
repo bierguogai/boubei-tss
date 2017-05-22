@@ -1,3 +1,12 @@
+
+TOMCAT_URL = "";
+BASE_JSON_URL  = TOMCAT_URL + '/tss/data/json/';
+BASE_JSONP_URL = TOMCAT_URL + '/tss/data/jsonp/';
+
+function json_url(id)  { return BASE_JSON_URL + id; }
+function jsonp_url(id) { return BASE_JSONP_URL + id; }
+
+
 // 14345 返回 15000，坐标展示用 
 function $round(intNum) {
 	intNum = Math.round(intNum);

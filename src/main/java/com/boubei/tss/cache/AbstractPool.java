@@ -242,7 +242,7 @@ public abstract class AbstractPool implements Pool {
         while (item == null  &&  (System.currentTimeMillis() - time < timeout)) {
             try {
                 log.debug("【" + getName() + "】中没有可用的缓存项......等待 " + timeout + "（毫秒）");
-                wait(timeout); // wait需要结合synchronized，线程wait后会先释放对象锁，待wait时间（timeout）到了或其他线程notify后再收回对象锁，继续执行。
+                wait(timeout); /* wait需要结合synchronized，线程wait后会先释放对象锁，待wait时间（timeout）到了或其他线程notify后再收回对象锁，继续执行。 */
                 item = checkOut();
             } 
             catch (InterruptedException e) { 

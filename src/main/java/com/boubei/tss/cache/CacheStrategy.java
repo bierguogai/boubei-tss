@@ -176,24 +176,17 @@ public class CacheStrategy {
 	 * 设置缓存策略的自定义类。同时改变池的customizer对象，如果池已经存在的话。
 	 */
 	public void setCustomizerClass(String customizerClass) {
-		this.customizerClass = EasyUtils.isNullOrEmpty(customizerClass) ? 
-				DEFAULT_CUSTOMIZER : customizerClass;
+		this.customizerClass = (String) EasyUtils.checkNull(customizerClass, DEFAULT_CUSTOMIZER);
 	}
 
-	/**
-	 * 设置缓存池类型
-	 */
+	/** 设置缓存池类型 */
 	public void setPoolClass(String poolClass) {
-		this.poolClass = EasyUtils.isNullOrEmpty(poolClass) ? 
-				SIMPLE_POOL_CLASS : poolClass;
+		this.poolClass = (String) EasyUtils.checkNull(poolClass, SIMPLE_POOL_CLASS);
 	}
 
-	/**
-	 * 设置缓存池的容器类
-	 */
+	/** 设置缓存池的容器类 */
 	public void setPoolContainerClass(String poolContainerClass) {
-		this.poolContainerClass = EasyUtils.isNullOrEmpty(poolContainerClass) ? 
-				DEFAULT_CONTAINER : poolContainerClass;
+		this.poolContainerClass = (String) EasyUtils.checkNull(poolContainerClass, DEFAULT_CONTAINER) ;
 	}
 
 	public void setCyclelife(Long cyclelife) {

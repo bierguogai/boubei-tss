@@ -625,10 +625,16 @@
                         "stop":true
                     };
                     var groupType = treeNode.getAttribute("groupType");
-                    if( groupType == "1" && hasSameAttributeTreeNode(page2Tree2, "groupType", groupType)) {
-                        result.error = true;
-                        result.message = "一个用户只能属于一个主用户组，请先把当前的主用户组移除。";
-                        result.stop = true;
+                    if( groupType == "1" ) {
+                        // 先主动移除‘自注册用户组’，如果有的话
+                        var selfRegisterGroup = page2Tree2.getTreeNodeById(-7);
+                        selfRegisterGroup && page2Tree2.removeTreeNode(selfRegisterGroup);
+                        
+                        if(hasSameAttributeTreeNode(page2Tree2, "groupType", groupType)){
+                            result.error = true;
+                            result.message = "一个用户只能属于一个主用户组，请先把当前的主用户组移除。";
+                            result.stop = true;
+                        }
                     }
 
                     return result;

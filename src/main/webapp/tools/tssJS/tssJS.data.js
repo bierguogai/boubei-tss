@@ -29,7 +29,7 @@
                 var cv = item[field];
                 if( v != cv ) {
                     v = cv;
-                    n++;
+                    n = i+1;
                 }
                 item[noField] = n; // noField为”名次“字段名
             });
@@ -40,7 +40,7 @@
                 {'org': '浙江', 'city': '杭州', 'site': '九堡', 'v1': 1, 'v2': '2.2', 'v3': 3}, 
                 {'org': '浙江', 'city': '杭州', 'site': '下沙', 'v1': null, 'v2': 2, 'v3': '3.3'}
             ];
-            groupby(a, 'org,city', 'v1,v2,v3', 1);
+            tssJS.Data.groupby(a, 'org,city', 'v1,v2,v3', 1);
          */
         groupby: function(arr, fields, vFileds, x) {
             vFileds = vFileds || "value";

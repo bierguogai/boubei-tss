@@ -12,12 +12,14 @@
 <script src="../../tools/tssJS/tssJS.all.js"></script>
 <script src="../../tools/tssJS/tssJS.json2Form.js"></script>
 <script src="../../tools/tssUtils.js"></script>
+<script src="../../tools/common/md5.js"></script>
 
 <script src="recorder_x.js"></script>
 
 <style type="text/css">
     body { overflow-x: auto; }
     .gridContainer { vertical-align: top; }
+    #gridTitle .tssbutton { margin-left: 3px; }
 
     #ws {
         width: 40%; max-width: 600px; min-width: 400px;
@@ -35,7 +37,7 @@
     #attach  { width: 800px; display: none; z-index: 10000; }
     #uploadForm  { background-color: #E0ECFF; padding: 5px 5px 5px 10px; margin-top: -3px; }
     #attachGrid { height: 200px; background-color: #fff; }
-    #sourceFile { color: #fff; background-color: #323232; padding: 2px 0px 1px 0px; }
+    #attachFile { color: #fff; background-color: #323232; padding: 2px 0px 1px 0px; }
 
 </style>
 
@@ -48,14 +50,28 @@ XML_SOURCE_LIST = "RecordData";
 /* XMLHTTP请求地址汇总 */
 URL_DATA_XML   = AUTH_PATH + "xdata/xml/";
 URL_DATA_JSON  = AUTH_PATH + "xdata/json/";
+URL_DATA_CSV   = AUTH_PATH + "xdata/export/";
 URL_SAVE_SOURCE   = AUTH_PATH + "xdata/";
 URL_BATCH_OPERATE = AUTH_PATH + "xdata/batch/";
 URL_DELETE_SOURCE = AUTH_PATH + "xdata/";
 URL_GET_DEFINES   = AUTH_PATH + "xdata/define/";
 URL_GET_USER_HAS  = AUTH_PATH + "user/has";
+URL_GET_OPERATION = AUTH_PATH + "rc/operations/";  // {id}
+
+if( IS_TEST ) {
+    URL_DATA_XML      = "data/data_grid.xml?";
+    URL_DATA_JSON     = "data/data_list.json?";
+    URL_DATA_CSV      = "data/_success.xml?";
+    URL_SAVE_SOURCE   = "data/_success.xml?";
+    URL_DELETE_SOURCE = "data/_success.xml?";
+    URL_BATCH_OPERATE = "data/_success.xml?";   
+    URL_GET_DEFINES   = "data/record_define.json?";
+    URL_GET_USER_HAS  = "data/user_has.json?";
+    URL_GET_OPERATION = "data/_operation.xml?";
+}
 
 // 数据录入定义信息
-var recordId = 1, recordName = "数据录入", recordDefine, customizeJS, customizeGrid, needFile;
+var recordId = 1, recordName = "数据录入", recordDefine, customizeJS, customizeGrid, needFile, batchImp;
 
 // 用户权限信息
 var _operation = ['1','2','3','4','5'], 
@@ -79,8 +95,9 @@ var params = {};
 
 $(function() {
     
-    if( !IS_TEST ) {
-        var globalValiable = window.parent.globalValiable;
+    var globalValiable = window.parent.globalValiable;
+    if( globalValiable && globalValiable._operation ) {
+        
         recordId   = globalValiable.id;
         recordName = globalValiable.name;
         _operation = (globalValiable._operation || '').split(',');
@@ -89,23 +106,15 @@ $(function() {
         return;
     }
 
-    // just Test
-    URL_DATA_XML      = "data/data_grid.xml?";
-    URL_DATA_JSON     = "data/data_list.json?";
-    URL_SAVE_SOURCE   = "data/_success.xml?";
-    URL_DELETE_SOURCE = "data/_success.xml?";
-    URL_BATCH_OPERATE = "data/_success.xml?";   
-    URL_GET_DEFINES   = "data/record_define.json?";
-    URL_GET_USER_HAS  = "data/user_has.json?";
-
-    init();
+    recordId = $.Query.get("id");
+    getSourceOperation(recordId, function(operations) {
+        _operation = (operations||'').split(',');;
+        init();
+    });
 });
 
 /* 页面初始化 */
 function init() {
-    initMenus();
-    initWorkSpace();
-
     // 先取用户权限信息，Grid定制依赖具体权限
     $.ajax({
         url : URL_GET_USER_HAS,
@@ -129,13 +138,18 @@ function init() {
                     customizeJS   = result[1];
                     customizeGrid = result[2];
                     needFile      = result[3];
+                    batchImp      = (result[4] == 1);
+                    recordName    = result[5];
 
                     recordDefine.each(function(i, field){
                         field._defaultValue = field.defaultValue;
                     });
 
-                    /* 添加tssGrid定制的script。
-                     * 注：customizeGrid可用作全局js，customizeJS只有在录入Form打开后才加载，查询Form需要的onchange对应方法可放在customizeGrid里。
+                    initMenus();
+                    initWorkSpace();
+
+                    /* 添加tssGrid定制的script，需要放initMenus后，以便对menu进行定制。
+                     * 注：customizeGrid可用作全局js，customizeJS只有在录入Form打开后才加载。
                      */
                     if(customizeGrid) {
                         $.createScript( customizeGrid );
@@ -146,10 +160,17 @@ function init() {
     });
 
     loadGridData(1); 
+}
+
+function initMenus() {
     $("#rcTitle").html("【" + recordName + "】");
 
     if( !_operation.contains("1") ) {
         $("#btn_create").hide();
+        $("#btn_bk").hide();
+    } 
+    if( !_operation.contains("1") || !batchImp ) {
+        $("#btn_imp").hide();
     }
     if( !_operation.contains("2") && !_operation.contains("4") && !_operation.contains("5") ) {
         $("#btn_search").hide();
@@ -157,9 +178,7 @@ function init() {
     if( !_operation.contains("5") ) { // 只有维护数据权限的角色才能使用批量删除
         $("#btn_batch_del").hide();
     }
-}
 
-function initMenus() {
     /* Grid菜单初始化  */
     var item1 = {
         label:"编辑",
@@ -522,6 +541,40 @@ function showQueryForm() {
     }
 }
 
+var EXP_PAGE_SIZE = 10000;
+function backup( _params ) {
+   if( _params ) {
+        _params.page = 1; // $1("GridPageList").value
+        _params.pagesize = EXP_PAGE_SIZE;
+        if( $("#GridPageList>option").length*50 > _params.pagesize ) {
+            return $.alert("单次导出不能超过" +Math.round(_params.pagesize/50)+ "页，请缩短查询条件后再导出");
+        }
+    } else {
+        _params = {};
+    }
+    var queryString = "?";
+    $.each(_params, function(key, value) {
+        if( queryString.length > 1 ) {
+            queryString += "&";
+        }
+        queryString += (key + "=" + value);
+    });
+
+    var url = encodeURI(URL_DATA_CSV + recordId + queryString);
+    $("#downloadFrame").attr( "src", url);
+}
+
+function batchImport() {
+    function checkFileWrong(subfix) {
+        return subfix != ".csv";
+    }
+
+    var url = URL_UPLOAD_FILE + "?afterUploadClass=com.boubei.tss.dm.record.file.ImportCSV";
+    url += "&recordId=" + recordId;
+    var importDiv = createImportDiv("请点击图标选择CSV文件导入", checkFileWrong, url);
+    $(importDiv).show();
+}
+
 // ------------------------------------------------ 数据录入附件管理 -----------------------------------------------
 
 URL_ATTACH_LIST   = AUTH_PATH + "xdata/attach/xml/";
@@ -567,9 +620,9 @@ function clostUpload() {
 }
 
 function uploadAttach() {       
-    var fileValue = $("#sourceFile").value();
+    var fileValue = $("#attachFile").value();
     if( !fileValue ) {
-         return $("#sourceFile").notice("您还没有选择文件，请选择一个文件再点上传!");               
+         return $("#attachFile").notice("您还没有选择文件，请选择一个文件再点上传!");               
     }
 
     if( checkUploadFile(fileValue) ) {
@@ -624,12 +677,15 @@ function delAttach() {
     <table>
         <tr>
           <td id="gridTitle">
-            <span class="icon"></span><span id="rcTitle">资源列表</span>&nbsp;
-            <input type="button" class="tssbutton small blue" value="新 增" id="btn_create" onclick="showDetail('_new')"/>&nbsp;
-            <input type="button" class="tssbutton small orange" value="批量删除" id="btn_batch_del" onclick="removeBatch()"/>&nbsp;
-            <input type="button" class="tssbutton small blue" value="查 询" id="btn_search" onclick="showQueryForm()"/>&nbsp;
-            <span id="customizeBox"></span>
-            <span class="buttonBox" id="gridToolBar"></span>
+<span class="icon"></span><span id="rcTitle">资源列表</span>
+<input type="button" class="tssbutton small blue" value="备 份" id="btn_bk" onclick="backup()"/>
+<input type="button" class="tssbutton small blue" value="批量导入" id="btn_imp" onclick="batchImport()"/>
+<input type="button" class="tssbutton small green" value="新 增" id="btn_create" onclick="showDetail('_new')"/>
+<input type="button" class="tssbutton small orange" value="批量删除" id="btn_batch_del" onclick="removeBatch()"/>
+<input type="button" class="tssbutton small blue" value="查 询" id="btn_search" onclick="showQueryForm()"/>
+<input type="button" class="tssbutton small blue" value="导出结果" id="btn_ex" onclick="backup(params)"/>
+<span id="customizeBox"></span>
+<span class="buttonBox" id="gridToolBar"></span>
           </td>
         </tr>
         <tr>
@@ -653,7 +709,7 @@ function delAttach() {
         <Grid id="attachGrid"></Grid>
         <form id="uploadForm" method="post" target='fileUpload' enctype="multipart/form-data">
             <span>
-                <input type="file" name="file" id="sourceFile"/>
+                <input type="file" name="file" id="attachFile"/>
                 附件类型: 
                 <label><input name="fileType" type="radio" value="1"/> 图片 </label> 
                 <label><input name="fileType" type="radio" value="2" checked="checked"/> 文档 </label> 
@@ -665,6 +721,8 @@ function delAttach() {
         </form>
         <iframe name='fileUpload' style='display:none;'></iframe>
     </div>
+
+    <iframe id="downloadFrame" style="display:none"></iframe>
 
 </body>
 </html>

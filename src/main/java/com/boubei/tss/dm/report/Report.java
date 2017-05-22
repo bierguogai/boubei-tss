@@ -19,8 +19,8 @@ import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.report.permission.ReportResource;
 import com.boubei.tss.framework.persistence.entityaop.IDecodable;
 import com.boubei.tss.framework.persistence.entityaop.OperateInfo;
-import com.boubei.tss.framework.web.dispaly.tree.TreeAttributesMap;
-import com.boubei.tss.framework.web.dispaly.xform.IXForm;
+import com.boubei.tss.framework.web.display.tree.TreeAttributesMap;
+import com.boubei.tss.framework.web.display.xform.IXForm;
 import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.um.permission.IResource;
 import com.boubei.tss.util.BeanUtil;
@@ -71,6 +71,7 @@ public class Report extends OperateInfo implements IXForm, IDecodable, IResource
     
     private String  datasource; // 单独为报表指定数据源
     private String  displayUri; // 用来展示当前报表的模板页面的路径
+    private String  paramUri;   // 用来展示当前报表的查询页面的自定义路径：默认为 more/bi_condition.html, 如果no-need：则隐藏公共查询界面
     
     @Column(nullable = false)
     private Integer type;  // 种类  0：报表分组 1: 业务报表
@@ -196,6 +197,9 @@ public class Report extends OperateInfo implements IXForm, IDecodable, IResource
         if( this.id.longValue() < 0 || (this.levelNo < 2 && isActive()) ) {
         	map.put("_open", "true");
         }
+        if( EasyUtils.obj2String(this.remark).indexOf("open") >= 0 ) {
+        	map.put("_open", "true");
+        }
  
         return map;
     }
@@ -243,5 +247,13 @@ public class Report extends OperateInfo implements IXForm, IDecodable, IResource
 
 	public void setMailable(Integer mailable) {
 		this.mailable = mailable;
+	}
+
+	public String getParamUri() {
+		return paramUri;
+	}
+
+	public void setParamUri(String paramUri) {
+		this.paramUri = paramUri;
 	}
 }

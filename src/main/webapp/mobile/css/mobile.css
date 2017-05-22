@@ -535,6 +535,8 @@ body {
   line-height: 24px;
   background: #fff;
   color: #202020;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 /* =Links
 -----------------------------------------------------------------------------*/

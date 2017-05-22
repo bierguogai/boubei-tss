@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +29,6 @@ import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
 import com.boubei.tss.modules.param.ParamConstants;
-import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.XMLDocUtil;
@@ -55,7 +55,7 @@ public abstract class _Database {
 	public List<String> fieldRole2s;
 	
 	public String toString() {
-		return "【" + this.datasource + ", " + this.recordName + ", " + this.table + "】";
+		return "【" + this.datasource + "." + this.recordName + "】";
 	}
  	
 	public _Database(Record record) {
@@ -126,7 +126,7 @@ public abstract class _Database {
 	public abstract void createTable();
 	
 	public void dropTable(String table, String datasource) {
-		SQLExcutor.excute("drop table " + this.table, datasource);
+		SQLExcutor.excute("drop table " + table, datasource);
 	}
 	
 	public void updateTable(Record _new) {
@@ -180,7 +180,16 @@ public abstract class _Database {
     		}
     		if( !exsited ) {
     			try {
-    				SQLExcutor.excute("alter table " + this.table + " drop column " + oldCode, newDS);
+    				// 先查询该字段是否有值，没有值才删除该列
+    				String checkSQL = "select count(*) num from " +this.table+ " where " +oldCode+ " is not null";
+    				SQLExcutor ex = new SQLExcutor();
+    				ex.excuteQuery(checkSQL, newDS);
+    				int count = EasyUtils.obj2Int( ex.getFirstRow("num") );
+    				if(count == 0) {
+    					SQLExcutor.excute("alter table " +this.table+ " drop column " + oldCode, newDS);
+    				} else {
+    					SQLExcutor.excute("alter table " +this.table+ " modify " +oldCode+ " null", newDS);
+    				}
     			} catch(Exception e) { }
         	}
     	}
@@ -193,6 +202,8 @@ public abstract class _Database {
 	public void insert(Map<String, String> valuesMap) {
 		Map<Integer, Object> paramsMap = buildInsertParams(valuesMap);
 		SQLExcutor.excute(createInsertSQL(), paramsMap, this.datasource);
+		
+		logCUD("", "create", " add a new row: " + valuesMap);
 	}
 	
 	public Long insertRID(Map<String, String> valuesMap) {
@@ -201,11 +212,14 @@ public abstract class _Database {
 		for(int i = 0; i < params.length; i++) {
 			params[i] = paramsMap.get( i+1 );
 		}
-		return SQLExcutor.excuteInsert(createInsertSQL(), params, this.datasource);
+		
+		Long rID = SQLExcutor.excuteInsert(createInsertSQL(), params, this.datasource);
+		logCUD(rID, "create", " add a new row: " + valuesMap);
+		return rID;
 	}
 
 	protected Map<Integer, Object> buildInsertParams(Map<String, String> valuesMap) {
-		Map<Integer, Object> paramsMap = new HashMap<Integer, Object>();
+		Map<Integer, Object> paramsMap = new LinkedHashMap<Integer, Object>();
 		int index = 0;
 		for(String field : this.fieldCodes) {
 			Object value = DMUtil.preTreatValue(valuesMap.get(field), fieldTypes.get(index));
@@ -232,6 +246,8 @@ public abstract class _Database {
 			throw new BusinessException("您当前的登录已超时，请注销后重新登录！");
 		}
 		SQLExcutor.excuteBatch(createInsertSQL(), paramsList , this.datasource);
+		
+		logCUD("", "create", " add some rows: " + valuesMaps);
 	}
 	
 	protected String createInsertSQL() {
@@ -278,11 +294,7 @@ public abstract class _Database {
 		String updateSQL = "update " + this.table + " set " + tags + "updatetime=?, updator=?, version=version+1 where id=?";
 		SQLExcutor.excute(updateSQL, paramsMap, this.datasource);
 		
-		if(this.needLog) { // 记录修改日志
-			Log excuteLog = new Log(recordName + ", " + id, "\n修改前： " + old + " \n修改后： " + valuesMap);
-	    	excuteLog.setOperateTable("数据录入修改");
-	        ((IBusinessLogger) Global.getBean("BusinessLogger")).output(excuteLog);
-		}
+		logCUD(id, "update", "\n begin: " + old + " \n after: " + get(id));
 	}
 	
 	public void updateBatch(String ids, String field, String value) {
@@ -296,6 +308,8 @@ public abstract class _Database {
 		paramsMap.put(++index, Environment.getUserCode());
 		
 		SQLExcutor.excute(updateSQL, paramsMap, this.datasource);
+		
+		logCUD(ids, "update batch", "\n field: " + field + " \n value: " + value);
 	}
 
 	private Map<String, Object> get(Long id) {
@@ -318,15 +332,27 @@ public abstract class _Database {
 		SQLExcutor.excute(updateSQL, this.datasource);
 		
 		// 记录删除日志
-		Log excuteLog = new Log(recordName + ", " + id, Environment.getUserCode() + "删除了记录：" + old );
-    	excuteLog.setOperateTable("数据录入删除");
-        ((IBusinessLogger) Global.getBean("BusinessLogger")).output(excuteLog);
+        logCUD(id, "delete", Environment.getUserCode() + " deleted one row：" + old);
 	}
 	
-	public SQLExcutor select() {
-		 return this.select(1, 100, new HashMap<String, String>());
+	private void logCUD(Object id, String opeartion, String logMsg) {
+		if( !this.needLog ) return;
+		
+		Log excuteLog = new Log(recordName + ", " + id, logMsg);
+		excuteLog.setOperateTable("record-" + opeartion);
+		((IBusinessLogger) Global.getBean("BusinessLogger")).output(excuteLog);
 	}
-
+	
+	/**
+	 * 查询数据，同时进行权限控制。 <br>
+	 * 1、如果用户有浏览、维护数据权限，允许其查询其它人创建的记录；否则只能查询本人创建的记录 <br>
+	 * 2、加上 customizeTJ 里强制性的过滤条件 <br>
+	 * 
+	 * @param page
+	 * @param pagesize
+	 * @param params
+	 * @return
+	 */
 	public SQLExcutor select(int page, int pagesize, Map<String, String> params) {
 		Map<Integer, Object> paramsMap = new HashMap<Integer, Object>();
 		paramsMap.put(1, Environment.getUserCode());
@@ -336,7 +362,7 @@ public abstract class _Database {
 		}
 		
 		// 增加权限控制，针对有編輯权限的允許查看他人录入数据, '000' <> ? <==> 忽略创建人这个查询条件
-		boolean visible = UMConstants.isAdmin();
+		boolean visible = Environment.isAdmin();
 		try {
 			List<String> permissions = PermissionHelper.getInstance().getOperationsByResource(recordId,
 	                RecordPermission.class.getName(), RecordResource.class);
@@ -404,7 +430,7 @@ public abstract class _Database {
 		}
 		
 		if( !EasyUtils.isNullOrEmpty(this.customizeTJ) ) {
-			condition += " and " + DMUtil.customizeParse(this.customizeTJ) + " ";
+			condition += " and ( " + DMUtil.customizeParse(this.customizeTJ + " or -1 = ${userId} ") + " ) ";
 		}
 		
 		// 设置排序方式
@@ -459,7 +485,7 @@ public abstract class _Database {
         }
         
         if(this.needFile) {
-        	sb.append("<column name=\"fileNum\" mode=\"string\" caption=\"附件数\" />").append("\n");
+        	sb.append("<column name=\"fileNum\" mode=\"string\" caption=\"附件\" width=\"30px\"/>").append("\n");
         }
         
         // 判断是否默认隐藏这5列

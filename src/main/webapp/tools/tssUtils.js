@@ -177,6 +177,16 @@ function onTreeNodeRightClick(ev, carePermission, treeName) {
 	}
 }
 
+function getSourceOperation(sourceId, callback) {
+	$.ajax({
+		url : URL_GET_OPERATION + sourceId,
+		onresult : function() {
+			var _operation = this.getNodeValue(XML_OPERATION);
+			callback && callback(_operation);
+		}
+	});			  
+}
+
 /*
  *	获取对树节点的操作权限
  *	参数：	treeNode:treeNode       树节点
@@ -307,6 +317,9 @@ function createImportDiv(remark, checkFileWrong, importUrl) {
 
 		$(importDiv).panel(remark, str.join("\r\n"), false);
 		$(importDiv).css("height", "300px").center();
+	} else {
+		$("#sourceFile").value("");
+		$('#importDiv h2').text(" - " + remark);
 	}
 
 	// 每次 importUrl 可能不一样，比如导入门户组件时。不能缓存
@@ -737,22 +750,27 @@ Element.moveable = function(element, handle) {
 	$(element).drag(handle);
 }
 
-// 弹出选择树
+/* 
+ * 弹出选择树.
+ * popupTree('/tss/auth/role/list', 'RoleTree', {'_default': '12'}, function(d){} );
+ * popupTree('/tss/auth/service/roles/tree', 'RoleTree', {'treeType':'multi', '_default': '8,54'}, function(d){} );
+ */
 function popupTree(url, nodeName, params, callback) {
 	removeDialog();
 	params = params || {};
+	var treeType = params.treeType||'single';
 
 	var boxName = "popupTree";
 	var el = $.createElement("div", "popupItem");
 	el.innerHTML = '<h2>- ' + (params._title || '点击选择树节点') + 
 		'<span class="search"> <input id="sksk"/><button class="tssbutton orange small">查找</button> </span> </h2>' +
-		'<Tree id="' + boxName + '"><div class="loading"></div></Tree>' + 
+		'<Tree id="' + boxName + '" treeType="' +treeType+ '"><div class="loading"></div></Tree>' + 
 	    '<div class="bts">' + 
 	       '<input type="button" value="确定" class="tssbutton blue small b1" >' + 
        	   '<input type="button" value="关闭" class="tssbutton blue small b2" >' +  
 	    '</div>';
 	document.body.appendChild(el);
-	$(el).addClass("dialog").css("width", "320px").css("height", "320px").center(320, 400).css("zIndex", "999");
+	$(el).addClass("dialog").css("width", "420px").css("height", "360px").center(420, 360).css("zIndex", "999");
 
 	$(".bts .b2", el).click(removeDialog);
 
@@ -768,6 +786,7 @@ function popupTree(url, nodeName, params, callback) {
 	var _default = params._default;
 	delete params._default;
 	delete params._title;
+	delete params.treeType;
 
 	$.ajax({
 		url: url,
@@ -776,17 +795,23 @@ function popupTree(url, nodeName, params, callback) {
 			$.showWaitingLayer();
 
 			var tree = $.T(boxName, this.getNodeValue(nodeName));
-			_default && tree.setActiveTreeNode(_default);
+			if(_default) {
+				if(treeType == 'multi') {
+					tree.setCheckValues(_default);
+				} else {
+					tree.setActiveTreeNode(_default);
+				}
+			}
 
 			tree.onTreeNodeDoubleClick = function(ev) {
 				doCallback();
 			}
 
 			function doCallback(){
-				var treeNode = getActiveTreeNode(boxName);
-				if( treeNode ) {
+				var result = treeType == 'multi' ? tree.getCheckedIds() : getActiveTreeNode(boxName);
+				if( result ) {
 					removeDialog();
-					callback(treeNode);
+					callback(result);
 				}
 			}
 
@@ -890,62 +915,44 @@ function popupGroupTree(callback) {
 
 // 获取系统参数模块的配置信息
 function getParam(key, callback) {
-	$.ajax({
-        url: NO_AUTH_PATH + "param/json/simple/" + key,
-        method: 'GET',
-        type: "json",
-        ondata: function() {
-            var result = this.getResponseJSON(), val;
+	$.getJSON(NO_AUTH_PATH + "param/json/simple/" + key, {}, 
+        function(result) {
             if( result && result.length  && result[0] ) {
                 val = result[0];
             }
             callback && callback(val);
-        }
-    });
+        }, "GET");
 }
 
 // 发送邮件，支持html标签
 function email(receivers, title, content) {
-	$.ajax({
-		url: AUTH_PATH + "message/email2",
-		method: "POST",
-		params: {"receivers": receivers, "title": title, "content": content}
-	});
+	$.post(AUTH_PATH + "message/email2", {"receivers": receivers, "title": title, "content": content});
 }
 
 function sendMessage(receivers, title, content) {
-	$.ajax({
-		url: AUTH_PATH + "message",
-		headers: {"appCode": FROMEWORK_CODE},
-		method: "POST",
-		params: {"receivers": receivers, "title": title, "content": content}
-	});
+	$.post(AUTH_PATH + "message", {"receivers": receivers, "title": title, "content": content});
 }
 
 function listMessages(callback) {
-	$.ajax({
-		url: AUTH_PATH + "message/list",
-		headers: {"appCode": FROMEWORK_CODE},
-		method: "GET",
-		type : "json",
-		ondata: function() {
+	$.getJSON(
+		AUTH_PATH + "message/list", {},
+		function() {
 			var messages = this.getResponseJSON();
 			callback && callback(messages);
-		}
-	});
+		}, 
+		"GET"
+	);
 }
 
 function getNewMessageNum(callback) {
-	$.ajax({
-		url: AUTH_PATH + "message/num",
-		headers: {"appCode": FROMEWORK_CODE},
-		method: "GET",
-		type : "json",
-		ondata: function() {
+	$.getJSON(
+		AUTH_PATH + "message/num", {},
+		function() {
 			var num = this.getResponseJSON();
 			callback && callback(num);
-		}
-	});
+		}, 
+		"GET"
+	);
 }
 
 function checkUploadFile(fileValue) {

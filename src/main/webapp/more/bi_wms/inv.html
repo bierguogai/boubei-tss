@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html> 
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>库存分析</title>
+
+<link rel="stylesheet" href="../../tools/tssJS/css/boubei.css">
+
+<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssJS/tssJS.data.js"></script>
+
+<script src="../../tools/easyui/jquery.min.js"></script>
+<script src="../../tools/easyui/jquery.easyui.min.js"></script>
+<script src="../../tools/easyui/datagrid-filter.js"></script>
+<script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+
+<script src="../../tools/echarts/echarts-all-2.1.10.js"></script>
+<script src="../../more/bi_template/tssJS.chart.js"></script>
+<script src="../../more/bi_template/common.js"></script>
+
+<STYLE type="text/css">
+
+#x0 { cursor: pointer; text-decoration: underline; }
+#dlg1 table { margin: 5px; }
+#dlg1 table tr { height: 40px; }
+         
+</STYLE>
+
+<script type="text/javascript">
+
+TOMCAT_URL = "";
+
+function getParams() {
+    var params = {};
+    if(parent.globalValiable) {
+        params = parent.globalValiable.queryParams;
+    }
+
+    var keys = ["_g21", "_g22", "_g23", "_g24", "_day1", "_day2"];
+    keys.each(function(i, key) {        
+        var paramKey = "param" + (i+1);
+        params[paramKey] = tssJS.Cookie.getValue(key);
+    });
+
+    /* 页面跳转时，优先使用通过QueryString传递过来的参数
+    for(var i=1; i <= 18; i++ ) {
+        var paramN = "param" + i;
+        var paramX  = tssJS.Query.get(paramN); 
+        if(paramX) {
+            params[paramN] = paramX;
+        }               
+    } */
+
+    filterEmptyParams(params);
+    return params;
+}
+
+var _params;
+$(document).ready(function(){
+    _params = getParams();
+
+    query(_params);
+
+/* 分页: 需要把url传递到 datagrid 内部
+    dg1 = $('#t1').datagrid({
+        ......
+        pagination : true,    // 分页
+        pageSize : 300,
+        url : QUERY_URL,      // 数据地址
+        queryParams : params, // 参数
+        method: "POST",
+    });
+*/
+    dg1 = $('#t1').datagrid({
+        fit : true,
+        fitColumns : true,
+        rownumbers : true,  // 显示序号
+        singleSelect : false,
+        remoteSort : false,
+        showFooter: true,
+        sortName : "owner",
+        sortOrder : "asc",
+        // frozenColumns: [FIELDS_1],  // 固定列
+        columns : [FIELDS_1],
+        toolbar: [ 
+            '-', { text: '导出结果', iconCls: 'icon-save', handler: _export }
+        ],
+        onClickCell: function(index, field, value) {
+            if(field == 'warehouse') {
+                var params = {"param1": value};
+                query(params);
+            }   
+            if(field == 'owner') {
+                var params = {"param2": value};
+                query(params);
+            }           
+        }
+    });
+});
+
+var styler1 = function(value, row, index) { 
+    return 'cursor: pointer; text-decoration: underline;'; 
+} 
+var styler2 = function(value, row, index) { 
+    return 'cursor: pointer; text-decoration: underline; font-weight: bold; background-color:RGB(234,242,255);'; 
+}
+var FIELDS_1 = [
+    { field: 'warehouse', title: '仓库', width: 60, align: "center", sortable: true, styler: styler1},
+    { field: 'owner', title: '货主', width: 60, align: "center", sortable: true, styler: styler2},
+    { field: 'sku', title: '货品', width: 100, align: "center", sortable: true},
+    { field: 'loc', title: '库位', width: 60, align: "center", sortable: true},
+    { field: 'qty', title: '数量', width: 40, align: "right", sortable: true},
+    { field: '_day', title: '入库日期', width: 60, align: "center", sortable: true}
+];
+
+var dg1;
+function query(params) {
+
+    tssJS.getJSON(json_url(721), params, function(data){
+
+        showGrid(data);
+        showChart(data);
+
+    }, "POST", true);
+}
+
+/* 显示数据表格 */
+function showGrid(data) {
+    var foot = {'warehouse': '合计', 'qty': 0};
+
+    data.each(function(i, item) {
+        item._day = item._day.split(" ")[0];
+        foot["qty"] += parseFloat(item["qty"]);
+    });
+
+    dg1.datagrid('loadData', data);
+    dg1.datagrid('reloadFooter',[foot]);
+    // dg1.datagrid('enableFilter');
+}
+
+/* 显示数据图 */
+function showChart(data) {
+    var data1 = tssJS.Data.groupby(data, "warehouse", "qty");
+    data1.each(function(i, item) {
+        item.name = item.warehouse;
+        item.value = Math.round(item.qty);
+    });
+    tssJS.Echart.pie2D('canvas1', '仓库占比', data1);
+    
+    var data1 = tssJS.Data.groupby(data, "owner", "qty");
+    data1.each(function(i, item) {
+        item.name = item.owner;
+        item.value = Math.round(item.qty);
+    });
+    tssJS.Echart.pie2D('canvas2', '货主占比', data1);
+}
+
+/* 导出数据 */
+function _export() {
+    var data = [];
+    $.each( $('#t1').datagrid("getRows"), function(index, row) {
+        data.push(row);
+    });
+
+    if(data.length == 0) {
+        $.messager.show({ title: '提示', msg: '没有任何数据可以导出，请先查询' });
+    }
+
+    tssJS.Data.data2CSV("Inv", FIELDS_1, data);
+}
+
+</script>
+
+
+</head>
+
+<body>
+   
+   <div id="main" class="easyui-layout" data-options="fit:'true'">
+        <div data-options="region:'center',split:true" title="库存明细" style="width:60%;" border="false">
+            <table id="t1" border="false"></table>
+        </div>
+        <div data-options="region:'east'" title="占比" style="width:40%;" border="false">
+            <div id='canvas1' title="分仓占比" style="height: 50%; padding: 10px;"></div>
+            <div id='canvas2' title="货主占比" style="height: 50%; padding: 10px;"></div>
+        </div>       
+    </div>
+
+</body>
+</html>

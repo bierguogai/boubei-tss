@@ -20,7 +20,6 @@ import com.boubei.tss.framework.SecurityUtil;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.modules.param.ParamConstants;
-import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.MacrocodeCompiler;
@@ -50,10 +49,10 @@ public class ReportServiceImpl implements ReportService {
     
     public Report getReport(Long id) {
         boolean auth;
-        if(UMConstants.ROBOT_USER_ID.equals( Environment.getUserId() )) { // 定时JOB
+        if( Environment.isRobot() ) { // 定时JOB
         	auth = false;
         } else {
-        	auth = SecurityUtil.getSecurityLevel() >= 4;
+        	auth = SecurityUtil.getLevel() >= 4;
         }
 		return this.getReport(id, auth);
     }
@@ -174,7 +173,7 @@ public class ReportServiceImpl implements ReportService {
 		 * 这里先把  ${GetWHListByLogonUser} 解析出来，下面会接着解析${fromUserId} */
       	reportScript = MacrocodeCompiler.runLoop(reportScript, fmDataMap, true); 
       	
-      	// 加入所有request请求带的参数
+      	// 加入所有request请求带的参数（TODO 有注入隐患，如：script = ${xx} 等）
       	fmDataMap.putAll(requestMap);
       	
       	// 过滤掉用于宏解析（ ${paramX} ）后的request参数

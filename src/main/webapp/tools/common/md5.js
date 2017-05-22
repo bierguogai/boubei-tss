@@ -6,10 +6,7 @@ function b64_md5(s){ return binl2b64(core_md5(str2binl(s), s.length * chrsz));}
 function hex_hmac_md5(key, data) { return binl2hex(core_hmac_md5(key, data)); } 
 function b64_hmac_md5(key, data) { return binl2b64(core_hmac_md5(key, data)); } 
 function calcMD5(s){ return binl2hex(core_md5(str2binl(s), s.length * chrsz));} 
-function md5_vm_test() 
-{ 
-return hex_md5("abc") == "900150983cd24fb0d6963f7d28e17f72"; 
-} 
+
 
 function core_md5(x, len) 
 { 
