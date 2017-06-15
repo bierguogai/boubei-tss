@@ -62,21 +62,13 @@ public class _Recorder extends BaseActionSupport {
 		}
 		
 		Pool cache = CacheHelper.getLongCache();
-		
 		String cacheKey = "_db_record_" + recordId;
-		Cacheable cacheItem = cache.getObject(cacheKey);
-				
-		_Database _db;
-		if(cacheItem == null) {
-			Record record = recordService.getRecord(recordId);
-			
-			cache.putObject(cacheKey, _db = _Database.getDB(record));
-		}
-		else{
-			_db = (_Database) cacheItem.getValue();
-		}
+		if( !cache.contains(cacheKey) ) {
+			cache.putObject(cacheKey, recordService.getDB(recordId));
+		} 
 		
-		return _db;
+		Cacheable cacheItem = cache.getObject(cacheKey);
+		return (_Database) cacheItem.getValue();
 	}
 	
 	@RequestMapping("/define/{recordId}")
@@ -84,16 +76,17 @@ public class _Recorder extends BaseActionSupport {
     public Object getDefine(@PathVariable("recordId") Long recordId) {
 		Record record = recordService.getRecord(recordId);
 		if(!record.isActive()) {
-			throw new BusinessException("该数据录入已被停用，无法再录入数据！");
+			throw new BusinessException("该录入表已被停用，无法再录入数据！");
 		}
 		
         return new Object[] { 
-        		getDB(recordId, Record.OPERATION_VDATA).getFields(), 
+        		getDB(recordId, Record.OPERATION_CDATA, Record.OPERATION_EDATA, Record.OPERATION_VDATA).getFields(), 
         		record.getCustomizeJS(), 
         		record.getCustomizeGrid(),
         		record.getNeedFile(),
         		record.getBatchImp(),
-        		record.getName()
+        		record.getName(),
+        		record.getCustomizePage()
         	};
     }
 	
@@ -209,12 +202,12 @@ public class _Recorder extends BaseActionSupport {
     	
     	_Database _db = getDB(recordId, Record.OPERATION_CDATA);
     	try {
-    		_db.insert( requestMap );
+    		Long newID = _db.insertRID( requestMap );
+    		printSuccessMessage( String.valueOf(newID) );
     	}
     	catch(Exception e) {
     		throwEx(e, _db + "表里新增");
     	}
-    	printSuccessMessage();
     }
     
     @RequestMapping(value = "/rid/{recordId}", method = RequestMethod.POST)
@@ -250,9 +243,7 @@ public class _Recorder extends BaseActionSupport {
     	Map<String, String> requestMap = prepareParams(request, recordId);
     	
     	// 检查用户对当前记录是否有编辑权限，防止篡改别人创建的记录
-		if( !checkRowEditable(recordId, id) ) {
-			throw new BusinessException("您对此数据记录没有维护权限");
-		}
+    	checkRowEditable(recordId, id);
     	
     	_Database _db = getDB(recordId);
     	try {
@@ -297,9 +288,7 @@ public class _Recorder extends BaseActionSupport {
     
     private void exeDelete(Long recordId, Long id) {
 		// 检查用户对当前记录是否有编辑权限
-		if( !checkRowEditable(recordId, id) ) {
-			throw new BusinessException("您没有权限删除该记录！");
-		}
+    	checkRowEditable(recordId, id);
     	
     	_Database db = getDB(recordId);
 		db.delete(id);
@@ -324,6 +313,57 @@ public class _Recorder extends BaseActionSupport {
     		exeDelete(recordId, EasyUtils.obj2Long(id));
     	}
         printSuccessMessage();
+    }
+    
+    /**
+     * 批量新增、修改、删除，All in one。
+     * @param request
+     * @param recordId
+     * @param csv
+     * @return
+     */
+    @RequestMapping(value = "/cud/{recordId}", method = RequestMethod.POST)
+    @ResponseBody
+    public Object cudBatch(HttpServletRequest request, @PathVariable("recordId") Long recordId, String csv) {
+    	_Database _db = getDB(recordId, Record.OPERATION_CDATA);
+    	prepareParams(request, recordId);
+    	
+		String[] rows = EasyUtils.split(csv, "\n");
+		List<Map<String, String>> insertList = new ArrayList<Map<String, String>>();
+		int updateCount = 0, deleteCount = 0;;
+		
+		String[] headers = rows[0].split(",");
+		for(int index = 1; index < rows.length; index++) { // 第一行为表头，不要
+			String row = rows[index];
+			String[] fields = row.split(",");
+			
+			Map<String, String> item = new HashMap<String, String>();
+			for(int j = 0; j < fields.length; j++) {
+    			item.put(headers[j], fields[j]);
+        	}
+			
+			String _itemID = item.get("id");
+			if( EasyUtils.isNullOrEmpty(_itemID) ) {
+				insertList.add(item);
+			} else {
+				Long itemID = EasyUtils.obj2Long( _itemID );
+				if( row.replaceAll(",", "").trim().equals(_itemID.trim()) ) { // 除了ID其它都为空
+					exeDelete(recordId, itemID);
+					deleteCount++;
+				} else {
+					checkRowEditable(recordId, itemID);
+					_db.update(itemID, item);
+					updateCount ++;
+				}
+			}
+		}
+    	_db.insertBatch(insertList);
+    	
+    	Map<String, Object> rtMap = new HashMap<String, Object>();
+    	rtMap.put("created", insertList.size());
+    	rtMap.put("updated", updateCount);
+    	rtMap.put("deleted", deleteCount);
+    	return rtMap;
     }
     
     /************************************* record batch import **************************************/
@@ -386,9 +426,7 @@ public class _Recorder extends BaseActionSupport {
 		}
 		
 		// 检查用户对当前附件所属记录是否有编辑权限
-		if( !checkRowEditable(attach.getRecordId(), attach.getItemId()) ) {
-			throw new BusinessException("您对此附件没有删除权限");
-		}
+		checkRowEditable(attach.getRecordId(), attach.getItemId());
 		
 		recordService.deleteAttach(id);
 		FileHelper.deleteFile(new File(attach.getAttachPath()));
@@ -415,9 +453,9 @@ public class _Recorder extends BaseActionSupport {
 	
 	/************************************* check permissions：安全级别 > 5 才启用 **************************************/
 	
-	public static int SAFETY_LEVEL = 6;
-	
 	private boolean checkPermission(Long recordId, String permitOption) {
+		if(SecurityUtil.getLevel() < SecurityUtil.LEVEL_6 ) return true;
+		
 		PermissionHelper helper = PermissionHelper.getInstance();
 		String permissionTable = RecordPermission.class.getName();
 		List<String> permissions = helper.getOperationsByResource(recordId, permissionTable, RecordResource.class);
@@ -425,8 +463,13 @@ public class _Recorder extends BaseActionSupport {
 		return permissions.contains( permitOption );
 	}
 	
-	private boolean checkRowEditable(Long recordId, Long itemId) {
-		if(SecurityUtil.getLevel() < SAFETY_LEVEL ) return true;
+	/**
+	 * 检查用户对当前记录是否有编辑权限，防止篡改别人创建的记录
+	 * @param recordId
+	 * @param itemId
+	 */
+	private void checkRowEditable(Long recordId, Long itemId) {
+		if(SecurityUtil.getLevel() < SecurityUtil.LEVEL_6 ) return;
 		
 		boolean flag = false;
 		if( checkPermission(recordId, Record.OPERATION_EDATA) ) {
@@ -435,14 +478,17 @@ public class _Recorder extends BaseActionSupport {
 		if( !flag && checkPermission(recordId, Record.OPERATION_CDATA) ) {
 			flag = checkRowAuthor(recordId, itemId); // 如果没有【维护数据】只有【新建】权限，则只能编辑自己创建的记录
 		}
-		return flag;
+		
+		if(!flag) {
+			throw new BusinessException("您对此数据记录【" +itemId+ "】没有维护权限，无法修改或删除。");
+		}
 	}
 	
 	/**
 	 * 因db.select方法里对数据进行了权限过滤，所以能按ID查询出来的都是有权限查看的
 	 */
 	private boolean checkRowVisible(Long recordId, Long itemId) {
-		if(SecurityUtil.getLevel() < SAFETY_LEVEL ) return true;
+		if(SecurityUtil.getLevel() < SecurityUtil.LEVEL_6 ) return true;
 		
 		Map<String, String> requestMap = new HashMap<String, String>();
 		requestMap.put("id", EasyUtils.obj2String(itemId));

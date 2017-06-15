@@ -7,7 +7,7 @@ import java.util.Map;
 
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
-import com.boubei.tss.framework.timer.AbstractJob;
+import com.boubei.tss.modules.timer.AbstractJob;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 
@@ -27,7 +27,7 @@ public class SyncUserRoleJob extends AbstractJob {
 	 * jobConfig的格式为 : 
 	 * 		sql @ datasource
 	 */
-	protected void excuteJob(String jobConfig) {
+	protected void excuteJob(String jobConfig, Long jobID) {
 		log.info("开始用户对角色信息同步......");
 		
 		String info[] = EasyUtils.split(jobConfig, "@");

@@ -33,6 +33,7 @@ public class SQLExcutor {
     static Logger log = Logger.getLogger(SQLExcutor.class);
     
     public List<String> selectFields = new ArrayList<String>();
+    public List<Integer> fieldTypes = new ArrayList<Integer>(); // java.sql.Types
     
     public int count;
     public List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
@@ -180,10 +181,12 @@ public class SQLExcutor {
                 // 从1开始，非0
 				for(int index = 1; index <= fieldNum; index++) {
 					String columnName = rsMetaData.getColumnLabel(index).toLowerCase();
+					
                 	if(columnName.equals("rn")) continue;
                 	
                 	if( result.isEmpty() && !selectFields.contains(columnName) ) {
 						selectFields.add(columnName);
+						fieldTypes.add( rsMetaData.getColumnType(index) );
 					}
 	                
 	                Object value = rs.getObject(index);
@@ -357,6 +360,16 @@ public class SQLExcutor {
         }
     }
     
+    
+    /**
+     * 执行插入操作，并放回新插入记录的ID
+     * 
+     * @param sql
+     * @param params
+     * @param datasource
+     * @return
+     * @see com.boubei.tss.dm.record.ddl._Oracle.insertRID()
+     */
     public static Long excuteInsert(String sql, Object[] params, String datasource) {
     	Pool connpool = getDSPool(datasource);
         Cacheable connItem = connpool.checkOut(0);
@@ -370,8 +383,8 @@ public class SQLExcutor {
             for (Object paramValue : params) {
                 pstmt.setObject(index++, paramValue); // 从1开始，非0
             }
-    
             pstmt.executeUpdate();  
+            
             rs = pstmt.getGeneratedKeys();  
             rs.next();
             return EasyUtils.obj2Long( rs.getObject(1) );

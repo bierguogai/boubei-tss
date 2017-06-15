@@ -1,4 +1,37 @@
-// ------------------------------------------------- 自定义扩展 ------------------------------------------------
+// ------------------------------------------------- 控制录入表单的常用方法 ------------------------------------------------
+
+/** 
+ * 判断当前的录入表单是否为新建记录；如果是在编辑已有记录，返回false
+ */
+function isNew() {
+    var tag = ws.getActiveTab().SID;
+    if(tag && (tag.indexOf("_new") > 0 || tag.indexOf("_copy") > 0) ) {
+        return true;
+    }
+    return false;
+}
+
+/** 
+ * 更新字段输入框里的值
+ *
+ * @param string field  单个字段ID
+ * @param string value  新值
+ * @example updateField("applier", "Jack");
+ */
+function updateField(field, value) {
+    var xform = $.F("page1Form");
+    if(!xform) return; // queryForm触发
+
+    xform.updateDataExternal(field, value);    
+    xform.updateData( $1(field) );
+}
+
+/** 
+ * 检查当前用户是否拥有指定角色集中的一个
+ *
+ * @param string roles  逗号分隔的一至多个角色ID
+ * @example checkRole("12,13") 、 checkRole("12")
+ */
 function checkRole(roles) {    
     if(!roles) return true; // 默认通过
 
@@ -11,6 +44,12 @@ function checkRole(roles) {
     return result;
 }
 
+/** 
+ * 检查当前用户是否拥有指定用户组集中的一个
+ *
+ * @param string groups  逗号分隔的一至多个用户组ID
+ * @example checkGroup("12,13") 、 checkGroup("12")
+ */
 function checkGroup(groups) {
     if(!groups) return true; // 默认通过
 
@@ -26,8 +65,23 @@ function checkGroup(groups) {
     return result;
 }
 
+/** 
+ * 设置字段是否可编辑
+ *
+ * @param string field  逗号分隔的一至多个字段ID
+ * @param string tag  "true": 可编辑，"false": 不可编辑
+ * @example permit("f1,f2", "true")
+ */
+function permit(field, tag) {
+    var xform = $.F("page1Form");
+    var fields = (field || '').split(",");
+    fields.each(function(i, _field) {
+        xform.setFieldEditable(_field, tag || "false"); 
+    });
+}
+
 /* 
- * 依据用户的角色和组织判断用户是否能对指定字段可编辑，除指定的角色和组织之外一律不可编辑 
+ * 依据当前用户的角色和组织判断用户是否能对指定字段可编辑，除指定的角色和组织之外一律不可编辑 
  * forbid( "score", "r1,r2", "g1, g2");
  */
 function forbid(field, roles, groups) {
@@ -39,44 +93,48 @@ function forbid(field, roles, groups) {
     !editable && permit(field, "false");
 }
 
-// check("f1,f2", "User1,User2")
+/** 
+ * 检查当前用户是否为特定用户集中的一员
+ *
+ * @example check("f1,f2", "User1,User2")
+ */
 function check(field, users) {
     users = (users || '').split(',');
     !users.contains(userCode) && permit(field, "false");
 }
 
-function permit(field, tag) {
-    var xform = $.F("page1Form");
-    var fields = (field || '').split(",");
-    fields.each(function(i, _field) {
-        xform.setFieldEditable(_field, tag || "false"); 
-    });
-}
-
+/** 
+ * 在输入框显示提示气泡
+ *
+ * @example $("money").notice("请输入金额");
+ */
 function notice(field, msg) {
     $("#" + field).click(function(){  
         $(this).notice(msg); 
     });
 }
 
-// 隐藏右键的删除按钮
+/** 
+ * 隐藏Grid列表的右键的删除按钮
+ */
 function hideDelButton() {
     $1("grid").contextmenu.delItem("_item_id3");
 }
 
+/** 
+ * 禁止编辑录入表单
+ */
 function disableForm() {
     $("#page1BtSave").hide(); 
     $.F("page1Form").setEditable("false");
 }
 
-function updateField(field, value) {
-    var xform = $.F("page1Form");
-    if(!xform) return; // queryForm触发
-
-    xform.updateDataExternal(field, value);    
-    xform.updateData( $1(field) );
-}
-
+/** 
+ * 将指定字段从录入表单里隐藏起来不显示
+ *
+ * @param string field  逗号分隔的一至多个字段ID
+ * @example hideFiled("f1,f2")
+ */
 function hideFiled(field) {
     var fields = (field || '').split(",");
     fields.each(function(i, fID) {
@@ -84,6 +142,13 @@ function hideFiled(field) {
         $("#label_" + fID).hide();
     });
 }
+
+/** 
+ * 将指定字段（隐藏状态）从录入表单里重新显示出来
+ *
+ * @param string field  逗号分隔的一至多个字段ID
+ * @example showFiled("f1,f2")
+ */
 function showFiled(field) {
     var fields = (field || '').split(",");
     fields.each(function(i, fID) {
@@ -92,15 +157,16 @@ function showFiled(field) {
     });
 }
 
-function isNew() {
-    var tag = ws.getActiveTab().SID;
-    if(tag && (tag.indexOf("_new") > 0 || tag.indexOf("_copy") > 0) ) {
-        return true;
-    }
-    return false;
-}
-
-// addOptBtn('批量及格', function() { batchUpdate("score", "及格") });  
+/** 
+ * 在Grid表头上方添加一个操作按钮，且只有特定角色（或用户组）的人可见
+ *
+ * @param string name  按钮标题
+ * @param function fn  点击按钮触发此方法
+ * @param string roles 逗号分隔的一至多个角色ID
+ * @param string groups 逗号分隔的一至多个用户组ID
+ * @example 
+ *      addOptBtn('批量打分', function() { batchUpdate("score", "及格") });
+ */
 function addOptBtn(name, fn, roles, groups) {
     if( !checkRole(roles) && !checkGroup(groups||'-1212') ) {
         return;
@@ -111,23 +177,20 @@ function addOptBtn(name, fn, roles, groups) {
     $('#customizeBox').appendChild(batchOpBtn);
 }
 
-// batchOpt('批量及格', "score", "及格", "r1,r2", "g1, g2");
+/** 
+ * 在Grid表头上方添加一个批量操作按钮，且只有特定角色（或用户组）的人可见。
+ * 用以更新所有选中记录行的某字段为某个特定值
+ *
+ * @param string name  按钮标题
+ * @param string field 字段名
+ * @param string value 新值
+ * @param string roles 逗号分隔的一至多个角色ID
+ * @param string groups 逗号分隔的一至多个用户组ID
+ * @example 
+ *      batchOpt('批量审批', "status", "审核通过", "r1,r2", "g1, g2");
+ */
 function batchOpt(name, field, value, roles, groups) {
     addOptBtn(name, function() { batchUpdate(field, value) }, roles, groups);  
-}
-
-// 针对指定的字段，检查Grid中选中行该字段的值是否和预期的值一致，如不一致，弹框提醒
-function checkBatch(field, expectVal, msg) {
-    var values = $.G("grid").getCheckedRowsValue(field);
-    var flag = true;
-    values.each(function(i, val) {
-        if(val != expectVal) {
-            flag = false;
-        }
-    });
-
-    !flag && msg && $.alert(msg);
-    return flag;
 }
 
 // 批量更新选中行某一列的值
@@ -148,7 +211,21 @@ function batchUpdate(field, value) {
     });
 }
 
-// ------------------------------------------------- 不常用 start------------------------------------------------
+// ----------------------------------------------- 非常用方法 start------------------------------------------------
+// 针对指定的字段，检查Grid中选中行该字段的值是否和预期的值一致，如不一致，弹框提醒
+function checkBatch(field, expectVal, msg) {
+    var values = $.G("grid").getCheckedRowsValue(field);
+    var flag = true;
+    values.each(function(i, val) {
+        if(val != expectVal) {
+            flag = false;
+        }
+    });
+
+    !flag && msg && $.alert(msg);
+    return flag;
+}
+
 /* nextLevel("season", "month", 
  *   {"春":"三月|四月|五月", "夏":"六月|七月|八月", "秋":"九月|十月|十一月", "冬":"十二月|一月|二月"});
  */
@@ -217,7 +294,7 @@ function before(day, delta) {
     today.setDate(today.getDate() - delta);
     return new Date(day) < today;
 }
-// ------------------------------------------------- 不常用 End ------------------------------------------------
+// ----------------------------------------------- 非常用方法 End ------------------------------------------------
 
 /*
  *  多级下拉选择联动，录入表单和查询表单都使用本方法
@@ -266,21 +343,21 @@ function getNextLevelOption(nextL, serviceID, currParam, currParamValue) {
   });
  */
 function loadRemoteAttach(recordId, itemId, appUrl, appCode, callback) {
-  $.ajax({ 
-    url: URL_ATTACH_LIST + recordId + "/" + itemId + "?anonymous=true", 
-    method: "POST", 
-    headers: {"anonymous": "true", "appCode": appCode},
-    onresult: function(){
-      var attachNode  = this.getNodeValue("RecordAttach");
-      $("column[name='delOpt']", attachNode).attr("display", "none");  // 隐藏删除附件操作
-      $.G("attachGrid", attachNode);   
+    $.ajax({ 
+        url: URL_ATTACH_LIST + recordId + "/" + itemId + "?anonymous=true", 
+        method: "POST", 
+        headers: {"anonymous": "true", "appCode": appCode},
+        onresult: function(){
+            var attachNode  = this.getNodeValue("RecordAttach");
+            $("column[name='delOpt']", attachNode).attr("display", "none");  // 隐藏删除附件操作
+            $.G("attachGrid", attachNode);   
 
-      tssJS("#attachGrid td>a").each(function(i, item){
-        if( $(item).text() == '查看' ) {
-          $(item).attr('href', appUrl + $(item).attr('href') + '?anonymous=true');
-        }
-      });
-      callback && callback();
-    } 
-  });
+            tssJS("#attachGrid td>a").each(function(i, item){
+                if( $(item).text() == '查看' ) {
+                    $(item).attr('href', appUrl + $(item).attr('href') + '?anonymous=true');
+                }
+            });
+            callback && callback();
+        } 
+    });
 }

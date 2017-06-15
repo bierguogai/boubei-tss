@@ -19,7 +19,7 @@ import com.boubei.tss.util.DateUtil;
 
 /**
  * <p>
- * 数据录入的附件
+ * 录入表对应的附件表
  * </p>
  * /download/{tableId}/{recordId}/{seqNo}
  */
@@ -37,7 +37,7 @@ public class RecordAttach implements IEntity, IGridNode {
 
 	private Long itemId; // 所属数据行
 
-	private Long recordId; // 所属数据录入表
+	private Long recordId; // 所属录入表
 
 	private Integer seqNo = 0; // 附件序号
 

@@ -63,6 +63,8 @@ function init() {
             $1("page3BtSearch").onclick = function() {
                 searchPermission();
             }
+
+            _role2Resource && searchPermission();
         }
     });
 }

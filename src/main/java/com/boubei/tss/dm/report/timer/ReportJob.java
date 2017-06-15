@@ -19,7 +19,7 @@ import com.boubei.tss.dm.data.util.DataExport;
 import com.boubei.tss.dm.report.ReportService;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.sso.context.Context;
-import com.boubei.tss.framework.timer.AbstractJob;
+import com.boubei.tss.modules.timer.AbstractJob;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
@@ -47,7 +47,7 @@ public class ReportJob extends AbstractJob {
      *  2:报表二:x2@x.com
 	 *	3:报表三:x3@x.com,x4@x.com:param1=a,param2=b
 	 */
-	protected void excuteJob(String jobConfig) {
+	protected void excuteJob(String jobConfig, Long jobID) {
 		
 		String[] jobConfigs = EasyUtils.split(jobConfig, "\n");
 		

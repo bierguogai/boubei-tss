@@ -930,7 +930,7 @@
                     var param = params[i].split("=");
                     if(param.length == 2) {
                         var key = param[0].replace(/%20/g, "");
-                        items[key] = param[1].replace(/%20/g, "");
+                        items[key] = param[1].trim();
                     }
                 }
             }

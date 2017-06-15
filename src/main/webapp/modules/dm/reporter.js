@@ -50,6 +50,7 @@ function showReport() {
     var hasScript = treeNode.getAttribute("hasScript") == "true"; 
 
     globalValiable.title = treeNode.name;
+    globalValiable.reportId = reportId;
 
     // 判断当前报表是否专门配置了展示页面
     if( displayUri.length > 0 ) {

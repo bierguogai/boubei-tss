@@ -917,6 +917,7 @@ function popupGroupTree(callback) {
 function getParam(key, callback) {
 	$.getJSON(NO_AUTH_PATH + "param/json/simple/" + key, {}, 
         function(result) {
+        	var val;
             if( result && result.length  && result[0] ) {
                 val = result[0];
             }

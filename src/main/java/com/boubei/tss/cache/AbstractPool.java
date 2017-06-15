@@ -412,24 +412,20 @@ public abstract class AbstractPool implements Pool {
     
     public Set<Cacheable> listItems() {
         Set<Cacheable> values = new HashSet<Cacheable>();
-        if(getFree() != null) {
+        try {
             values.addAll(getFree().valueSet());
-        }
-        if(getUsing() != null) {
             values.addAll(getUsing().valueSet());
-        }
+    	} catch(Exception e) {}
         
         return values;
     }
     
     public Set<Object> listKeys() {
         Set<Object> keys = new HashSet<Object>();
-        if(getFree() != null) {
+        try{
             keys.addAll(getFree().keySet());
-        }
-        if(getUsing() != null) {
             keys.addAll(getUsing().keySet());
-        }
+        } catch(Exception e) {}
         
         return keys;
     }
@@ -459,8 +455,6 @@ public abstract class AbstractPool implements Pool {
     }
  
     public final void firePoolEvent(int eventType) {
-        if (listeners.isEmpty()) return;
-        
         PoolEvent poolEvent = new PoolEvent(this, eventType);
         for ( Listener listener : listeners){
         	listener.dealwithPoolEvent(poolEvent);

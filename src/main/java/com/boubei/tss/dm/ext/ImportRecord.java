@@ -63,15 +63,18 @@ public class ImportRecord implements AfterUpload {
             if ( i == 0 ) {
                 record.setParentId(groupId);
             } else {
-                record.setParentId(idMapping.get(record.getParentId()));
+                Long parentId = idMapping.get(record.getParentId());
+                parentId = (Long) EasyUtils.checkNull(parentId, groupId);
+				record.setParentId(parentId);
             }
             
             if( Record.TYPE1 == record.getType() ) {
             	count ++;
             	record.setDatasource(dataSource);
+            	
+            	String table = record.getTable();
+                record.setTable( table.substring(table.indexOf(".") + 1) ); // 去掉表空间|schema
             }
-            String table = record.getTable();
-            record.setTable( table.substring(table.indexOf(".") + 1) ); // 去掉表空间|schema
             
             String remark = "导入前原ID = " + oldId + " .\n " + EasyUtils.obj2String(record.getRemark());
             record.setRemark(remark);

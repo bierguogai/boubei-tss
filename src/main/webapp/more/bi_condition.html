@@ -212,10 +212,6 @@ function clearTimeCondition(keys) {
 }
 
 function initParams(getCookie) {
-
-    $('#_day1').datebox('setValue', getFirstDayOfMonth( now ) );
-    $('#_day2').datebox('setValue', cday);
-
     var weeks = [], months = [], seasons = [], years = [];
     for(var i = 1; i <= 53; i++) {
         weeks.push({"value": i, "text": "第"+i+"周" });
@@ -245,6 +241,9 @@ function initParams(getCookie) {
     $('#_season2').combobox( { panelHeight: '100px', data: seasons, onSelect: changeTime  });
     $('#_year1').combobox( { panelHeight: '100px', data: years, onSelect: changeTime  });
     $('#_year2').combobox( { panelHeight: '100px', data: years, onSelect: changeTime  });
+
+    $('#_day1').datebox('setValue', getFirstDayOfMonth( now ) );
+    $('#_day2').datebox('setValue', subDateS(now, 0) );
 
     // 空间组织条件
     initGroupParams( function() {

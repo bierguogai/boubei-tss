@@ -227,7 +227,7 @@ public class ReportAction extends BaseActionSupport {
     @RequestMapping("/template")
     public void getReportTLs(HttpServletResponse response) {
     	StringBuffer sb = new StringBuffer("<actionSet>"); 
-    	sb.append("<treeNode id=\"0\" name=\"").append("/tss/modules/dm/recorder.html?id=录入表ID").append("\"/>");
+    	sb.append("<treeNode id=\"0\" name=\"").append("/tss/modules/dm/recorder.html?id={录入表ID}").append("\"/>");
     	
     	// bi or more/bi4.0 等目录下
     	String rtd = DMConstants.getReportTLDir();
@@ -388,8 +388,7 @@ public class ReportAction extends BaseActionSupport {
     public void saveJobParam(HttpServletResponse response, Long reportId, boolean self, String configVal) {
 		Param jobParam = paramService.getParam(PX.TIMER_PARAM_CODE);
 		if(jobParam == null) {
-			jobParam = ParamManager.addComboParam(ParamConstants.DEFAULT_PARENT_ID, 
-	        		PX.TIMER_PARAM_CODE, "定时配置");
+			jobParam = ParamManager.addComboParam(ParamConstants.DEFAULT_PARENT_ID, PX.TIMER_PARAM_CODE, "定时配置");
     	}
 		
 		String value = ReportJob.class.getName() + " | " + configVal;
@@ -445,7 +444,7 @@ public class ReportAction extends BaseActionSupport {
 		if(jobParam != null) {
 			paramService.delete(jobParam.getId());
 		}
-		printSuccessMessage("退订成功");
+		printSuccessMessage("成功取消邮件推送");
     }
 	
 	/** 

@@ -132,7 +132,7 @@ public abstract class _Database {
 	public void updateTable(Record _new) {
 		String newDS = _new.getDatasource();
 		String table = _new.getTable();
-		this.customizeTJ = _new.getCustomizeJS();
+		this.customizeTJ = _new.getCustomizeTJ();
 		this.needLog = ParamConstants.TRUE.equals(_new.getNeedLog());
 		this.needFile = ParamConstants.TRUE.equals(_new.getNeedFile());
 		
@@ -476,28 +476,26 @@ public abstract class _Database {
             String fieldWidth = fieldWidths.get(index);
             String fieldRole2 = fieldRole2s.get(index);
             String fieldType  = "string"; // fieldTypes.get(index);==> GridNode里转换异常（date类型要求值也为date）
-            index++;
             
-            if( PermissionHelper.checkRole(fieldRole2) ) {
+            if( PermissionHelper.checkRole(fieldRole2) && !"hidden".equals(fieldTypes.get(index)) ) {
             	sb.append("<column name=\"" + fieldCode + "\" mode=\"" + fieldType + "\" caption=\"" + filed 
 					+ "\" align=\"" + fieldAlign + "\" width=\"" + fieldWidth + "\" />").append("\n");
             }
+            index++;
         }
         
         if(this.needFile) {
         	sb.append("<column name=\"fileNum\" mode=\"string\" caption=\"附件\" width=\"30px\"/>").append("\n");
         }
         
-        // 判断是否默认隐藏这5列
-        String show5C = "";
-        if( (this.customizeTJ+"").indexOf("hideCUV") >= 0 || !needLog ) {
-        	show5C = "display=\"none\"";
+        // 判断是否显示这5列
+        if( (this.customizeTJ+"").indexOf("showCUV") >= 0 ) {
+        	sb.append("<column name=\"createtime\"  caption=\"创建时间\" sortable=\"true\"/>").append("\n");
+            sb.append("<column name=\"creator\"  caption=\"创建人\" sortable=\"true\"/>").append("\n");
+            sb.append("<column name=\"updatetime\"  caption=\"更新时间\" sortable=\"true\"/>").append("\n");
+            sb.append("<column name=\"updator\"  caption=\"更新人\" sortable=\"true\"/>").append("\n");
+            sb.append("<column name=\"version\"  caption=\"更新次数\" />").append("\n");
         }
-    	sb.append("<column name=\"createtime\" " +show5C+ " caption=\"创建时间\" sortable=\"true\"/>").append("\n");
-        sb.append("<column name=\"creator\" " +show5C+ " caption=\"创建人\" sortable=\"true\"/>").append("\n");
-        sb.append("<column name=\"updatetime\" " +show5C+ " caption=\"更新时间\" sortable=\"true\"/>").append("\n");
-        sb.append("<column name=\"updator\" " +show5C+ " caption=\"更新人\" sortable=\"true\"/>").append("\n");
-        sb.append("<column name=\"version\" " +show5C+ " caption=\"更新次数\" />").append("\n");
         
         // ID列默认隐藏
         sb.append("<column name=\"id\" display=\"none\"/>").append("\n");

@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
 <meta charset="UTF-8">
-<title>数据录入</title>
+<title>录入表</title>
 
 <link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
 <link href="../../css/css.css" rel="stylesheet">
@@ -56,6 +56,7 @@ URL_BATCH_OPERATE = AUTH_PATH + "xdata/batch/";
 URL_DELETE_SOURCE = AUTH_PATH + "xdata/";
 URL_GET_DEFINES   = AUTH_PATH + "xdata/define/";
 URL_GET_USER_HAS  = AUTH_PATH + "user/has";
+URL_GET_RECORD_ID = AUTH_PATH + "rc/id";  // {id}
 URL_GET_OPERATION = AUTH_PATH + "rc/operations/";  // {id}
 
 if( IS_TEST ) {
@@ -67,11 +68,13 @@ if( IS_TEST ) {
     URL_BATCH_OPERATE = "data/_success.xml?";   
     URL_GET_DEFINES   = "data/record_define.json?";
     URL_GET_USER_HAS  = "data/user_has.json?";
+    URL_GET_RECORD_ID = "data/record_id.json?";
     URL_GET_OPERATION = "data/_operation.xml?";
 }
 
-// 数据录入定义信息
-var recordId = 1, recordName = "数据录入", recordDefine, customizeJS, customizeGrid, needFile, batchImp;
+// 录入表定义信息
+var recordId=1, recordName="录入表", openItemId,
+    recordDefine, customizeJS, customizeGrid, needFile, batchImp;
 
 // 用户权限信息
 var _operation = ['1','2','3','4','5'], 
@@ -107,11 +110,26 @@ $(function() {
     }
 
     recordId = $.Query.get("id");
+    recordName = $.Query.get("name");
+    openItemId =  $.Query.get("itemId");
+
+    if(!recordId && recordName) {
+        $.post(URL_GET_RECORD_ID, {"name": decodeURI(recordName)}, function(result) {
+            recordId = result;
+            getOperation();
+        });
+    }
+    else {
+        getOperation();
+    }
+});
+
+function getOperation() {
     getSourceOperation(recordId, function(operations) {
         _operation = (operations||'').split(',');;
         init();
     });
-});
+}
 
 /* 页面初始化 */
 function init() {
@@ -140,6 +158,13 @@ function init() {
                     needFile      = result[3];
                     batchImp      = (result[4] == 1);
                     recordName    = result[5];
+                    customizePage = result[6];
+
+                    // if has customize page
+                    if( (customizePage||"").indexOf("html") > 0 ) {
+                        location.href = customizePage;
+                        return;
+                    }
 
                     recordDefine.each(function(i, field){
                         field._defaultValue = field.defaultValue;
@@ -147,6 +172,9 @@ function init() {
 
                     initMenus();
                     initWorkSpace();
+
+                    loadGridData(1); 
+                    openItemId && showDetail(openItemId);
 
                     /* 添加tssGrid定制的script，需要放initMenus后，以便对menu进行定制。
                      * 注：customizeGrid可用作全局js，customizeJS只有在录入Form打开后才加载。
@@ -158,8 +186,6 @@ function init() {
             });
         }
     });
-
-    loadGridData(1); 
 }
 
 function initMenus() {
@@ -203,12 +229,19 @@ function initMenus() {
         callback: function() { manageAttach(null, "row"); },
         visible:function() {return canEditRow() && needFile;}
     }
+    var item5 = {
+        label:"查看修改记录",
+        icon: "images/icon_view.gif",
+        callback: function() { showEditLog(); },
+        visible:function() { return canEditRow(); }
+    }
 
     var menu = new $.Menu();
     menu.addItem(item1);
     menu.addItem(item2);
     menu.addItem(item3);
     menu.addItem(item4);
+    menu.addItem(item5);
     $1("grid").contextmenu = menu;
 }
 
@@ -360,12 +393,14 @@ function saveSource(rowID, version) {
 
     var request = new $.HttpRequest();
     request.url = URL_SAVE_SOURCE + recordId;
+    request.headers.noAlert = true;
 
     var dataNode = $.cache.XmlDatas[rowID];
     request.setFormContent(dataNode);
     version && request.addParam("_version", version);
 
-    if(rowID != '_new' && (rowID + "").indexOf('_copy') < 0 ) {
+    var isUpdate = (rowID != '_new' && (rowID + "").indexOf('_copy') < 0);
+    if( isUpdate ) {
        request.url += "/" + rowID;
 
        // update操作，检查id是否和form里的一致，防止多个修改时发生串数据现象
@@ -378,9 +413,12 @@ function saveSource(rowID, version) {
     syncButton([$1("page1BtSave")], request); // 同步按钮状态
     detachReminder(rowID); // 解除提醒
 
-    request.onsuccess = function() { 
+    request.onsuccess = function(info) { 
+        var itemID = isUpdate ? rowID : parseInt(info.msg);
+        $.alert( "保存成功" );
+
         if( afterListener && $.isFunction(afterListener) ) {
-            afterListener();
+            afterListener(itemID);
         }
         delete $.cache.XmlDatas[rowID];
         ws.closeTab("viewRow_" + rowID);  
@@ -423,6 +461,15 @@ function removeBatch() {
             }
         }); 
     });
+}
+
+function showEditLog() {
+    var selectedLineId = $.G("grid").getColumnValue("id"); 
+    var operateTable = "record-update",
+        operationCode = recordName + ", " + selectedLineId;
+
+    $.openIframePanel("logPanel", "数据修改日志", 960, 500, "../_log/log.htm?operateTable="+operateTable+"&operationCode=" + encodeURI(operationCode) );
+    $("#logPanel").css("zIndex", "10001");
 }
 
 function clone (obj) {
@@ -575,7 +622,7 @@ function batchImport() {
     $(importDiv).show();
 }
 
-// ------------------------------------------------ 数据录入附件管理 -----------------------------------------------
+// ----------------------------------------- 录入表附件管理 -----------------------------------------
 
 URL_ATTACH_LIST   = AUTH_PATH + "xdata/attach/xml/";
 URL_ATTACH_DELETE = AUTH_PATH + "xdata/attach/";

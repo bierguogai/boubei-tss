@@ -267,15 +267,16 @@
     }
  
     function delDS() {
-         $.ajax( {
-            url: URL_DS_DELETE + getTreeNodeId(),
-            method: "DELETE",
-            ondata: function() {
-                $.alert(this.getResponseJSON());
-
-                loadInitData();
-            }
-        })
+        $.confirm("您确定要删除此数据源吗？此操作不可逆。", "删除确认", function(){
+            $.ajax( {
+                url: URL_DS_DELETE + getTreeNodeId(),
+                method: "DELETE",
+                ondata: function() {
+                    $.alert( this.getResponseJSON() );
+                    loadInitData();
+                }
+            });
+        });        
     }
  
     function getTreeNodeVal() {

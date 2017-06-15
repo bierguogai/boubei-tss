@@ -12,7 +12,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<tss.version>4.2</tss.version>
+		<tss.version>4.3</tss.version>
 		<jdk.version>1.7</jdk.version>
 		<spring.version>3.2.0.RELEASE</spring.version>
 		<hibernate.version>3.5.1-Final</hibernate.version>
@@ -220,7 +220,7 @@
 									match="username root" replace="username ${db.username}" byline="true" />
 								<replaceregexp
 									file="${basedir}/target/classes/application.properties" 
-									match="800best@com" replace="${db.password}" byline="true" />
+									match="boubei@com" replace="${db.password}" byline="true" />
 								<replaceregexp
 									file="${basedir}/target/classes/application.properties" 
 									match="localhost:3306\/tss" replace="${db.url}" byline="true" />
@@ -269,13 +269,30 @@
 			</activation>
 			<properties>
 				<environment>dev</environment>
-				<security.level>2</security.level>
+				<security.level>6</security.level>
 				<job.enable>true</job.enable>
-				<log.level>debug</log.level>
+				<log.level>info</log.level>
+				<db.username>root</db.username>
+				<db.password>800best@com</db.password>
+				<db.url>127.0.0.1:3306/tss</db.url>
+				<tomcat.url>127.0.0.1:8080</tomcat.url>
+			</properties>
+		</profile>
+		
+		<profile>
+			<id>xbi</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<environment>xbi</environment>
+				<security.level>6</security.level>
+				<job.enable>true</job.enable>
+				<log.level>info</log.level>
 				<db.username>tssbiu1</db.username>
 				<db.password>www.boubei.com</db.password>
 				<db.url>boubei.com:3306/xbi</db.url>
-				<tomcat.url>127.0.0.1:8080</tomcat.url>
+				<tomcat.url>127.0.0.1:9090</tomcat.url>
 			</properties>
 		</profile>
 		

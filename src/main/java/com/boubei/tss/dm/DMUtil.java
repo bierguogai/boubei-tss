@@ -196,7 +196,7 @@ public class DMUtil {
       	// 加入登陆用户的信息
       	fmDataMap.put(DMConstants.USER_ID, EasyUtils.obj2String(Environment.getUserId()));
       	fmDataMap.put(DMConstants.USER_CODE, Environment.getUserCode());
-		fmDataMap.put(DMConstants.FROM_USER_ID, Environment.getUserInfo("fromUserId"));
+		fmDataMap.put(DMConstants.FROM_USER_ID, Environment.getUserInfo(DMConstants.FROM_USER_ID));
 		
 		// 将常用的script片段（权限过滤等）存至param模块，这里取出来加入fmDataMap
 		try {

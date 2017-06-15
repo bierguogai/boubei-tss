@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.boubei.tss.cache.extension.CacheHelper;
 import com.boubei.tss.dm.DMConstants;
@@ -20,6 +21,7 @@ import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.record.permission.RecordPermission;
 import com.boubei.tss.dm.record.permission.RecordResource;
 import com.boubei.tss.framework.web.display.tree.LevelTreeParser;
+import com.boubei.tss.framework.web.display.tree.StrictLevelTreeParser;
 import com.boubei.tss.framework.web.display.tree.TreeEncoder;
 import com.boubei.tss.framework.web.display.xform.XFormEncoder;
 import com.boubei.tss.framework.web.mvc.BaseActionSupport;
@@ -53,9 +55,15 @@ public class RecordAction extends BaseActionSupport {
     @RequestMapping("/groups")
     public void getAllRecordGroups(HttpServletResponse response) {
         List<?> list = recordService.getAllRecordGroups();
-        TreeEncoder treeEncoder = new TreeEncoder(list, new LevelTreeParser());
+        TreeEncoder treeEncoder = new TreeEncoder(list, new StrictLevelTreeParser(Record.DEFAULT_PARENT_ID));
         treeEncoder.setNeedRootNode(true);
         print("SourceTree", treeEncoder);
+    }
+    
+	@RequestMapping(value = "/id", method = RequestMethod.POST)
+    @ResponseBody
+    public Object getRecordID( String name ) {
+		return recordService.getRecordID(name);
     }
     
     @RequestMapping(value = "/detail/{type}")

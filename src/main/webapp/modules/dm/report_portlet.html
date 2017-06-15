@@ -257,6 +257,7 @@ function init() {
             globalValiable._url   = defines[2];
             globalValiable.hasScript = defines[3];
             globalValiable.remark = defines[5];
+            globalValiable.reportId = reportId;
 
             // if recorder.html 
             if( (globalValiable._url||"").indexOf("dm/recorder.html?id=") >= 0 ) {
@@ -269,7 +270,7 @@ function init() {
             }
             // 报表说明
             if( defines[5]) {
-                $("#tip3 pre").html( defines[5] );
+                $("#tip3 pre").html( defines[5].replace(/【/g, "\n") );
             }
 
             // 自定义的通用查询条件界面
@@ -439,7 +440,7 @@ function searchReport(params) {
 function shareData() {
     var msg = "您可以在特定栏目里创建一篇文章，把您当前查询到的数据结果及评论分享到数据门户里，以供其它人员查阅。";
     $.confirm(msg, "开始分享", 
-                function() { parent.parent.turn2IFrame('modules/cms/channel.html'); },
+                function() { parent.parent.openUrl('modules/cms/channel.html'); },
                 function() { return;}
             );
 }
@@ -467,7 +468,7 @@ function subscribe() {
                 var _dvs = (dv+"||").split("||");  // #_day1||today-1
                 dv =  _dvs[1] || $.Cookie.getValue(_dvs[0].substring(1)); // 优先用默认条件
             }
-            params[key] = (dv == "undefined" ? "" : dv);
+            tmp.defaultValue = (dv == "undefined" ? "" : dv);
         }
 
         x.push(tmp);

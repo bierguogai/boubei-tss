@@ -482,7 +482,7 @@ function scheduleReport() {
             params: params,
             method: "DELETE",
             onsuccess: function() {
-                $("#subscribeV").hide();
+                $("#scheduleFormDiv").hide();
             }
         });
     });

@@ -20,7 +20,7 @@ import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
 
 /**
- * 根据数据录入提供的导入模板，填写后导入实现批量录入数据。
+ * 根据录入表提供的导入模板，填写后导入实现批量录入数据。
  */
 public class ImportCSV implements AfterUpload {
 

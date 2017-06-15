@@ -6,6 +6,9 @@ import com.boubei.tss.util.EasyUtils;
 
 public class DDLUtil {
 
+	/**
+	 * 字符串的类型字段的长度 = height/18 *255
+	 */
 	public static int getVarcharLength(Map<Object, Object> fDefs) {
 		int length = 255;
 		

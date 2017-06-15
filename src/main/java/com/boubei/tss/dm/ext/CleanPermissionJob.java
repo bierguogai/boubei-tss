@@ -2,17 +2,21 @@ package com.boubei.tss.dm.ext;
 
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
-import com.boubei.tss.framework.timer.AbstractJob;
+import com.boubei.tss.framework.Global;
+import com.boubei.tss.modules.timer.AbstractJob;
+import com.boubei.tss.um.service.IUserService;
 
 /**
  * 清理垃圾权限信息
  * 
- * com.boubei.tss.dm.ext.CleanPermissionJob | 0 0 * * * ? | X
+ * com.boubei.tss.dm.ext.CleanPermissionJob | 0 0 01 * * ? | X
  * 
  */
 public class CleanPermissionJob extends AbstractJob {
+	
+	IUserService userService = (IUserService) Global.getBean("UserService");
  
-	protected void excuteJob(String jobConfig) {
+	protected void excuteJob(String jobConfig, Long jobID) {
  
 		log.info("------------------- 清理权限信息......");
 		
@@ -33,6 +37,9 @@ public class CleanPermissionJob extends AbstractJob {
 		}
 		
 		log.info("------------------- 清理权限信息 Done");
+		
+		// 处理过期的用户、角色、转授策略等
+		userService.overdue();
 	}
 	 
 }

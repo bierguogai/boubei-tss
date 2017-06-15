@@ -1,7 +1,9 @@
 package com.boubei.tss.dm.record;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.persistence.Column;
@@ -28,7 +30,7 @@ import com.boubei.tss.util.EasyUtils;
 
 /**
  * 说明：
-	1、数据录入权限项分为： 维护录入表、删除录入表、录入数据、浏览数据、维护数据
+	1、录入表权限项分为： 维护录入表、删除录入表、录入数据、浏览数据、维护数据
 	2、拥有”维护录入表“权限的，可以编辑录入表的定义、移动至其它分组及授予角色
 	3、拥有“删除录入表”权限的，可以删除录入表
 	4、拥有“录入数据”权限的，可打开录入页，进行数据录入，并可以修改、删除自己录入的数据；只能看到自己录入的数据；可以复制自己的数据
@@ -44,15 +46,15 @@ import com.boubei.tss.util.EasyUtils;
 		"updatorId", "updateTime", "updatorName", "lockVersion", "decode", "seqNo", "levelNo", "active", "resourceType"})
 public class Record extends OperateInfo implements IXForm, IDecodable, IResource {
 	
-	public static final int TYPE0 = 0;  // 数据录入分组
-	public static final int TYPE1 = 1;  // 数据录入
+	public static final int TYPE0 = 0;  // 录入表分组
+	public static final int TYPE1 = 1;  // 录入表
     
 	public static final Long DEFAULT_PARENT_ID = 0L;
     
-    // 资源类型： 数据录入
+    // 资源类型： 录入表
     public static final String RESOURCE_TYPE = "D2"; 
     
-    // 数据录入资源操作ID
+    // 录入表资源操作ID
     public static final String OPERATION_CDATA   = "1"; // 录入数据, create data/delete data
     public static final String OPERATION_EDIT    = "2"; // 维护录入
     public static final String OPERATION_DELETE  = "3"; // 删除录入
@@ -67,7 +69,7 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
     private String  name;       // 展示名称
     
     @Column(nullable = false)
-    private Integer type;       // 0：数据录入分组   1: 数据录入
+    private Integer type;       // 0：录入表分组   1: 录入表
     
     private String  datasource; // 保存至哪个数据源
     
@@ -88,7 +90,10 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
     @Column(length = 2000)  
     private String customizeGrid;
     
-    /** 定制的过滤条件，可按登录人的角色、组织等信息进行过滤 , 1=1 <#if btrOrg??> and org='${btrOrg}' </#if> */
+    /** 
+     * 定制的过滤条件，可按登录人的角色、组织等信息进行过滤 , 1=1 <#if org??> and org='${org}' </#if> 
+     *  1=1<#if 1=0>showCUV< /#if>
+     */
     @Column(length = 1000)  
     private String customizeTJ;
    
@@ -101,7 +106,7 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
     private Integer levelNo;// 层次值
     
     private Integer disabled = ParamConstants.FALSE; // 停用/启用标记，默认为启用
-    private Integer needLog  = ParamConstants.FALSE; // 记录修改日志，适用于重要性高的数据录入
+    private Integer needLog  = ParamConstants.FALSE; // 记录修改日志，适用于重要性高的录入表
     private Integer needFile = ParamConstants.FALSE; // 是否需要附件上传
     private Integer batchImp = ParamConstants.FALSE; // 是否允许批量导入
 	
@@ -110,7 +115,7 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
     }
 
 	public String toString() {
-        return "数据录入【id = " + this.id + ", name = " + this.name + "】";
+        return "录入表【id = " + this.id + ", name = " + this.name + "】";
     }
     
     public boolean equals(Object obj) {
@@ -308,5 +313,11 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
 
 	public void setNeedFile(Integer needFile) {
 		this.needFile = needFile;
+	}
+	
+	public static List<String> SYS_TABLES = new ArrayList<String>();
+	
+	public boolean inSysTable() {
+		return SYS_TABLES.contains( this.getTable() );
 	}
 }

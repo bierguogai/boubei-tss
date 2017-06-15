@@ -251,6 +251,10 @@ function logout() {
 }
 
 function gotoIndex(loginName) {
+    if(loginName === 'Admin') {
+        indexPage = 'index.html';
+    }
+
     if(window.parent && window.parent != window.self) {
         window.parent.location.href = indexPage;
     } else {

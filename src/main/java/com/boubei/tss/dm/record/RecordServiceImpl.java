@@ -28,6 +28,20 @@ public class RecordServiceImpl implements RecordService {
         recordDao.evict(record);
         return record;
 	}
+	
+	public Long getRecordID(String recordName) {
+		String hql = "select o.id from Record o where o.name = ? and type = 1 order by o.decode";
+		List<?> list = recordDao.getEntities(hql, recordName); 
+		if(EasyUtils.isNullOrEmpty(list)) {
+			throw new BusinessException("没有找到名为【" +recordName+ "】的录入表");
+		}
+		return (Long) list.get(0);
+	}
+	
+	public _Database getDB(Long recordId) {
+		Record record = getRecord(recordId);
+		return _Database.getDB(record);
+	}
 
 	public List<Record> getAllRecords() {
 		return (List<Record>) recordDao.getEntities("from Record o order by o.decode");
@@ -59,7 +73,7 @@ public class RecordServiceImpl implements RecordService {
             record.setSeqNo(recordDao.getNextSeqNo(record.getParentId()));
             recordDao.create(record);
             
-            if(Record.TYPE1 == record.getType()) {
+            if(Record.TYPE1 == record.getType() && !record.inSysTable() ) {
             	_Database _db = _Database.getDB(record);
             	_db.createTable();
             }

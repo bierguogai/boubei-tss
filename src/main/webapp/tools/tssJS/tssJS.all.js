@@ -930,7 +930,7 @@
                     var param = params[i].split("=");
                     if(param.length == 2) {
                         var key = param[0].replace(/%20/g, "");
-                        items[key] = param[1].replace(/%20/g, "");
+                        items[key] = param[1].trim();
                     }
                 }
             }
@@ -1300,7 +1300,7 @@
             method : method || "POST",
             params : params, 
             waiting : waiting || false, 
-            ondata : function() { 
+            onresult : function() { 
                 var data = this.getResponseXML();
                 callback(data);
             }
@@ -3898,7 +3898,11 @@
             this.el.editable = status || $(this.el).attr("editable");
 
             var disabled = (this.el.editable == "false");
-            $(this.el).addClass( disabled ? "field_disabled" : "string" );
+            if(disabled) {
+                $(this.el).addClass("field_disabled").removeClass("string");
+            } else {
+                $(this.el).removeClass("field_disabled").addClass("string");
+            }
 
             if(this.el.tagName == "textarea") {
                 this.el.readOnly = disabled;  // textarea 禁止状态无法滚动显示所有内容，所以改为只读

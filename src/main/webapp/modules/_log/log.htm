@@ -10,6 +10,7 @@
 
 <script src="../../tools/tssJS/tssJS.all.js"></script>
 <script src="../../tools/tssUtils.js"></script>
+<script src="../../tools/util_date.js"></script>
 
 <script type="text/javascript">
 
@@ -28,7 +29,13 @@
 		URL_LOG_LIST = "data/loglist.xml?";
 		URL_LOG_DETAIL = "data/log1.xml?";
 	}
-	
+
+	var _condition = {}, operationCode = $.Query.get("operationCode");
+	_condition.operateTable = $.Query.get("operateTable");  
+	if(operationCode) {
+		_condition.operationCode = decodeURI( operationCode );
+	}
+
     /* 页面初始化 */
     function init() {
 		initMenus();
@@ -37,8 +44,12 @@
 
 		loadInitData();
 
-		var time1 = new Date($.now() - 7*1000*60*60*24).format('yyyy-MM-dd');
-		loadGridData({"operateTimeFrom": time1}, "1"); 
+		if( !_condition.operationCode ) {
+			_condition.operateTimeFrom = subDateS(now, 7);
+		} else {
+			closePalette();
+		}
+		loadGridData(_condition, "1"); 
     }
  
     function initMenus() {

@@ -65,7 +65,7 @@
             headers : {"appCode": FROMEWORK_CODE, "anonymous": "true"},
             formNode : $.cache.XmlDatas[XML_REGISTER_INFO].querySelector("data"),
             onsuccess : function() { 
-                $.alert("您已成功注册，请等待管理员审批后再登陆");
+                $.alert("您已成功注册，可以登录，如需访问更多功能请等管理员审批后再登陆。");
                 init();
             }
         });

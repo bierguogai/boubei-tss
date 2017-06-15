@@ -21,15 +21,21 @@ import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.MailUtil;
  
 /**
- * 将耗时查询（如report）的执行中的查询缓存起来。
- * 如果同一个用户对同一报表，相同查询条件的查询还在执行中，则让后面的请求进入等待状态。
+ * <pre>
+ * 将比较耗时的数据服务（如report）的查询过程（请求正处于执行状态）缓存起来。
+ * 对同一数据服务的查询请求，发现已经有相同查询条件的查询正在执行中，则让后发起的请求进入等待状态。
  * 等第一次的查询执行完成，然后后续的查询直接取缓存里的数据。
  * 这样可以防止用户重复点击查询（以及频繁且耗时的查询），造成性能瓶颈。 
  * 
- * QC_cache项数(I) + QC_cache项的命中次数之和(H) == 当前等待线程数X，当X如果非常大，系统会崩溃，
- * 需要设定一个阈值V，当 X > V , 直接抛出异常
+ * 同时，对等待队列的线程数进行控制：
+ * 1、当前等待线程数X == QC_cache项数(I) + QC_cache项的命中次数之和(H)，当X如果非常大，系统会崩溃，
+ * 	需要设定一个阈值V，当 X > V , 直接抛出异常，不在进入等待队列；X默认为100，可设置；
+ * 2、同一个人发起同样两次一样的请求时，第二次直接提示“已在执行中，不要反复查询”；防止单个人反复查询一个耗时服务，占用线程资源；
+ * 3、检查当前查询服务（同一服务、参数忽略）在等待队列中是否超过了阈值（X）25%，超过则不再接受新的查询请求，
+ *  以防止单个性能出现异常的数据服务耗尽队列；
  * 
  * 测试时，可以把第一次查询设置断点断住，来模拟耗时的report查询过程。
+ * </pre>
  */
 @Component("queryCacheInterceptor")
 public class QueryCacheInterceptor implements MethodInterceptor {
@@ -152,7 +158,7 @@ public class QueryCacheInterceptor implements MethodInterceptor {
     	for(Cacheable item : items) {
     		String key = item.getKey().toString();
 			if( key.indexOf(method + "(" + limitArg) > 0) { // TODO 用正则表达式，可以不是第一个参数
-				String visitors = (String) item.getValue() + "";
+				String visitors = item.getValue() + "";
 				count += visitors.split(",").length;
 			}
     	}

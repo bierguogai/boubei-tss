@@ -104,7 +104,6 @@ function openUrl(url) {
     $iframe.removeClass("hidden").addClass("open");
 }
 
-// 
 function openMsgPage() {
     openUrl('modules/um/message.html');
 }
@@ -112,8 +111,24 @@ var resizeIFrame = function resizeIFrame() {
     $(".tssIFrame").css("height", (document.body.offsetHeight - 30) + "px");
 }
 
+// report_portlet.html  的 feedback()方法调用到这里
 function feedback(module) {
     var url = encodeURI('modules/dm/record.html?_default=系统使用反馈' + (module ? "&udf="+module : ""));
+    openUrl(url);
+}
+
+function manageJob() {
+    var url = encodeURI('modules/dm/recorder.html?name=系统定时任务');
+    openUrl(url);
+}
+
+function manageETLTask() {
+    var url = encodeURI('modules/dm/recorder.html?name=ETL任务');
+    openUrl(url);
+}
+
+function manageToken() {
+    var url = encodeURI('modules/dm/recorder.html?name=对外用户令牌发放');
     openUrl(url);
 }
 
@@ -179,8 +194,8 @@ tssJS(function(){
             <li><a href='javascript:void(0)'>数据管理</a>    
                 <ul> 
                     <li><a href='javascript:void(0)' onclick="openUrl('modules/dm/report.html')">数据报表</a></li> 
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/dm/record.html')">数据采集</a> </li>
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/cms/channel.html')">栏目内容</a></li>
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/dm/record.html')">录入表</a> </li>
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/cms/channel.html')">栏目文章</a></li>
                 </ul> 
             </li>  
             <li><a href='javascript:void(0)'>用户权限</a>    
@@ -205,8 +220,11 @@ tssJS(function(){
                     <li><a href='javascript:void(0)' onclick="openUrl('modules/_param/param.htm')">系统参数</a></li> 
                     <li><a href='javascript:void(0)' onclick="openUrl('modules/_cache/cache.htm')">缓存监控</a></li> 
                     <li><a href='javascript:void(0)' onclick="openUrl('more/x/xn.html')">性能监控</a> </li>
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/dm/datasource.html')">数据源</a></li> 
-                    <li><a href='javascript:void(0)' onclick="feedback()">管理反馈</a> </li>
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/dm/datasource.html')">数据源</a></li>
+                    <li><a href='javascript:void(0)' onclick="manageJob()">定时Job</a> </li>
+                    <li><a href='javascript:void(0)' onclick="manageETLTask()">ETL任务</a> </li>
+                    <li><a href='javascript:void(0)' onclick="manageToken()">令牌管理</a> </li>
+                    <!-- <li><a href='javascript:void(0)' onclick="feedback()">管理反馈</a> </li> -->
                     <li><a href='javascript:void(0)' onclick="openUrl('more/x/feedback.html')">查看反馈</a></li> 
                 </ul> 
             </li>   
@@ -216,6 +234,8 @@ tssJS(function(){
                 <ul>
                     <li><a href='javascript:void(0)' onclick='$.openIframePanel("p2", "修改密码", 440, 300, "modules/um/_password.htm", true);'>修改密码</a></li>
                     <li><a href='javascript:void(0)' onclick="logout()"> 注销登陆</a></li> 
+                    <li><a href='index.portal' target="_self">返回门户</a></li>
+                    <li><a href='tssbi.html' target="_self">进入BI</a></li>
                 </ul>
             </li>
             

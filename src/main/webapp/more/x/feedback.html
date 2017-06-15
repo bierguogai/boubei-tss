@@ -72,6 +72,9 @@ function query(page) {
           $(".fb-processor time", li).html( item.updatetime || "" );
 
           $("ul.data-list-ul").appendChild(li);
+          $(".tssbutton", li).click(function(){
+            window.open(encodeURI('/tss/modules/dm/recorder.html?name=系统使用反馈&itemId=' + item.id));
+          });
         });
       }
     })
@@ -106,6 +109,7 @@ $(function(){
         <span data-icon="E" class="icon"></span>
         <span class="author"></span>
         <time></time>
+        <button class="tssbutton blue small">开始处理</button>
       </div>
   </div>
 </li>

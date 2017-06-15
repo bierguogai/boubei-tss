@@ -815,6 +815,12 @@ WorkSpace\:Box WorkSpace\:PageStep .tssbutton {
   box-shadow: #555 0px 0px 20px;
   border-radius: 0 0 5px 5px;
 }
+@media (max-width: 600px) {
+  #alert_box {
+    width: 62%;
+    min-width: 300px;
+  }
+}
 #alert_box .title {
   padding-left: 10px;
   font-weight: bold;
