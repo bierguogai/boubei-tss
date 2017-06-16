@@ -129,7 +129,7 @@ public class DMUtil {
 	public static String getExportPath() {
 		String exportPath = FileHelper.ioTmpDir();
 		try {
-			exportPath = ParamManager.getValue(PX.TEMP_EXPORT_PATH);
+			exportPath = ParamManager.getValue(PX.ATTACH_PATH);
 		} catch(Exception e) {
 		}
 		return exportPath;

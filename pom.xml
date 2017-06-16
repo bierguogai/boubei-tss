@@ -274,7 +274,7 @@
 				<log.level>info</log.level>
 				<db.username>root</db.username>
 				<db.password>800best@com</db.password>
-				<db.url>127.0.0.1:3306/tss</db.url>
+				<db.url>127.0.0.1:3306/tss_demo1</db.url>
 				<tomcat.url>127.0.0.1:8080</tomcat.url>
 			</properties>
 		</profile>
@@ -292,6 +292,23 @@
 				<db.username>tssbiu1</db.username>
 				<db.password>www.boubei.com</db.password>
 				<db.url>boubei.com:3306/xbi</db.url>
+				<tomcat.url>127.0.0.1:9090</tomcat.url>
+			</properties>
+		</profile>
+		
+		<profile>
+			<id>demo1</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<environment>demo1</environment>
+				<security.level>6</security.level>
+				<job.enable>true</job.enable>
+				<log.level>info</log.level>
+				<db.username>tssbiu1</db.username>
+				<db.password>www.boubei.com</db.password>
+				<db.url>boubei.com:3306/tss_demo1</db.url>
 				<tomcat.url>127.0.0.1:9090</tomcat.url>
 			</properties>
 		</profile>

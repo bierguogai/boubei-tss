@@ -154,7 +154,7 @@ public class _Recorder extends BaseActionSupport {
     		@PathVariable("recordId") Long recordId, @PathVariable("page") int page) {
     	
     	Map<String, String> requestMap = prepareParams(request, recordId);
-    	int _pagesize = getPageSize(requestMap, PAGE_SIZE);
+    	int _pagesize = getPageSize(requestMap, PAGE_SIZE*20);
     	
         _Database _db = getDB(recordId);
         return _db.select( page, _pagesize, requestMap ).result;

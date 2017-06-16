@@ -80,7 +80,12 @@ public class ReportAction extends BaseActionSupport {
     @RequestMapping("/my/{groupId}")
 	@ResponseBody
     public List<Object> getReportsByGroup(@PathVariable Long groupId) {
-    	List<Report> list = reportService.getReportsByGroup(groupId, Environment.getUserId());
+    	List<Report> list;
+    	if(Report.DEFAULT_PARENT_ID.equals(groupId)) {
+    		list = reportService.getAllReport();
+    	} else {
+    		list = reportService.getReportsByGroup(groupId, Environment.getUserId());
+    	}
     	List<Report> tempList = new ArrayList<Report>();
     	List<Object> result = new ArrayList<Object>();
 	    

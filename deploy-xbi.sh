@@ -1,8 +1,5 @@
 mvn clean install -Pxbi -Dmaven.test.skip=true
-cp target/tss.war /Users/jinpujun/Desktop/workspace/release/boubei/tomcat-xbi/webapps
-
 cd /Users/jinpujun/Desktop/workspace/release/boubei/
-zip -r tss.zip tomcat-xbi
 
 # 此测试BI连的boubei.com/xbi|xbidata库
 # 定期把tssbi、tssx、tssdata同步至xbi和xbidata，并修改掉Admin的密码（为www.boubei.com）、数据源、Title

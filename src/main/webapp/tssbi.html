@@ -165,46 +165,55 @@ tssJS(function(){
 
 // ----------------------------------- 获取BI报表一级菜单 -----------------------------------
 var globalValiable = {},
-    _menus = {}, items = {}, rootId = 669,
-    fisrtGroup, 
-    fisrtReport;
+    _menus = {}, items = {}, rootId = 0,
+    fisrtGroup;
 
 function getBIMenu() {
-	tssJS.getJSON( "/tss/auth/rp/my/" + rootId, {},
-		function(data) {
+    tssJS.getJSON( "/tss/auth/rp/my/" + rootId, {},
+        function(data) {
 
-			data.each( function(i, item) {
-				var id = item[0], pid = item[2], name = item[1], isReport = item[3];
-				items[id] = item;
+            data.each( function(i, item) {
+                var id = item[0], pid = item[2], name = item[1], isReport = item[3];
+                items[id] = item;
 
-				if( pid == 0 ) return true;
+                if( pid == 0 && rootId != 0 ) return true;
 
-				if( pid == rootId ) { // 一级目录
-					var li = tssJS.createElement("li");
-					$(li).html("<a href='javascript:void(0)' onclick='openLevelOne(" +id+ ")'>" +name+ "</a>");
-					$("#_bi>ul").appendChild(li);
+                if( pid == rootId ) { // 一级目录
+                    var li = tssJS.createElement("li");
+                    $(li).html("<a href='javascript:void(0)' onclick='openLevelOne(" +id+ ")'>" +name+ "</a>");
+                    $("#_bi>ul").appendChild(li);
 
-					_menus[id] = [];
+                    _menus[id] = [];
                     fisrtGroup = fisrtGroup || id;
-				}
-				else if( !isReport ) { // 二级目录
-					_menus[pid] && _menus[pid].push(item);
-					item.children = [];
-				}
-				else if( isReport ) {  // 报表
-					items[pid] && items[pid].children && items[pid].children.push(item);
-                    fisrtReport = fisrtReport || id;
-				}
-			} );
+                }
+                else if( !isReport ) { // 二级目录
+                    _menus[pid] && _menus[pid].push(item);
+                    item.children = [];
+                }
+                else if( isReport ) {  // 报表
+                    items[pid] && items[pid].children && items[pid].children.push(item);
+                }
+            } );
 
             openLevelOne(fisrtGroup); // 默认打开第一个报表
-		}
-	);
+        }
+    );
 }
 
 function openLevelOne(id) {
-	globalValiable.list = _menus[id];
-	openUrl('more/bi_menu.html?id=' + id + (fisrtReport ? "&_default="+fisrtReport : "") );
+    var fisrtReport;
+    globalValiable.list = _menus[id];
+    globalValiable.list.each( function(i, _item) {
+        (_item.children||[]).each(function(i, item){
+            if(item[3]) { // isReport = true
+                fisrtReport = item[0];
+                return false;
+            }
+        });
+        if(fisrtReport) return false;
+    } );
+
+    openUrl('more/bi_menu.html?id=' + id + (fisrtReport ? "&_default="+fisrtReport : "") );
 }
 
 </script>
@@ -218,8 +227,8 @@ function openLevelOne(id) {
     <div class="menu"> 
         <ul> 
             <li id="_bi">
-            	<a href='javascript:void(0)'>BI</a>
-            	<ul></ul>
+                <a href='javascript:void(0)'>BI</a>
+                <ul></ul>
             </li>           
             <li><a href='javascript:void(0)' onclick="openUrl('modules/dm/record.html')">我的功能</a></li>
             <li class="biadmin"><a href='javascript:void(0)'>系统管理</a>    
@@ -236,7 +245,7 @@ function openLevelOne(id) {
                     onclick='$.openIframePanel("p1", "个人信息", 760, 320, "modules/um/_userInfo.htm", true);' id="userInfo">个人信息</a>
                 <ul>
                     <li>
-                    	<a href='javascript:void(0)' onclick='$.openIframePanel("p2", "修改密码", 440, 300, "modules/um/_password.htm", true);'>修改密码</a>
+                        <a href='javascript:void(0)' onclick='$.openIframePanel("p2", "修改密码", 440, 300, "modules/um/_password.htm", true);'>修改密码</a>
                     </li>
                     <li><a href='javascript:void(0)' onclick="logout()">注销登陆</a></li>
                     <li><a href='javascript:void(0)' onclick="openMsgPage()">待办事项</a></li> 
