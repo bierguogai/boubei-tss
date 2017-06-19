@@ -38,6 +38,7 @@ import com.boubei.tss.framework.web.display.grid.DefaultGridNode;
 import com.boubei.tss.framework.web.display.grid.GridDataEncoder;
 import com.boubei.tss.framework.web.display.grid.IGridNode;
 import com.boubei.tss.framework.web.mvc.BaseActionSupport;
+import com.boubei.tss.modules.HitRateManager;
 import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
@@ -449,6 +450,7 @@ public class _Recorder extends BaseActionSupport {
 		} 
 		
 		FileHelper.downloadFile(response, attach.getAttachPath(), attach.getName());
+		HitRateManager.getInstanse("dm_record_attach").output(id);
 	}
 	
 	/************************************* check permissions：安全级别 > 5 才启用 **************************************/

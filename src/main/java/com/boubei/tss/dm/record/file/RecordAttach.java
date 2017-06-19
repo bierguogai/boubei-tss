@@ -54,6 +54,8 @@ public class RecordAttach implements IEntity, IGridNode {
 	private Date   uploadDate; // 上传日期
 	private String uploadUser; // 上传用户
 	
+	private Integer hitCount = 0; // 点击下载次数
+	
 	public String getAttachPath() {
 		return getAttachDir(this.recordId, this.itemId) + "/" + this.fileName;
 	}
@@ -162,6 +164,7 @@ public class RecordAttach implements IEntity, IGridNode {
 		map.put("url", this.getDownloadUrl());
 		map.put("_url", "<a href='" + this.getDownloadUrl() + "' target='_blank'>查看</a>");
 		map.put("delOpt", "<a href='javascript:void(0)' onclick='delAttach(" + this.getPK() + ")'>删除</a>");
+		map.put("hitCount", this.getHitCount());
 		return map;
 	}
 
@@ -178,5 +181,13 @@ public class RecordAttach implements IEntity, IGridNode {
 
 	public void setItemId(Long itemId) {
 		this.itemId = itemId;
+	}
+
+	public Integer getHitCount() {
+		return hitCount;
+	}
+
+	public void setHitCount(Integer hitCount) {
+		this.hitCount = hitCount;
 	}
 }
