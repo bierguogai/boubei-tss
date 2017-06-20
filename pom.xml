@@ -313,6 +313,23 @@
 			</properties>
 		</profile>
 		
+		<profile>
+			<id>ebi</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<environment>ebi</environment>
+				<security.level>6</security.level>
+				<job.enable>true</job.enable>
+				<log.level>info</log.level>
+				<db.username>tssbiu1</db.username>
+				<db.password>www.boubei.com</db.password>
+				<db.url>boubei.com:3306/tss_init</db.url>
+				<tomcat.url>127.0.0.1:9091</tomcat.url>
+			</properties>
+		</profile>
+		
 	</profiles>
 
 	<reporting>
