@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <servers>
-	<server code="TSS" framework="tss" name="TSS" sessionIdName="JSESSIONID" baseURL="http://localhost:8088/tss"/>
+	<server code="TSS" framework="tss" name="TSS" sessionIdName="JSESSIONID" baseURL="http://localhost:9090/tss"/>
+	<server code="BBI" framework="tss" name="BBI" sessionIdName="JSESSIONID" baseURL="http://www.boubei.com/tss"/>
 </servers>

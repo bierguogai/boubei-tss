@@ -60,5 +60,4 @@ public class Export {
         FileHelper.writeFile(exportPath, json, false);
         DataExport.downloadFileByHttp(response, exportPath);
 	}
-
 }

@@ -238,7 +238,7 @@
 								</echo>
 								<replaceregexp
 									file="${basedir}/target/classes/tss/appServers.xml" 
-									match="localhost:8088" replace="${tomcat.url}" byline="true" />
+									match="localhost:9090" replace="${tomcat.url}" byline="true" />
 							</tasks>
 						</configuration>
 					</execution>

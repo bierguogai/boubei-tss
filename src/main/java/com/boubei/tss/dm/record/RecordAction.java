@@ -42,6 +42,8 @@ public class RecordAction extends BaseActionSupport {
     	List<Record> all = recordService.getAllRecords();
         List<Record> list1 = recordService.getRecordables(); 
         List<Record> list2 = recordService.getVisiables(); // include record groups
+        
+        // 过来权限，有录入
         for(Record record : all) {
         	if( list1.contains(record) || list2.contains(record) ){
         		result.add(record);

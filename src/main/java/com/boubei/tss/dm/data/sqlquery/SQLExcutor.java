@@ -236,9 +236,8 @@ public class SQLExcutor {
     		log.debug(" excute  sql: " + sql);
 			statement = conn.createStatement();
 			statement.execute(sql);
-			conn.commit();
 			
-			conn.setAutoCommit(autoCommit);
+			conn.commit();
 			
 		} catch (SQLException e) {
 			try { conn.rollback(); } catch (Exception e2) { }
@@ -248,9 +247,7 @@ public class SQLExcutor {
 			throw new BusinessException(errorMsg);
 			
 		} finally {
-			try { conn.setAutoCommit(autoCommit); } 
-        	catch (Exception e2) { log.error(e2.getMessage(), e2);  }
-			
+			try { conn.setAutoCommit(autoCommit); } catch (Exception e) { }
 			try { statement.close(); } catch (Exception e) { }
 		}
     }
