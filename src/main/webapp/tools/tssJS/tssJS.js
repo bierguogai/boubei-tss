@@ -379,6 +379,16 @@
                 }
                 return h;
             },
+
+            _close: function() {
+                if ( $.isFirefox || $.isChrome) {
+                    window.location.href = "about:blank";
+                } else {
+                    window.opener = null;
+                    window.open(" ", "_self");
+                    window.close();
+                }
+            },
             
             isIE: mc(/.net/),
             isChrome: mc(/\bchrome\b/),

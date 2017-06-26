@@ -379,6 +379,16 @@
                 }
                 return h;
             },
+
+            _close: function() {
+                if ( $.isFirefox || $.isChrome) {
+                    window.location.href = "about:blank";
+                } else {
+                    window.opener = null;
+                    window.open(" ", "_self");
+                    window.close();
+                }
+            },
             
             isIE: mc(/.net/),
             isChrome: mc(/\bchrome\b/),
@@ -1271,7 +1281,7 @@
             type : "json",
             method : method || "POST",
             params : params,
-            waiting : waiting || false, 
+            waiting : waiting || true, 
             ondata : function() { 
                 var data = this.getResponseJSON();
                 callback(data);
@@ -1737,6 +1747,7 @@
      *  这样做的好处是，当session过期需要重新登陆时，无需离开当前页面回到登陆页登陆，保证了用户操作的连贯性。
      * 
      * info.type：(参考 ErrorMessageEncoder)
+     * <li>0－不显示
      * <li>1－普通业务逻辑错误信息，没有异常发生的
      * <li>2－有异常发生，同时被系统捕获后添加友好错误消息的
      * <li>3－其他系统没有预见的异常信息

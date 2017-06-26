@@ -86,8 +86,8 @@ var Field = function(info) {
 			}
 			if(this.options) {
 				if (this.options.codes == "year") {
-					this.options.codes = '2010|2011|2012|2013|2014|2015|2016|2017|2018|2019|2020';
-					this.options.names = '2010|2011|2012|2013|2014|2015|2016|2017|2018|2019|2020';
+					this.options.codes = '2010|2011|2012|2013|2014|2015|2016|2017|2018|2019|2020|2021|2022|2023|2024';
+					this.options.names = '2010|2011|2012|2013|2014|2015|2016|2017|2018|2019|2020|2021|2022|2023|2024';
 				}
 				if (this.options.codes == "month") {
 					this.options.codes = '1|2|3|4|5|6|7|8|9|10|11|12';

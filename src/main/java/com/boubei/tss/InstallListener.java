@@ -1,12 +1,12 @@
 package com.boubei.tss;
 
 import java.io.File;
-import java.io.IOException;
+import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.springframework.stereotype.Component;
 
 import com.boubei.tss.framework.Config;
 import com.boubei.tss.framework.sso.Anonymous;
@@ -19,18 +19,19 @@ import com.boubei.tss.util.FileHelper;
 
 /**
  * TSS安装监听器，定时收集安装端信息：
- * ip、安装版本、使用情况：创建多少报表、录入表资源、登陆次数、登录用户数、分时段访问统计等，
+ * ip、安装版本、使用情况：创建多少报表、录入表资源、登陆次数、登录用户数、分时段访问统计、异常信息等，
  * 
  * 集中发往boubei.com，方式：
  * 1、通过前端 JS动态挂载 发送
  * 2、通过httpproxy代理转发，内置一个 BBI 的Appserver，指向www.boubei.com/tss
  * 3、后台JOB定时转发、通过Recorder的API、不要用远程接口
  */
+@Component
 public class InstallListener {
 
 	String product = Config.getAttribute("application.code").toLowerCase();
 	String version = Config.getAttribute("application.version");
-	
+
 	public InstallListener() {
 		try {
 			init();
@@ -50,15 +51,15 @@ public class InstallListener {
 			registerLicense(license);
 		}
 		
-		String owner = license.owner; // 往后围绕owner记录统计信息
+//		String owner = license.owner; // 往后围绕owner记录统计信息
 		
 		// TODO 用户在外网登录时，往boubei.com发送部署BI的域名IP等信息
 	}
 
 	private void registerLicense(License license) throws Exception {
-		PostMethod postMethod = new PostMethod("http://www.boubei.com/tss/auth/xdata/rid/" + 60);
+		PostMethod postMethod = new PostMethod("http://www.boubei.com/tss/xdata/api/rid/" + 60);
 		postMethod.addParameter("uName", Anonymous._CODE);
-		postMethod.addParameter("uToken", "");
+		postMethod.addParameter("uToken", "0211bdae3d86730fe302940832025419");
 		
 		postMethod.addParameter("user", license.owner);
 		postMethod.addParameter("type", "License");
@@ -79,8 +80,12 @@ public class InstallListener {
 	 * @throws Exception 
 	 */
 	private void initLicense() throws Exception {
-		String expiry = "2099-12-31";
-		String owner = String.valueOf( System.currentTimeMillis() );
+        // 生成公钥、私钥对。
+		LicenseFactory.generateKey();
+        
+		Date now = new Date();
+		String expiry = DateUtil.format(DateUtil.addDays(DateUtil.noHMS(now), 365*10+2));
+		String owner = String.valueOf( now.getTime() );
 		String type = License.LicenseType.Evaluation.toString();
 		Map<String, String> map = new LicenseAction().genLicense(owner, product, version, expiry, type);
 		String license = map.get("license");

@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width">
 <meta charset="UTF-8">
 <TITLE> 404 -- You lost </TITLE>
-<!-- 资源不可见（不存在或没有权限），自动跳转登陆页 -->
+<!-- 资源不存在，不跳转登陆页 -->
+
+<script src="tools/tssJS/tssJS.js"></script>
 
 <style>
 	html { height: 100%; }
@@ -15,29 +17,18 @@
 
 <script type="text/javascript">
 
-    setTimeout( function() {
-    	if(window.parent && window.parent != window.self) {
-    		window.parent.location.href = "404.html";
-    	} else {
-    		window.location.href = "login.html";
-    	}
-    }, 
-    0.5*1000 );
-
 </script>
 
 </HEAD>
 
 <BODY>
-<!-- 	
 	<img id="L404" src="images/404.jpg"  usemap="#map1" />
 
 	<map id="map1" name="map1">
-		<area shape="index"  coords="490,348,592,390" href="login.html" target="_self" alt="index"/>
+		<area shape="index"  coords="490,348,592,390" href="index.portal" target="_self" alt="index"/>
 		<area shape="logout" coords="592,348,710,390" href="login.html" target="_self" alt="logout" />
-		<area shape="close"  coords="710,348,820,390" href="#" onclick="window.close();" alt="close" />
+		<area shape="close"  coords="710,348,820,390" href="javascript:void(0)" onclick="$._close();" alt="close" />
 	</map> 
- -->
 </BODY>
 
 </HTML>

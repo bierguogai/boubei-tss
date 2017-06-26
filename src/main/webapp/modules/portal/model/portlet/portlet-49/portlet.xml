@@ -58,7 +58,7 @@
 			html[html.length] = "<div style='width:97%;padding-left:10px;padding-right:10px;'>" + content.getCDATA(".") + "</div><br>";
 			html[html.length] = "<div align='right'>";
 			html[html.length] = "  <span style='cursor:hand;padding-right:5px' onclick='window.print()' title='打印文章'><img src='${basepath}print.jpg'/></span>";
-			html[html.length] = "  <span style='cursor:hand;padding-right:5px' onclick='window.close()' title='关闭本页'><img src='${basepath}close.jpg'/></span>";
+			html[html.length] = "  <span style='cursor:hand;padding-right:5px' onclick='$._close()' title='关闭本页'><img src='${basepath}close.jpg'/></span>";
 			html[html.length] = "</div>";
 			html[html.length] = extendStr;
 			html[html.length] = "</div>";
