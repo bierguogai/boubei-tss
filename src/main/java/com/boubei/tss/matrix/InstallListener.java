@@ -1,15 +1,14 @@
-package com.boubei.tss;
+package com.boubei.tss.matrix;
 
 import java.io.File;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.springframework.stereotype.Component;
 
 import com.boubei.tss.framework.Config;
-import com.boubei.tss.framework.sso.Anonymous;
 import com.boubei.tss.modules.license.License;
 import com.boubei.tss.modules.license.LicenseAction;
 import com.boubei.tss.modules.license.LicenseFactory;
@@ -18,17 +17,15 @@ import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.FileHelper;
 
 /**
- * TSS安装监听器，定时收集安装端信息：
- * ip、安装版本、使用情况：创建多少报表、录入表资源、登陆次数、登录用户数、分时段访问统计、异常信息等，
+ * TSS安装监听器
+ * 收集安装端信息：安装应用、安装版本、安装人标识、安装时间、安装ip等
  * 
- * 集中发往boubei.com，方式：
- * 1、通过前端 JS动态挂载 发送
- * 2、通过httpproxy代理转发，内置一个 BBI 的Appserver，指向www.boubei.com/tss
- * 3、后台JOB定时转发、通过Recorder的API、不要用远程接口
+ * 用户也可以直接打开系统里的注册页面来完成注册。
+ * 安装服务器不一定能访问的到boubei.com，在前端Admin登录时完成注册？
  */
 @Component
 public class InstallListener {
-
+	
 	String product = Config.getAttribute("application.code").toLowerCase();
 	String version = Config.getAttribute("application.version");
 
@@ -50,34 +47,42 @@ public class InstallListener {
 			license = licenseManager.getLicense(product, version);
 			registerLicense(license);
 		}
-		
-//		String owner = license.owner; // 往后围绕owner记录统计信息
-		
-		// TODO 用户在外网登录时，往boubei.com发送部署BI的域名IP等信息
 	}
-
+	
 	private void registerLicense(License license) throws Exception {
-		PostMethod postMethod = new PostMethod("http://www.boubei.com/tss/xdata/api/rid/" + 60);
-		postMethod.addParameter("uName", Anonymous._CODE);
-		postMethod.addParameter("uToken", "0211bdae3d86730fe302940832025419");
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("user", license.owner);
+		map.put("type", "License");
+		map.put("resource", license.product +"|"+ license.version);
+		map.put("token", license.toString());
+		map.put("expiretime", DateUtil.format(license.expiry));
 		
-		postMethod.addParameter("user", license.owner);
-		postMethod.addParameter("type", "License");
-		postMethod.addParameter("resource", license.product +"|"+ license.version);
-		postMethod.addParameter("token", license.toString());
-		postMethod.addParameter("expiretime", DateUtil.format(license.expiry));
-
-        HttpClient httpClient = new HttpClient();
-        int statusCode = httpClient.executeMethod(postMethod);
-        if(statusCode == 200) {
-            String soapResponseData = postMethod.getResponseBodyAsString();
-            System.out.println("返回结果: \n" + soapResponseData);     
-        }
+		MatrixUtil.remoteRecord(60, map); // 注册令牌
+		
+		map = new HashMap<String, String>();
+		map.put("appcode", product);
+		map.put("appversion", version);
+		map.put("owner", license.owner);
+		map.put("ip", MatrixUtil.getIpAddress());
+		map.put("time", DateUtil.formatCare2Second(new Date()));
+		
+		Properties props = System.getProperties();   
+		map.put("osname", props.getProperty("os.name"));
+		map.put("osversion", props.getProperty("os.version"));
+		map.put("javaversion", props.getProperty("java.version"));
+		map.put("javavendor", props.getProperty("java.vendor"));
+		map.put("javahome", props.getProperty("java.home"));
+		
+		Map<String, String> env = System.getenv();  
+		map.put("sysuser", env.get("USERNAME"));
+		map.put("computer", env.get("COMPUTERNAME"));
+		map.put("domain", env.get("USERDOMAIN"));
+		
+		MatrixUtil.remoteRecord(65, map ); // 注册安装信息
 	}
 
 	/**
 	 * 第一次启动给设置一个License
-	 * @throws Exception 
 	 */
 	private void initLicense() throws Exception {
         // 生成公钥、私钥对。

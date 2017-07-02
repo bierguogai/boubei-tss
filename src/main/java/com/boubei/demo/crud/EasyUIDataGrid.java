@@ -1,4 +1,4 @@
-package com.boubei.tss.ext;
+package com.boubei.demo.crud;
 
 import java.util.List;
 

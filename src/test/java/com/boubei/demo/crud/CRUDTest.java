@@ -9,7 +9,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.boubei.tss.AbstractTest4;
-import com.boubei.tss.ext.EasyUIDataGrid;
 import com.boubei.tss.modules.param.Param;
 
 public class CRUDTest extends AbstractTest4 {

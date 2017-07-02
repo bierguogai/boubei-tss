@@ -1,4 +1,4 @@
-package com.boubei.tss.ext;
+package com.boubei.tss;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ import com.boubei.tss.modules.param.ParamService;
 
 @Controller
 @RequestMapping("/init")
-public class SystemInit {
+public class ParamsInit {
 	
 	@Autowired protected ParamService paramService;
 	

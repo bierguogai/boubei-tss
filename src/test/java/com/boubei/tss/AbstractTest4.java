@@ -9,7 +9,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
 import org.springframework.test.context.transaction.TransactionConfiguration;
 
-import com.boubei.tss.ext.SystemInit;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.sso.IdentityCard;
 import com.boubei.tss.framework.sso.TokenUtil;
@@ -35,7 +34,7 @@ public abstract class AbstractTest4 extends AbstractTransactionalJUnit4SpringCon
     
     @Autowired protected H2DBServer dbserver;
     
-    @Autowired protected SystemInit systemInit;
+    @Autowired protected ParamsInit systemInit;
     @Autowired protected ParamService paramService;
     
     @Autowired protected PermissionHelper permissionHelper;

@@ -1,4 +1,4 @@
-package com.boubei.tss.ext.sys;
+package com.boubei.tss;
 
 import java.util.Date;
 import java.util.List;
@@ -8,21 +8,16 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 
 import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
-import com.boubei.tss.framework.Config;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.modules.log.IBusinessLogger;
 import com.boubei.tss.modules.log.Log;
 import com.boubei.tss.modules.param.ParamManager;
+import com.boubei.tss.util.EasyUtils;
 
 public class MonitorUtil {
 	
-	static final String MONITORING_JOBS = "Monitoring-Jobs";  // 242 是一个异常Job，测试时可用之
 	static final String MONITORING_RECEIVERS = "Monitoring-Receivers";
-	
-	static boolean isProdEnv() {
-		return "prod".equals( Config.getAttribute("environment").trim() );
-	}
-	
+
 	static String[] getReceiver() {
 		try {
 			return ParamManager.getValue(MONITORING_RECEIVERS).split(",");
@@ -84,9 +79,12 @@ public class MonitorUtil {
 		return null;
 	}
 	
-	static void monitoringRestfulUrl(String url) {
+	static void monitoringRestfulUrl(String url, String expectWord) {
 		String ret = MonitorUtil.visitHttpUrl(url);
-		if(ret == null || !ret.startsWith("[") || !ret.endsWith("]")) {
+		if(ret == null 
+				|| (!ret.startsWith("[") && !ret.endsWith("]"))
+				|| (EasyUtils.isNullOrEmpty(expectWord) && ret.indexOf(expectWord) < 0) 
+			) {
 			recordErrLog("Restful Url", "URL【" +url+ "】访问结果异常，ret = " + ret);
 		}
 	}
