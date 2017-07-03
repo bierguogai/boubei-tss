@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 import com.boubei.tss.framework.Config;
@@ -14,6 +15,7 @@ import com.boubei.tss.modules.license.LicenseAction;
 import com.boubei.tss.modules.license.LicenseFactory;
 import com.boubei.tss.modules.license.LicenseManager;
 import com.boubei.tss.util.DateUtil;
+import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
 
 /**
@@ -26,14 +28,22 @@ import com.boubei.tss.util.FileHelper;
 @Component
 public class InstallListener {
 	
+	Logger log = Logger.getLogger(this.getClass());
+	
 	String product = Config.getAttribute("application.code").toLowerCase();
 	String version = Config.getAttribute("application.version");
+	
+	public static void main(String[] args) {
+		new InstallListener();
+	}
 
 	public InstallListener() {
 		try {
 			init();
 		} 
-		catch(Exception e) { }
+		catch(Exception e) {
+			log.error(e.getMessage(), e);
+		}
 	}
 	
 	private void init() throws Exception {
@@ -60,8 +70,9 @@ public class InstallListener {
 		MatrixUtil.remoteRecord(60, map); // 注册令牌
 		
 		map = new HashMap<String, String>();
-		map.put("appcode", product);
+		map.put("product", product + "-" + Config.getAttribute("environment"));
 		map.put("appversion", version);
+		map.put("packagetime", Config.getAttribute("last.package.time"));
 		map.put("owner", license.owner);
 		map.put("ip", MatrixUtil.getIpAddress());
 		map.put("time", DateUtil.formatCare2Second(new Date()));
@@ -74,9 +85,11 @@ public class InstallListener {
 		map.put("javahome", props.getProperty("java.home"));
 		
 		Map<String, String> env = System.getenv();  
-		map.put("sysuser", env.get("USERNAME"));
+		map.put("sysuser", (String) EasyUtils.checkNull(env.get("USERNAME"), env.get("USER")));
 		map.put("computer", env.get("COMPUTERNAME"));
 		map.put("domain", env.get("USERDOMAIN"));
+		
+		log.info(map);
 		
 		MatrixUtil.remoteRecord(65, map ); // 注册安装信息
 	}

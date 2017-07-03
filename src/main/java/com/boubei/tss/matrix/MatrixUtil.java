@@ -13,6 +13,7 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
 
 import com.boubei.tss.framework.sso.Anonymous;
+import com.boubei.tss.util.EasyUtils;
 
 public class MatrixUtil {
 	
@@ -29,16 +30,17 @@ public class MatrixUtil {
 		postMethod.addParameter("uToken", matrix_token);
 		
 		for(String key : params.keySet()) {
-			postMethod.addParameter(key, params.get(key));
+			String value = params.get(key);
+			postMethod.addParameter(key, EasyUtils.obj2String(value));
 		}
 		
 		HttpClient httpClient = new HttpClient();
         int statusCode = httpClient.executeMethod(postMethod);
         if(statusCode == 200) {
             String soapResponseData = postMethod.getResponseBodyAsString();
-            log.debug("远程录入成功: \n" + soapResponseData);     
+            log.info("remote record result: " + soapResponseData);     
         } else {
-        	log.debug("远程录入成功: " + statusCode);
+        	log.info("remote record error: " + statusCode);
         }
     }
 
