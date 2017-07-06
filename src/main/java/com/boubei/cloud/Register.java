@@ -48,7 +48,7 @@ public class Register extends HttpServlet {
         user.setPasswordQuestion("my phone?");
         user.setPasswordAnswer( user.getTelephone() );
         
-        String domain = request.getParameter("domain");
+        String domain = request.getParameter("domain"); // 域由后台统一生成
         
         service.register(user, domain);
 
