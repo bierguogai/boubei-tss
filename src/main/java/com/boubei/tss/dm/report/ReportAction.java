@@ -526,25 +526,26 @@ public class ReportAction extends BaseActionSupport {
 		return commonService.getList(hql, Environment.getUserId());
 	}
 	
-	// 报表点赞
-	@RequestMapping(value = "/zan/{reportId}", method = RequestMethod.POST)
-	public void zanReport(HttpServletResponse response, @PathVariable("reportId") Long reportId) {
-		String hql = "from ReportUser ru where ru.userId=? and ru.reportId=? and ru.type=2";
+	// 报表点赞|差评
+	@RequestMapping(value = "/zan/{reportId}/{type}", method = RequestMethod.POST)
+	public void zanReport(HttpServletResponse response,
+			@PathVariable Long reportId, @PathVariable Integer type) {
+		
+		String hql = "from ReportUser ru where ru.userId=? and ru.reportId=? and ru.type=?";
 		Long userId = Environment.getUserId();
-		List<?> list = commonService.getList(hql, userId, reportId);
+		List<?> list = commonService.getList(hql, userId, reportId, type);
 		if( list.isEmpty() ) {
 			ReportUser ru = new ReportUser(userId, reportId);
-			ru.setType(2);
+			ru.setType(type);
 			commonService.create(ru);
-		}
-		
-		printSuccessMessage("点赞成功，您的肯定是我们最大的动力！");
+			printSuccessMessage( ReportUser.TYPE_NAMES[type] + "成功，您还可以通过反馈异常进一步提供您宝贵的意见！");
+		} 
 	}
 	
-	@RequestMapping(value = "/zan/{reportId}", method = RequestMethod.GET)
+	@RequestMapping(value = "/zan/{reportId}/{type}", method = RequestMethod.GET)
 	@ResponseBody
-	public Object countZan(@PathVariable("reportId") Long reportId) {
-		String hql = "select count(*) from ReportUser ru where ru.reportId=? and ru.type=2";
-		return commonService.getList(hql, reportId).get(0);
+	public Object countZan(@PathVariable Long reportId, @PathVariable Integer type) {
+		String hql = "select count(*) from ReportUser ru where ru.reportId=? and ru.type=?";
+		return commonService.getList(hql, reportId, type).get(0);
 	}
 }

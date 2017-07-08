@@ -30,11 +30,13 @@
 		URL_LOG_DETAIL = "data/log1.xml?";
 	}
 
-	var _condition = {}, operationCode = $.Query.get("operationCode");
-	_condition.operateTable = $.Query.get("operateTable");  
+	var _condition = {}, 
+		operationCode = $.Query.get("operationCode");
+	 
 	if(operationCode) {
 		_condition.operationCode = decodeURI( operationCode );
 	}
+	_condition.operateTable = $.Query.get("operateTable"); 
 
     /* 页面初始化 */
     function init() {
@@ -42,12 +44,13 @@
 		initWorkSpace();
 		initEvents();
 
-		loadInitData();
-
-		if( !_condition.operationCode ) {
-			_condition.operateTimeFrom = subDateS(now, 7);
-		} else {
+		if( _condition.operationCode ) {
 			closePalette();
+			$("div.leftbar").hide();
+		} 
+		else {
+			loadInitData();
+			_condition.operateTimeFrom = subDateS(now, 7);
 		}
 		loadGridData(_condition, "1"); 
     }

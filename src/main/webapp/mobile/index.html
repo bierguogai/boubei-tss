@@ -126,18 +126,18 @@ function init() {
 				var li = $.createElement("li");
 				$("#menu1>ul").appendChild(li);
 
-				var menuHTML = [];
-				menuHTML.push("<a href='javascript:void(0)' onclick='openUrl(\"" +menu1.url+ "\")' >" + menu1.name + "</a>");
+				var html = [];
+				html.push("<a href='javascript:void(0)' onclick='openUrl(\"" +menu1.url+ "\")' >" +menu1.name+ "</a>");
 				if(menu1.children && menu1.children.length) {				
-					menuHTML.push('<ul>');
+					html.push('<ul>');
 				    $.each(menu1.children, function(j, menu2) {
-				    	menuHTML.push('<li>');
-				    	menuHTML.push("<a href='javascript:void(0)' onclick='openUrl(\"" +menu2.url+ "\")' >" + menu2.name + "</a>");
-						menuHTML.push('</li>');
+				    	html.push('<li>');
+				    	html.push("<a href='javascript:void(0)' onclick='openUrl(\"" +menu2.url+ "\")' >" +menu2.name+ "</a>");
+						html.push('</li>');
 				    });
-					menuHTML.push('</ul>');
+					html.push('</ul>');
 				}			
-				$(li).html(menuHTML.join(" "));
+				$(li).html(html.join(" "));
 
 				if( i == 0 && menu1.url ) { // 默认打开第一个菜单
 					openUrl( menu1.url );
@@ -188,7 +188,6 @@ function _logout() {
 		<button data-icon="V" class="icon refresh"></button>
 		<ul class="hidden">
 			<li><a href='javascript:void(0)' onclick="_logout()">注销<span id="userInfo"></span></a></li>
-			<!-- <li><a href='javascript:void(0)' onclick="openUrl('bi_visit.html')">访问概览</a></li> -->
 		</ul>
 	</div>
 </header>

@@ -312,7 +312,7 @@ public abstract class _Database {
 		logCUD(ids, "update batch", "\n field: " + field + " \n value: " + value);
 	}
 
-	private Map<String, Object> get(Long id) {
+	public Map<String, Object> get(Long id) {
 		String fieldTags = "";
 		for(String field : this.fieldCodes) {
 			fieldTags += field + ",";
@@ -429,9 +429,11 @@ public abstract class _Database {
 			}
 		}
 		
-		if( !EasyUtils.isNullOrEmpty(this.customizeTJ) ) {
-			condition += " and ( " + DMUtil.customizeParse(this.customizeTJ + " or -1 = ${userId} ") + " ) ";
-		}
+		String _customizeTJ = (String) EasyUtils.checkNull(this.customizeTJ, " 1=1 ");
+		// 如果用户的域不为空，则只筛选出该域下用户创建的记录
+		_customizeTJ += " <#if USERS_OF_DOAMIN??> and creator in (${USERS_OF_DOAMIN}) </#if> ";
+		
+		condition += " and ( " + DMUtil.customizeParse(_customizeTJ + " or -1 = ${userId} ") + " ) ";
 		
 		// 设置排序方式
 		String sortField = params.get("sortField");
@@ -472,14 +474,24 @@ public abstract class _Database {
         int index = 0; 
         for(String filed : fieldNames) {
             String fieldCode = fieldCodes.get(index);
-            String fieldAlign = fieldAligns.get(index);
+            String fieldAlign = (String) EasyUtils.checkNull(fieldAligns.get(index), "center");
             String fieldWidth = fieldWidths.get(index);
             String fieldRole2 = fieldRole2s.get(index);
             String fieldType  = "string"; // fieldTypes.get(index);==> GridNode里转换异常（date类型要求值也为date）
             
+            if(EasyUtils.isNullOrEmpty(fieldWidth)) {
+            	fieldWidth = "";
+            }
+            else if( fieldWidth.startsWith("0")) {
+            	fieldWidth = " display=\"none\" ";
+            } 
+            else {
+            	fieldWidth = " width=\"" + fieldWidth + "\" ";
+            }
+            
             if( PermissionHelper.checkRole(fieldRole2) && !"hidden".equals(fieldTypes.get(index)) ) {
             	sb.append("<column name=\"" + fieldCode + "\" mode=\"" + fieldType + "\" caption=\"" + filed 
-					+ "\" align=\"" + fieldAlign + "\" width=\"" + fieldWidth + "\" />").append("\n");
+					+ "\" align=\"" + fieldAlign + "\" " + fieldWidth + " />").append("\n");
             }
             index++;
         }

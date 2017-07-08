@@ -9,6 +9,6 @@ public class _H2 extends _MySQL {
 	}
 	
 	public String toPageQuery(String sql, int page, int pagesize) {
-		return sql;
+		return super.toPageQuery(sql, page, pagesize);
 	}
 }

@@ -93,13 +93,13 @@ public class _Reporter extends BaseActionSupport {
     	
 		DMUtil.outputAccessLog(reportService, reportId, "showAsGrid", requestMap, start);
         
-        List<IGridNode> temp = new ArrayList<IGridNode>();
+        List<IGridNode> list = new ArrayList<IGridNode>();
         for(Map<String, Object> item : excutor.result) {
             DefaultGridNode gridNode = new DefaultGridNode();
             gridNode.getAttrs().putAll(item);
-            temp.add(gridNode);
+            list.add(gridNode);
         }
-        GridDataEncoder gEncoder = new GridDataEncoder(temp, excutor.getGridTemplate());
+        GridDataEncoder gEncoder = new GridDataEncoder(list, excutor.getGridTemplate());
         
         PageInfo pageInfo = new PageInfo();
         pageInfo.setPageSize(pagesize);

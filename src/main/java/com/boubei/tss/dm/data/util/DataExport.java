@@ -151,12 +151,7 @@ public class DataExport {
             for (Object[] row : data) {
             	List<Object> values = new ArrayList<Object>();
             	for(Object value : row) {
-            		if(value == null) {
-            			value = "";
-            		}
-            		String valueS = value.toString().replaceAll(",", "，"); // 导出时字段含英文逗号会错列
-            		valueS = valueS.replaceAll("\r\n", " ").replaceAll("\n", " ");
-            		valueS = valueS.replaceAll("\"", "");
+            		String valueS = preCheatVal(value);
 					values.add(valueS); 
             	}
                 fw.write(EasyUtils.list2Str(values));
@@ -173,6 +168,16 @@ public class DataExport {
         } catch (IOException e) {
             throw new BusinessException("export csv error:" + path + ", " + e.getMessage());
         }
+    }
+    
+    public static String preCheatVal(Object value) {
+    	if(value == null) {
+			value = "";
+		}
+		String valueS = value.toString().replaceAll(",", "，"); // 导出时字段含英文逗号会错列
+		valueS = valueS.replaceAll("\r\n", " ").replaceAll("\n", " ");
+		valueS = valueS.replaceAll("\"", "");
+		return valueS; 
     }
     
     // 共Web页面上的表格数据直接导出成csv调用

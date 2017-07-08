@@ -382,3 +382,61 @@ function drawDonut2D(canvasName, data, title, width, height) {
  
 // 更多图形：柱状对比图、组合图等
 // 允许添加事件
+
+/*
+ * 处理图表横轴坐标个数（太多了显示难看）。
+ * 如果大于12个，则截取n + 1个
+ */
+function processLabelSize(labels, n) {
+	n = n || 6;
+
+	var _length = labels.length;
+	if(_length > 12) {
+		var labels2 = [];
+
+		for(var i = 0; i < n; i++) {
+			labels2.push(labels[Math.round(_length * i / n)]);
+		}
+		labels2.push(labels[_length - 1]);
+
+		labels = labels2;
+	}
+
+	return labels;
+}
+
+// 14345 返回 15000，坐标展示用 
+function $round(intNum) {
+	intNum = Math.round(intNum);
+
+	if(intNum <= 10) return 10;
+	if(intNum <= 100) return 100;
+
+	var toString = intNum.toString();
+	var length = toString.length;
+
+	var result = parseInt(toString.charAt(0) + toString.charAt(1)) + 1;
+	for(var i = 0; i < length - 2; i++) {
+		result = result + "0";
+	}
+
+	return parseInt(result);
+}
+
+// 14345 返回 14000，坐标展示用 
+function $ceil(intNum) {
+	intNum = Math.ceil(intNum);
+
+	if(intNum <= 10) return 0;
+	if(intNum <= 100) return 10;
+
+	var toString = intNum.toString();
+	var length = toString.length;
+
+	var result = parseInt(toString.charAt(0) + toString.charAt(1)) ;
+	for(var i = 0; i < length - 2; i++) {
+		result = result + "0";
+	}
+
+	return parseInt(result);
+}

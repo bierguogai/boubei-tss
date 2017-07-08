@@ -1,5 +1,6 @@
 package com.boubei.tss.dm.etl;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -67,7 +68,7 @@ public class ByDayETLJob extends AbstractETLJob {
 		long start = System.currentTimeMillis();
 		for (final Date day : dateList) {
 			TaskLog tLog = new TaskLog(task);
-			tLog.setDataDay( DateUtil.format(day) );
+			tLog.setDataDay( DateUtil.format(day) ); //记录执行日期
 	        
 			try {
 				long startTime = System.currentTimeMillis();
@@ -92,13 +93,13 @@ public class ByDayETLJob extends AbstractETLJob {
 	}
 	
 	/* 按天ETL */
-	private String etlByDay(Task task, Date day, boolean repeat) {
+	protected String etlByDay(Task task, Date day, boolean repeat) {
 		// 判断是否重新抽取以更新当前日期的数据，是的话先清除已存在的改天数据
 		String preRepeatSQL = task.getPreRepeatSQL();
 		if(repeat && !EasyUtils.isNullOrEmpty(preRepeatSQL) ) {
 			Map<Integer, Object> params = new HashMap<Integer, Object>();
-			params.put(1, day);
-			SQLExcutor.excute(preRepeatSQL, params , task.getTargetDS());
+			params.put(1, new Timestamp(day.getTime()));
+			SQLExcutor.excute(preRepeatSQL, params, task.getTargetDS());
 		}
 		
 		Report report;
@@ -119,13 +120,13 @@ public class ByDayETLJob extends AbstractETLJob {
 		paramsMap.put("param2", DateUtil.format(DateUtil.addDays(day, 1)));
 		
 		SQLExcutor ex = ReportQuery.excute(report, paramsMap , 1, 1);
-		int total = ex.count, pagesize = 10*10000;
-        int totalPages = PageInfo.calTotalPages(total, pagesize);
+		int total = ex.count;
+        int totalPages = PageInfo.calTotalPages(total, PAGE_SIZE);
         
         // 分页查询，批量插入
         String target = task.getTargetScript();
         for(int pageNum = 1; pageNum <= totalPages; pageNum++) {
-        	ex = ReportQuery.excute(report, paramsMap, pageNum, pagesize);
+        	ex = ReportQuery.excute(report, paramsMap, pageNum, PAGE_SIZE);
         	
         	List<Map<Integer, Object>> list1 = new ArrayList<Map<Integer, Object>>();
         	List<Map<String, String>> list2 = new ArrayList<Map<String, String>>();

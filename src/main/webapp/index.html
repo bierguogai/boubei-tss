@@ -70,10 +70,15 @@ html, body { height: 100%; overflow: hidden; }
 window.onload = function() {
     initUserInfo(function() {
         resizeIFrame();
-        // openUrl("modules/_cache/cache.htm");
         openMsgPage();
 
         dbsx();
+
+        $.getJSON("/tss/si/version", {}, function(result) {
+            if(result[1].indexOf("demo") >= 0) {
+                $("li.other").hide();
+            }
+        }, "GET")
     });
 
     /* 禁止鼠标右键 */
@@ -118,7 +123,7 @@ function feedback(module) {
 }
 
 function manageJob() {
-    var url = encodeURI('modules/dm/recorder.html?name=系统定时任务');
+    var url = encodeURI('modules/dm/recorder.html?name=系统定时器');
     openUrl(url);
 }
 
@@ -190,7 +195,7 @@ tssJS(function(){
     <div class="logo"></div>
     <div class="menu"> 
         <ul> 
-            <li><a href='javascript:void(0)' onclick="openMsgPage()">待办事项</a></li> 
+            <li><a href='javascript:void(0)' onclick="openMsgPage()">站内消息</a></li> 
             <li><a href='javascript:void(0)'>数据管理</a>    
                 <ul> 
                     <li><a href='javascript:void(0)' onclick="openUrl('modules/dm/report.html')">数据报表</a></li> 
@@ -202,17 +207,18 @@ tssJS(function(){
                 <ul> 
                     <li><a href='javascript:void(0)' onclick="openUrl('modules/um/group.html')">用户管理</a></li> 
                     <li><a href='javascript:void(0)' onclick="openUrl('modules/um/role.html')">角色授权</a></li> 
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/um/subauth.html')">权限转授</a></li> 
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/um/resource.html')">应用资源</a></li> 
+                    <li class="other"><a href='javascript:void(0)' onclick="openUrl('modules/um/subauth.html')">权限转授</a></li> 
+                    <li class="other"><a href='javascript:void(0)' onclick="openUrl('modules/um/resource.html')">应用资源</a></li>  
+                    <li><a href='javascript:void(0)' onclick="openUrl('modules/um/online.html')">在线用户</a></li> 
                 </ul> 
             </li> 
-            <li><a href='javascript:void(0)'>门户管理</a>    
+            <li class="other"><a href='javascript:void(0)'>门户管理</a>    
                 <ul> 
                     <li><a href='javascript:void(0)' onclick="openUrl('modules/portal/structure.html')">门户结构</a></li> 
                     <li><a href='javascript:void(0)' onclick="openUrl('modules/portal/component.html')">门户组件</a></li> 
                     <li><a href='javascript:void(0)' onclick="openUrl('modules/portal/release.html')">门户发布</a> </li>
                     <li><a href='javascript:void(0)' onclick="openUrl('modules/portal/navigator.html')">菜单导航</a></li> 
-                </ul> 
+                </ul>
             </li> 
             <li><a href='javascript:void(0)'>系统辅助</a>    
                 <ul> 
@@ -224,9 +230,8 @@ tssJS(function(){
                     <li><a href='javascript:void(0)' onclick="manageJob()">定时Job</a> </li>
                     <li><a href='javascript:void(0)' onclick="manageETLTask()">ETL任务</a> </li>
                     <li><a href='javascript:void(0)' onclick="manageToken()">令牌管理</a> </li>
-                    <!-- <li><a href='javascript:void(0)' onclick="feedback()">管理反馈</a> </li> -->
-                    <li><a href='javascript:void(0)' onclick="openUrl('more/x/feedback.html')">查看反馈</a></li> 
-                </ul> 
+                    <li><a href='javascript:void(0)' onclick="openUrl('more/x/feedback.html')">查看反馈</a></li>
+                </ul>
             </li>   
             <li>
                 <a href='javascript:void(0)' 

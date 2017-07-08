@@ -16,6 +16,8 @@ import com.boubei.tss.framework.persistence.IEntity;
 @Table(name = "dm_report_user")
 @SequenceGenerator(name = "report_user_seq", sequenceName = "report_user_seq", initialValue = 1, allocationSize = 10)
 public class ReportUser implements IEntity {
+	
+	public static String[] TYPE_NAMES = "操作,收藏,点赞,差评".split(",");
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "report_user_seq")
@@ -27,7 +29,7 @@ public class ReportUser implements IEntity {
 	@Column(nullable = false)
 	private Long userId;  // 用户ID
 	
-	private Integer type;  // 1：收藏; 2：点赞
+	private Integer type;  // 1：收藏; 2：点赞 3：差评
 	
     public ReportUser() { }
     

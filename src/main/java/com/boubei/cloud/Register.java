@@ -24,10 +24,6 @@ public class Register extends HttpServlet {
 		service = (IRegiterService) Global.getBean("RegiterService");
 	}
 	
-	public void destroy() {
-		service = null;
-	}
-	
     protected void doGet(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
         doPost(request, response);
@@ -37,20 +33,16 @@ public class Register extends HttpServlet {
     		throws ServletException, IOException {
     	
         User user = new User();
-        
-        // 前台传递的参数
         user.setLoginName(request.getParameter("loginName"));
         user.setPassword(request.getParameter("password"));
         user.setUserName(request.getParameter("userName"));
         user.setEmail(request.getParameter("email"));
         user.setTelephone(request.getParameter("telephone"));
         
-        user.setPasswordQuestion("my phone?");
-        user.setPasswordAnswer( user.getTelephone() );
-        
         String domain = request.getParameter("domain"); // 域由后台统一生成
+        String roles = request.getParameter("roles");  // 
         
-        service.register(user, domain);
+        service.register(user, domain, roles);
 
         response.setContentType("text/html;charset=UTF-8");
         SuccessMessageEncoder encoder = new SuccessMessageEncoder("用户注册成功！", "用户注册成功！");

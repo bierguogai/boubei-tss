@@ -36,6 +36,8 @@ public class Task extends AbstractRecordTable {
 	private Long jobId;
 	private String jobName;
 	
+	private Integer priority; // 优先级，按从大到小排序
+	
 	@Column(nullable = false)
 	private String type; // daily/byID
 	
@@ -63,7 +65,7 @@ public class Task extends AbstractRecordTable {
 	// 重复抽取最近X日内的数据，这几日的数据可能上一日的抽取又有了新的变化
 	private Integer repeatDays;
 	
-	// 重抽数据前先执行这个SQL
+	// 重抽数据前先执行这个SQL | ByID ETL时用以获取已有数据的最大ID
 	private String preRepeatSQL;
 	
 	// 任务申请人
@@ -237,5 +239,13 @@ public class Task extends AbstractRecordTable {
 
 	public void setStartID(Long startID) {
 		this.startID = startID;
+	}
+
+	public Integer getPriority() {
+		return priority;
+	}
+
+	public void setPriority(Integer priority) {
+		this.priority = priority;
 	}
 }

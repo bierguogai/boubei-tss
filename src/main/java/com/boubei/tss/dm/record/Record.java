@@ -268,7 +268,7 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
 	}
 
 	public String getCustomizeTJ() {
-		return customizeTJ;
+		return EasyUtils.obj2String(customizeTJ);
 	}
 
 	public void setCustomizeTJ(String customizeTJ) {

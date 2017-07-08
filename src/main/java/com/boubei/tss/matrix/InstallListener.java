@@ -91,7 +91,7 @@ public class InstallListener {
 		
 		log.info(map);
 		
-		MatrixUtil.remoteRecord(65, map ); // 注册安装信息
+		MatrixUtil.remoteRecord(65, map); // 注册安装信息
 	}
 
 	/**

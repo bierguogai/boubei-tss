@@ -18,14 +18,16 @@ import com.boubei.tss.util.MailUtil;
  */
 public abstract class AbstractETLJob extends AbstractJob {
 	
-	Logger log = Logger.getLogger(this.getClass());
+	protected Logger log = Logger.getLogger(this.getClass());
+	
+	public static int PAGE_SIZE = 10000;
 	
 	protected ICommonService commonService = Global.getCommonService();
 	protected ReportService reportService = (ReportService) Global.getBean("ReportService");
 	protected RecordService recordService = (RecordService) Global.getBean("RecordService");
 
 	protected void excuteJob(String jobConfig, Long jobID) {
-		String hql = "from Task where type = ? and status = 'opened' and jobId = ?";
+		String hql = "from Task where type = ? and status = 'opened' and jobId = ? order by priority desc, id asc ";
 		List<?> tasks = commonService.getList(hql, etlType(), jobID);
 		
 		for(Object task : tasks) {

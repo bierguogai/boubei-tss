@@ -23,20 +23,29 @@ public class ByIDETLJob extends AbstractETLJob {
 		return "byID";
 	}
 	
-	private Object getMaxID(Long taskId) {
-		String hql = "select max(maxID) from TaskLog where taskId = ? and exception='no'";
-		List<?> list = commonService.getList(hql, taskId);
-		Object rt = null;
+	protected Object getMaxID(Task task) {
+		// 优先从目标表里取出最大ID
 		try {
-			rt = list.get(0);
+			String preSQL = task.getPreRepeatSQL();
+			if( !EasyUtils.isNullOrEmpty(preSQL) ) {
+				Object maxID = SQLExcutor.query(task.getTargetDS(), preSQL).get(0).get("maxid");
+				return EasyUtils.obj2Long( maxID );
+			}
 		} catch(Exception e) { }
 		
-		return rt;
+		String hql = "select max(maxID) from TaskLog where taskId = ? and exception='no'";
+		List<?> list = commonService.getList(hql, task.getId());
+		Object maxId = null;
+		try {
+			maxId = list.get(0);
+		} catch(Exception e) { }
+		
+		return maxId;
 	}
 
 	protected void excuteTask(Task task) {
-		Long taskId = task.getId();
-		Long maxID = EasyUtils.obj2Long( EasyUtils.checkNull(getMaxID(taskId), task.getStartID() ) );
+		Long maxID = EasyUtils.obj2Long( getMaxID(task) );
+		maxID = Math.max(maxID, task.getStartID()); // 如果任务上设置的ID大于日志里记录的最大ID，则说明是人为单独设置了任务上的ID
 		
 		log.info(task.getName() + " is starting! 【 " + maxID + "】" );
 		
@@ -56,13 +65,13 @@ public class ByIDETLJob extends AbstractETLJob {
 		finally {
 			 // 记录任务日志，不管是否成功
 			tLog.setRunningMS(System.currentTimeMillis() - start);
-	        commonService.create(tLog);
+	        commonService.createWithoutLog(tLog);
 		}
 
 		log.info("Done! 共计用时: " + (System.currentTimeMillis() - start));
 	}
 	
-	private Long[] etlByID(Task task, Long startID) {
+	protected Long[] etlByID(Task task, Long startID) {
 		Report report;
 		String source = task.getSourceScript();
 		try { 
@@ -82,14 +91,15 @@ public class ByIDETLJob extends AbstractETLJob {
 		paramsMap.put("param1", String.valueOf(startID));
 		
 		SQLExcutor ex = ReportQuery.excute(report, paramsMap , 1, 1);
-		int total = ex.count, pagesize = 1*10000;
-        int totalPages = PageInfo.calTotalPages(total, pagesize);
+		int total = ex.count;
+        int totalPages = PageInfo.calTotalPages(total, PAGE_SIZE);
         
         // 分页查询，批量插入
         Long maxID = startID;
         String target = task.getTargetScript();
         for(int pageNum = 1; pageNum <= totalPages; pageNum++) {
-        	ex = ReportQuery.excute(report, paramsMap, pageNum, pagesize);
+        	long start = System.currentTimeMillis();
+        	ex = ReportQuery.excute(report, paramsMap, pageNum, PAGE_SIZE);
         	
         	List<Map<Integer, Object>> list = new ArrayList<Map<Integer, Object>>();
         	for (Map<String, Object> row : ex.result) {
@@ -104,6 +114,16 @@ public class ByIDETLJob extends AbstractETLJob {
 	        }
         	
         	SQLExcutor.excuteBatch(target, list, task.getTargetDS());
+        	
+        	// 如果分多页插入，则每每一页插入记录日志（除了最后一页，最后一页在excuteTask里记）
+        	if(pageNum < totalPages) {
+	        	TaskLog tLog = new TaskLog(task);
+	        	tLog.setException("no");
+				tLog.setDetail("page-" +pageNum+ "=" + list.size());
+				tLog.setMaxID(maxID);
+				tLog.setRunningMS(System.currentTimeMillis() - start);
+		        commonService.createWithoutLog(tLog);
+        	}
         }
         
         return new Long[] { (long) total, maxID};

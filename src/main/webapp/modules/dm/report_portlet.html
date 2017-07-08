@@ -34,11 +34,15 @@ body { width:100%; overflow: hidden; }
 #subscribeV .bts { padding: 5px 0 5px 20px; text-align: center;}
 #subscribeV .bts input { margin-right: 10px;}
 
+@media only screen and (max-height: 440px) {
+  .rbar>ul:nth-child(2) { display: none; }
+}
+
 .rbar { position:fixed; right:0; top:0; bottom:0; z-index:100001; width:28px; background-color:#E0ECFF; }
-.rbar>ul { position:absolute; list-style:none; min-height:42px; width: 100%; }
-.rbar>ul>li.item { height: 42px; font-size:12px; }
+.rbar>ul { position:absolute; list-style:none; min-height:38px; width: 100%; }
+.rbar>ul>li.item { height: 38px; font-size:12px; }
 .rbar>ul>li.line { width: 61.8%; margin:0 auto; border-bottom:1px dotted #bbb; }
-.rbar>ul>li.item>a { display:block; position:relative; height: 42px; 
+.rbar>ul>li.item>a { display:block; position:relative; height: 38px; 
     display:flex; justify-content:center; align-items: center; /* flex布局垂直居中 */
     color:#666; text-decoration:none!important; cursor:pointer; outline:0;}
 .rbar>ul>li.item>a:hover { color:#c81623; background-color:#fff; }
@@ -47,7 +51,7 @@ body { width:100%; overflow: hidden; }
 .rbar>ul:nth-child(2) { bottom:20px; }
 
 .rbar>ul>li.item>a>.tip { display:none; z-index:100002; width:85px; height:30px; border-radius: 3px 0 0 3px;
-    position:absolute; top:7px; left:-85px; box-shadow: #555 0px 0px 100px; 
+    position:absolute; top:4px; left:-85px; box-shadow: #555 0px 0px 100px; 
     color:#fff; line-height:30px; text-align:center; background:#c81623;
     -webkit-animation:leftFadeIn .3s ease-out;
     -moz-animation:leftFadeIn .3s ease-out;
@@ -157,9 +161,15 @@ body { width:100%; overflow: hidden; }
 
   <ul>
     <li class="item"> 
-      <a href="javascript:void(0)" onclick="dianzan()"> 
+      <a href="javascript:void(0)" onclick="dianzan(2)"> 
         <div class="icon icon-heart"></div>
-        <div class="tip"><span>点个赞 ( <i id="dznum">0</i> )</span><div>◆</div></div> 
+        <div class="tip"><span>点赞 ( <i id="dznum">0</i> )</span><div>◆</div></div> 
+      </a>
+    </li>
+    <li class="item"> 
+      <a href="javascript:void(0)" onclick="dianzan(3)"> 
+        <div class="icon icon-zap"></div>
+        <div class="tip"><span>差评 ( <i id="cpnum">0</i> )</span><div>◆</div></div> 
       </a>
     </li>
     <li class="item"> 
@@ -244,7 +254,8 @@ else {
 
 function init() {
     $("body").css("width", (document.body.offsetWidth - 28) + "px" );
-    getZanNum();
+    getZanNum(2);
+    getZanNum(3);
     
     $.ajax({
         url: report_info_url,
@@ -599,17 +610,18 @@ function queryCollected() {
 }
 
 // 点赞
-function dianzan() {
+function dianzan(type) {
     $.ajax({
-        url: "/tss/auth/rp/zan/" + reportId,
+        url: "/tss/auth/rp/zan/" +reportId+"/"+type,
         onsuccess: function() {
-            getZanNum();
+            getZanNum(type);
         }
     });
 }
 
-function getZanNum() {
-    $.getJSON( "/tss/auth/rp/zan/"+reportId, {}, function(data) { $("#dznum").text(data); }, "GET" );
+function getZanNum(type) {
+    var el = type == 2 ? "dznum" : "cpnum";
+    $.getJSON( "/tss/auth/rp/zan/" +reportId+"/"+type, {}, function(data) { $("#"+el).text(data); }, "GET" );
 }
 
 function openReport(id, name) {
