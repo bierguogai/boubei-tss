@@ -432,7 +432,6 @@ public abstract class _Database {
 		String _customizeTJ = (String) EasyUtils.checkNull(this.customizeTJ, " 1=1 ");
 		// 如果用户的域不为空，则只筛选出该域下用户创建的记录
 		_customizeTJ += " <#if USERS_OF_DOAMIN??> and creator in (${USERS_OF_DOAMIN}) </#if> ";
-		
 		condition += " and ( " + DMUtil.customizeParse(_customizeTJ + " or -1 = ${userId} ") + " ) ";
 		
 		// 设置排序方式

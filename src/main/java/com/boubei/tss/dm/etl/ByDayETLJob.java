@@ -146,7 +146,7 @@ public class ByDayETLJob extends AbstractETLJob {
 	        }
         	
         	try { 
-        		Long recordId = EasyUtils.obj2Long(target);
+        		Long recordId = EasyUtils.obj2Long(target); // check target is a ID or SQL, if SQL, this will throw exception, then do catch{} 
         		_Database db = recordService.getDB(recordId);
 				db.insertBatch(list2);
 				

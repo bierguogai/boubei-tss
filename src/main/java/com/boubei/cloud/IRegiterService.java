@@ -4,6 +4,8 @@ import com.boubei.tss.um.entity.User;
 
 public interface IRegiterService {
 
-	boolean register(User user, String domain, String roles);
+	boolean regBusiness(User user, String domain, String roles);
+	
+	boolean regDeveloper(User user);
 
 }

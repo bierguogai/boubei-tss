@@ -21,6 +21,7 @@ import com.boubei.tss.util.FileHelper;
 
 /**
  * 根据录入表提供的导入模板，填写后导入实现批量录入数据。
+ * TODO 批量插入，如果莫一批出错，如何回滚所有已经插入的数据
  */
 public class ImportCSV implements AfterUpload {
 
@@ -43,15 +44,17 @@ public class ImportCSV implements AfterUpload {
 		List<Map<String, String>> valuesMaps = new ArrayList<Map<String, String>>();
 		for(int index = 1; index < rows.length; index++) { // 第一行为表头，不要
 			String row = rows[index];
-			String[] fields = row.split(",");
+			String[] fieldVals = row.split(",");
 			
 			Map<String, String> valuesMap = new HashMap<String, String>();
-			for(int j = 0; j < fields.length; j++) {
-    			valuesMap.put(_db.fieldCodes.get(j), fields[j]);
+			for(int j = 0; j < fieldVals.length; j++) {
+    			String value = fieldVals[j];
+    			value = value.replaceAll("，", ","); // 导出时英文逗号替换成了中文逗号，导入时替换回来
+				valuesMap.put(_db.fieldCodes.get(j), value);
         	}
 			
 			valuesMaps.add(valuesMap);
-			// TODO 批量插入，如果莫一批出错，如何回滚所有已经插入的数据
+			
 			if(valuesMaps.size() == 10000) { // 按每一万批量插入一次
 				_db.insertBatch(valuesMaps);
 				valuesMaps.clear();

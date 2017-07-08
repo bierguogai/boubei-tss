@@ -42,7 +42,7 @@ public class Register extends HttpServlet {
         String domain = request.getParameter("domain"); // 域由后台统一生成
         String roles = request.getParameter("roles");  // 
         
-        service.register(user, domain, roles);
+        service.regBusiness(user, domain, roles);
 
         response.setContentType("text/html;charset=UTF-8");
         SuccessMessageEncoder encoder = new SuccessMessageEncoder("用户注册成功！", "用户注册成功！");

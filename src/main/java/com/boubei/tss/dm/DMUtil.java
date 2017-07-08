@@ -189,7 +189,6 @@ public class DMUtil {
   		return value;
   	}
   	
-  	@SuppressWarnings("unchecked")
 	public static Map<String, Object> getFreemarkerDataMap() {
     	Map<String, Object> fmDataMap = new HashMap<String, Object>();
         
@@ -197,18 +196,6 @@ public class DMUtil {
       	fmDataMap.put(DMConstants.USER_ID, EasyUtils.obj2String(Environment.getUserId()));
       	fmDataMap.put(DMConstants.USER_CODE, Environment.getUserCode());
 		fmDataMap.put(DMConstants.FROM_USER_ID, Environment.getUserInfo(DMConstants.FROM_USER_ID));
-		
-		// 将常用的script片段（权限过滤等）存至param模块，这里取出来加入fmDataMap
-		try {
-			List<Param> macroParams = ParamManager.getComboParam(PX.SCRIPT_MACRO);
-			macroParams = (List<Param>) EasyUtils.checkNull(macroParams, new ArrayList<Param>());
-			
-			for(Param p : macroParams) {
-				String key = p.getText();
-				String val = (String) EasyUtils.checkNull( fmDataMap.get(key), p.getValue() );
-				fmDataMap.put(key, val);
-			}
-		} catch(Exception e) { }
 		
 		/* 往dataMap里放入Session里的用户权限、角色、组织等信息，作为宏代码解析。 */
     	if(Context.getRequestContext() != null) {
