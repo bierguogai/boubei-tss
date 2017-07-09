@@ -3,13 +3,15 @@
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
 <meta charset="UTF-8">
-<title>它山石注册</title>
+<title>它山石登录</title>
 <link rel="shortcut icon" href="../images/tss.ico">
 <link rel="Bookmark" href="../images/tss.ico">
 
 <link rel="stylesheet" href="../tools/tssJS/css/reset.css">
 
 <style type="text/css">
+html { height: 100%; }
+body { background: url(bg2.jpg) no-repeat center;  }
  
 .modal-wrapper {
     box-sizing: border-box;
@@ -43,7 +45,7 @@
     transition: height .8s ease;  
 }
 
-#login_box {
+#login_box, #reg_box {
   display: none; text-align: center;
 }
 h1, h2, h3 { margin: 0; font: inherit; }
@@ -54,8 +56,8 @@ div.header { padding: 24px 0 28px; background: #049cdb; }
 .sysTitle { height: 40px; font-size: 24px; color: #fff; text-align: center; }
 .subTitle { margin-top:4px; font-size: 14px; color: #fff; text-align: center; }
 
-#bt_login:hover { background-color: #0064cd; }
-#bt_login { 
+div.bottonBox>button:hover { background-color: #0064cd; }
+div.bottonBox>button { 
     width: 352px;
     height: 34px;
     background-color: #049cdb;
@@ -67,12 +69,15 @@ div.header { padding: 24px 0 28px; background: #049cdb; }
     margin-top: 48px;
 }
 
-#login_box a:visited { color: #ccc; text-decoration: none; }
-#login_box a:hover { color: #999; text-decoration: underline;}
-#a1, #a2 { font-size: 14px; color: #ccc; position: absolute; padding-top: 5px; }
-#a1 { left: 24px; }
-#a2 { right: 24px; }
-#bz { margin-top: 12px; color: #ccc; }
+a:visited { color: #ccc; text-decoration: none; }
+a:hover { color: #999; text-decoration: underline;}
+a { font-size: 13px; color: #ccc; position: absolute; padding-top: 5px; }
+#a1, #a3 { left: 24px; }
+#a2, #a4 { right: 24px; }
+.bz { margin-top: 12px; color: #ccc; }
+
+#switch, #rswitch 
+{ width: 50px; height: 40px; position: absolute; right: 0px; margin: 10px 20px; opacity: .3;  } 
 
   </style>
 </head>
@@ -89,6 +94,7 @@ div.header { padding: 24px 0 28px; background: #049cdb; }
           <input type="text" id="loginName" placeholder="请输入手机号或邮箱"> 
         </div>
         <div class="input-wrapper">
+          <img id="switch" onclick="hidePasswd('switch','password')" src="visible.png" title="显示密码"> 
           <input type="password" id="password" placeholder="请输入密码"> 
         </div>
         <div>
@@ -98,7 +104,32 @@ div.header { padding: 24px 0 28px; background: #049cdb; }
         <div class="bottonBox">
           <button id="bt_login">登 陆 系 统</button>
         </div>
-        <h3 id="bz">*推荐使用Chrome、FireFox、IE11、Edge浏览器访问本系统</h3>
+        <h3 class="bz">*推荐使用Chrome、FireFox、IE11、Edge浏览器访问本系统</h3>
+    </div>
+
+    <div id="reg_box">
+        <div class="header">
+          <h1 class="sysTitle">它山石-BI</h1>
+          <h2 class="subTitle">有效管理您的数据，让数据价值彰显</h2>
+        </div>
+        <div class="input-wrapper">
+          <input type="text" id="rloginName" placeholder="请输入手机号或邮箱"> 
+        </div>
+        <div class="input-wrapper">
+          <input type="text" id="ruserName" placeholder="请输入姓名或组织名称"> 
+        </div>
+        <div class="input-wrapper">
+          <img id="rswitch" onclick="hidePasswd('rswitch', 'rpassword')" src="visible.png" title="显示密码">  
+          <input type="password" id="rpassword" placeholder="请输入密码"> 
+        </div>
+        <div>
+          <a href="/tss/boubei.com/tss/protocol.html" target="_blank" id="a3">注册即代表同意《卜贝协议》</a>
+          <a href="#" onclick="login()" id="a4">已有账号，立即登录</a>
+        </div>
+        <div class="bottonBox">
+          <button id="bt_reg">注 册</button>
+        </div>
+        <h3 class="bz">*企业用户注册，请输入企业的简称；个人用户直接填姓名或昵称</h3>
     </div>
   </div>
 </div>
@@ -106,10 +137,38 @@ div.header { padding: 24px 0 28px; background: #049cdb; }
 <script src="../tools/tssJS/tssJS.js"></script>
 <script type="text/javascript">
 
-  setTimeout(function() {
-      $(".modal").height(400);
-      $("#login_box").show(true);
-  }, 300)
+  setTimeout(login, 300);
+
+  function login() {
+    $(".modal").height(400);
+    $("#login_box").show(true);
+    $("#reg_box").hide();
+  }
+
+  function register() {
+    $(".modal").height(450);
+    $("#login_box").hide();
+    $("#reg_box").show(true);
+  }
+
+  function forget() {
+    
+  }
+
+  function hidePasswd(switchEL, pwdEL) {  
+      var switchImg = $1(switchEL);  
+      var rpassword = $1(pwdEL);  
+      if (rpassword.type == "password") {  
+          rpassword.type = "text";  
+          switchImg.src = "invisible.png";  
+          switchImg.title = "隐藏密码";
+      } else {  
+          rpassword.type = "password";  
+          switchImg.src = "visible.png";  
+          switchImg.title = "显示密码";
+      }  
+  }  
+
 
 </script>
 

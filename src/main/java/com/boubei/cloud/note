@@ -1,26 +1,23 @@
 
+7.10 -- 7.14
+1、G7BI结项问题 & 二季度维护费
+2、BI4 ETL
+3、更新ebi、WM、BI3、北极星，清理日志
+
+7.15 --> 7.17
+1、案例2《库存管理》  ------ 3d 
+
+
 SAAS版上线（role/group/record/report）: just register one accout     ------------------ 10
-
-
 7.7 --> 7.9
 1、域注册 + Collector 
 
-   卖杨梅 APP  --- 3d       用mianmian作为开发者，用JK作为审核管理员
-   杨梅预订APP，要支持自动登录，且多人使用（不同人的订单要隔离）
+   卖杨梅 APP, 用mianmian作为开发者，用JK作为审核管理员
+    支持自动登录，且多人使用（不同人的订单要隔离）
 	域账号：东岭下、桐桥
 	域下账号：王小军、金笑笑、周建文等，各有一个自己SSO Token，然后把带Token和Target（目标页面）的URL发给需要下单的人去录入
 	每个域下账号只能看自己的订单，域账号可以看所有域下账号的订单
 	可直接在线付款（支付宝、微信）等，支持打给域账号 或 域下账号
-	
-
-2、案例2《库存管理》  ------ 3d   7.15 --> 7.17
-
-
-7.10 -- 7.14
-1、G7BI结项问题 & 二季度维护费
-2、BI4 ETL
-3、更新ebi、WM、BI3
-
 
 测试：
 1、record data 导出再导入英文逗号是否还原了
@@ -29,3 +26,4 @@ SAAS版上线（role/group/record/report）: just register one accout     ------
 4、域注册、权限过滤（报表、录入表、录入表数据、栏目、用户（组）、Message、Log等）
 5、注册页完善
 6、report_portlet 和 recorder 支持直接嵌入到第三方系统；（url里带uName&uToken） --- 待测
+7、密码过期修改

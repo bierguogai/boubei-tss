@@ -13,7 +13,14 @@ import com.boubei.tss.um.entity.Group;
 import com.boubei.tss.um.entity.GroupUser;
 import com.boubei.tss.um.entity.RoleUser;
 import com.boubei.tss.um.entity.User;
+import com.boubei.tss.util.EasyUtils;
 
+/**
+ * TODO
+ * 1、一个月不登录，清除。
+ * 2、体验完成后，分享到微博微信等。
+ * 3、支持用“社交账号登录”
+ */
 @Service("RegiterService")
 public class RegiterService implements IRegiterService {
 	
@@ -28,7 +35,7 @@ public class RegiterService implements IRegiterService {
 	/* 
 	 * 企业商家注册：生成domain，其所有子组都属同一个域，用以SAAS隔离不同企业的数据（通过判断资源/录入记录的创建人是否为域下组的用户）
 	 * 
-	 * 1、注册用户XX（带domain?按普通用户注册：按域用户注册），作为域用户注册时可以选定一个或多个行业场景的角色（XX店老板等）
+	 * 1、注册用户XX（带domain?按普通用户注册：按域用户注册），作为域用户注册时可以选定一个或多个行业场景的角色集（XX店老板等）
 	 * 2、生成组域
 	 * 3、授予角色（域管理员）：维护自己的域组（新增、修改用户和子组）、公告栏（只能查看编辑自己域下用户创建的公告）
 	 * 4、注册成功
@@ -57,21 +64,25 @@ public class RegiterService implements IRegiterService {
 		userDao.createObject(gu);
 	
 		// roleuser
-//		String[] _roles = EasyUtils.obj2String(roles).split(",");
+		String[] _roles = EasyUtils.obj2String(roles).split(",");
+		for(String _role : _roles) {
+			RoleUser ru = new RoleUser();
+			ru.setRoleId( EasyUtils.obj2Long(_role) );
+			ru.setUserId(user.getId());
+			roleDao.createObject(ru);
+		}
+
 		RoleUser ru = new RoleUser();
 		ru.setRoleId(DOMAIN_ROLE_ID);
 		ru.setUserId(user.getId());
 		roleDao.createObject(ru);
 		
-		// permission：维护自己的域组（新增、修改用户和子组） 
-		
-		// permission：维护公告栏（ID=26）
-		
-		// 创建
+		// permission：维护自己的域组（新增、修改用户和子组）,DOMAIN_ROLE已经对DOMAIN_ROOT拥有完全权限 
+		// permission：维护公告栏（ID=26）,DOMAIN_ROLE已经对【公告栏】的新建和发布文章权限
 		
 		return false;
 	}
-
+ 
 	/* 
 	 * 1、注册开发者XX
 	 * 2、生成开发者私有域（XX用户组）
@@ -87,6 +98,20 @@ public class RegiterService implements IRegiterService {
 	 */
 	public boolean regDeveloper(User user) {
 		// TODO Auto-generated method stub
+		
+		/* 
+		 * 将新增的私人资源授权给私人管理员角色
+		GroupPermission newPermission = new GroupPermission();   
+        newPermission.setOperationId(operationId);
+        newPermission.setRoleId(roleId);
+        newPermission.setPermissionState(permissionState);
+        newPermission.setIsGrant(isGrant);
+        newPermission.setIsPass(isPass);
+        newPermission.setResourceId(resourceId);
+        newPermission.setResourceName(resource.getName());
+        roleDao.createObjectWithoutFlush(newPermission);
+        */
+		
 		return false;
 	}
 
