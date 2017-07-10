@@ -26,7 +26,6 @@ import com.boubei.tss.framework.web.display.tree.TreeEncoder;
 import com.boubei.tss.framework.web.display.xform.XFormEncoder;
 import com.boubei.tss.framework.web.mvc.BaseActionSupport;
 import com.boubei.tss.um.permission.PermissionHelper;
-import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.EasyUtils;
 
 @Controller
@@ -34,7 +33,6 @@ import com.boubei.tss.util.EasyUtils;
 public class RecordAction extends BaseActionSupport {
     
     @Autowired private RecordService recordService;
-    @Autowired private ILoginService loginService;
     
     @RequestMapping("/all")
     public void getAllRecord(HttpServletResponse response) {

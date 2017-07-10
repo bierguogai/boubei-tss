@@ -65,6 +65,7 @@ public class MatrixUtil {
     }
 
 	public static String getIpAddress() {
+		String rtip = "unknown.host";
 		try {
 			Enumeration<NetworkInterface> allNetInterfaces = NetworkInterface.getNetworkInterfaces();
 			InetAddress ip = null;
@@ -77,16 +78,16 @@ public class MatrixUtil {
 					while (addresses.hasMoreElements()) {
 						ip = addresses.nextElement();
 						if (ip != null && ip instanceof Inet4Address) {
-							return ip.getHostAddress();
+							rtip = ip.getHostAddress();
 						}
 					}
 				}
 			}
 		} catch (Exception e) {
-			log.debug("IP地址获取失败", e);
+//			log.debug("IP地址获取失败", e);
 		}
 
-		return "unknown.host";
+		return rtip;
 	}
  
 	  

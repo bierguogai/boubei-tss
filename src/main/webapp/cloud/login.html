@@ -3,15 +3,15 @@
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
 <meta charset="UTF-8">
-<title>它山石登录</title>
-<link rel="shortcut icon" href="../images/tss.ico">
-<link rel="Bookmark" href="../images/tss.ico">
+<title>系统登陆</title>
+<link rel="shortcut icon" href="images/tss.ico">
+<link rel="Bookmark" href="images/tss.ico">
 
-<link rel="stylesheet" href="../tools/tssJS/css/reset.css">
+<link rel="stylesheet" href="tools/tssJS/css/reset.css">
 
 <style type="text/css">
 html { height: 100%; }
-body { background: url(bg2.jpg) no-repeat center;  }
+body { background: url(images/login_bg.jpg) no-repeat center;  }
  
 .modal-wrapper {
     box-sizing: border-box;
@@ -94,12 +94,12 @@ a { font-size: 13px; color: #ccc; position: absolute; padding-top: 5px; }
           <input type="text" id="loginName" placeholder="请输入手机号或邮箱"> 
         </div>
         <div class="input-wrapper">
-          <img id="switch" onclick="hidePasswd('switch','password')" src="visible.png" title="显示密码"> 
+          <img id="switch" onclick="hidePasswd('switch','password')" src="images/visible_y.png" title="显示密码"> 
           <input type="password" id="password" placeholder="请输入密码"> 
         </div>
         <div>
           <a href="#" onclick="forget()" id="a1">忘记密码?</a>
-          <a href="#" onclick="register()" id="a2">没有账号，注册一个</a>
+          <a href="#" onclick="preRegister()" id="a2">没有账号，注册一个</a>
         </div>
         <div class="bottonBox">
           <button id="bt_login">登 陆 系 统</button>
@@ -119,33 +119,38 @@ a { font-size: 13px; color: #ccc; position: absolute; padding-top: 5px; }
           <input type="text" id="ruserName" placeholder="请输入姓名或组织名称"> 
         </div>
         <div class="input-wrapper">
-          <img id="rswitch" onclick="hidePasswd('rswitch', 'rpassword')" src="visible.png" title="显示密码">  
+          <img id="rswitch" onclick="hidePasswd('rswitch', 'rpassword')" src="images/visible_y.png" title="显示密码">  
           <input type="password" id="rpassword" placeholder="请输入密码"> 
         </div>
         <div>
           <a href="/tss/boubei.com/tss/protocol.html" target="_blank" id="a3">注册即代表同意《卜贝协议》</a>
-          <a href="#" onclick="login()" id="a4">已有账号，立即登录</a>
+          <a href="#" onclick="goLogin()" id="a4">已有账号，立即登录</a>
         </div>
         <div class="bottonBox">
-          <button id="bt_reg">注 册</button>
+          <button id="bt_reg" onclick="register()">注 册</button>
         </div>
         <h3 class="bz">*企业用户注册，请输入企业的简称；个人用户直接填姓名或昵称</h3>
     </div>
   </div>
 </div>
 
-<script src="../tools/tssJS/tssJS.js"></script>
+<script src="tools/tssJS/tssJS.js"></script>
+<script src="tools/tssJS/tssJS.ajax.js"></script>
+<!-- <script src="tools/tssUtils.js"></script> -->
+<script src="tools/common/md5.js"></script>
+<script src="../login.js"></script>
+
 <script type="text/javascript">
 
-  setTimeout(login, 300);
+  setTimeout(goLogin, 300);
 
-  function login() {
+  function goLogin() {
     $(".modal").height(400);
     $("#login_box").show(true);
     $("#reg_box").hide();
   }
 
-  function register() {
+  function preRegister() {
     $(".modal").height(450);
     $("#login_box").hide();
     $("#reg_box").show(true);
@@ -157,18 +162,68 @@ a { font-size: 13px; color: #ccc; position: absolute; padding-top: 5px; }
 
   function hidePasswd(switchEL, pwdEL) {  
       var switchImg = $1(switchEL);  
-      var rpassword = $1(pwdEL);  
-      if (rpassword.type == "password") {  
-          rpassword.type = "text";  
-          switchImg.src = "invisible.png";  
+      var passwdEL = $1(pwdEL);  
+      if (passwdEL.type == "password") {  
+          passwdEL.type = "text";  
+          switchImg.src = "images/visible_n.png";  
           switchImg.title = "隐藏密码";
       } else {  
-          rpassword.type = "password";  
-          switchImg.src = "visible.png";  
+          passwdEL.type = "password";  
+          switchImg.src = "images/visible_y.png";  
           switchImg.title = "显示密码";
       }  
   }  
 
+  function register() {
+    var params = {};
+    params.loginName = $1("rloginName").value,
+    params.userName  = $1("ruserName").value,
+    params.password  = $1("rpassword").value;
+    
+    if( !params.loginName ) {
+        return $("#rloginName").focus();
+    } 
+    else if( !params.password ) {
+        return $("#rpassword").focus();
+    }
+
+    // 获取一个随机数作为验证码
+    $.ajax({
+        url: URL_CHECK_USER,
+        params: {"loginName": "ANONYMOUS"},
+        onresult: function(){
+            params.randomKey = this.getNodeValue("randomKey"); 
+
+            // 注册
+            $.ajax({
+              url : "/tss/reg.in",
+              headers : {"anonymous": "true"},
+              params : params,
+              onsuccess : function() { 
+                  // 自动完成登录
+                  var accountEl = $1("loginName"), passwdEl  = $1("password");
+                  accountEl.value = params.loginName;
+                  passwdEl.value = params.password;
+
+                  $.ajax({
+                      url: URL_GET_USER_NAME,
+                      params: {"loginName": loginName},
+                      waiting: true,
+                      onexcption: function() {
+                          loginNameEL.focus();
+                      },
+                      onresult: function(){
+                          accountEl.identifier = this.getNodeValue("identifier"),
+                          accountEl.randomKey  = this.getNodeValue("randomKey");
+                          
+                          doLogin(accountEl, passwdEl);         
+                      }
+                  });
+              }
+          });          
+        }
+    });
+  }
 
 </script>
 

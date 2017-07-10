@@ -43,7 +43,7 @@ public class ReportServiceImpl implements ReportService {
         if( Environment.isRobot() ) { // 定时JOB
         	auth = false;
         } else {
-        	auth = SecurityUtil.getLevel() >= SecurityUtil.LEVEL_4;
+        	auth = SecurityUtil.isSafeMode();
         }
 		return this.getReport(id, auth);
     }

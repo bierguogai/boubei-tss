@@ -274,7 +274,7 @@
 				<log.level>info</log.level>
 				<db.username>root</db.username>
 				<db.password>800best@com</db.password>
-				<db.url>127.0.0.1:3306/tss_demo1</db.url>
+				<db.url>127.0.0.1:3306/tss</db.url>
 				<tomcat.url>127.0.0.1:8080</tomcat.url>
 			</properties>
 		</profile>

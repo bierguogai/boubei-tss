@@ -539,7 +539,7 @@
  
     function addNewUser() {
         var groupId = getActiveTreeNode().id;
-        loadUserInfo(OPERATION_ADD, DEFAULT_NEW_ID, "用户", groupId);
+        loadUserInfo(OPERATION_ADD, DEFAULT_NEW_ID, "用户", groupId);        
     }
  
     function editUserInfo() {
@@ -597,6 +597,10 @@
             
             var page1Form = $.F("page1Form", userInfoNode);
             attachReminder(page1Form.box.id, page1Form);
+
+            if( !$("#loginName").value() ) {
+                page1Form.setFieldEditable("loginName", "true"); 
+            }
             
             var page3Tree  = $.T("page3Tree",  user2RoleTreeNode);
             var page3Tree2 = $.T("page3Tree2", user2RoleGridNode);

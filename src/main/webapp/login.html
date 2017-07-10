@@ -1,78 +1,264 @@
 <!DOCTYPE html>
-<html> 
+<html>
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
 <meta charset="UTF-8">
 <title>系统登陆</title>
-<meta name="viewport" content="width=device-width">
-<meta name="apple-mobile-web-app-title" content="TSS登陆" />
-<meta name="keywords" content="卜贝软件，它山石，应用基础平台，门户，应用，内容, 聚合，数据分析，数据挖掘，大数据">
-
 <link rel="shortcut icon" href="images/tss.ico">
 <link rel="Bookmark" href="images/tss.ico">
 
-<link href="tools/tssJS/css/boubei.css" rel="stylesheet">
+<link rel="stylesheet" href="tools/tssJS/css/reset.css">
 
 <style type="text/css">
-    html, body { height: 100%; }
+html { height: 100%; }
+body { background: url(images/login_bg.jpg) no-repeat center;  }
+ 
+.modal-wrapper {
+    box-sizing: border-box;
+    position: fixed;
+    top: 0; right: 0; bottom: 0; left: 0;
+    z-index: 203;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background-color: rgba(0,0,0,.65);
+}
 
-    body {
-        background-image: url(data:image/png;base64,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);
-        background-color: #222;
-    }
-    #login_box { position:relative; top:220px; width:420px; margin:0 auto; font-size:16px; padding-left: 10px; }
-    #login_box h1 { width: 328px; line-height:30px; text-indent: 5px; color: #fff; border-bottom:1px solid #009999; }
-    #login_box span { display: block; margin: 20px 0px; padding: 0px 5px; }
-    #login_box input { 
-        width: 320px; height:32px; line-height:22px;
-        border: 1px solid #009999; border-radius:3px; background-color: #eee; 
-    }
-    #login_box input:hover, #login_box input:focus { background-color: #fff; }
+.modal {
+    position: relative;
+    z-index: 1;
+    width: 400px; height: 0px;
+    margin-right: auto;
+    margin-left: auto;
+    outline: 0;
+    border-radius: 2px;
+    box-shadow: 0 5px 20px 0 rgba(0,34,77,.5);   
+    background: #fff;
+    transition: height .8s ease;  
+}
 
-    #login_box span.bottonBox { margin:10px 0px; }        
-    #bt_login { 
-        width: 320px; height: 32px; 
-        background-color: #049cdb; color: #fff; cursor: pointer;
-        border-radius: 3px; border: 1px solid #95B8E7; 
-    }
-    #bt_login:hover { background-color: #0064cd; }
+#login_box, #reg_box {
+  display: none; text-align: center;
+}
+h1, h2, h3 { margin: 0; font: inherit; }
+.input-wrapper input { border: 0;  width: 100%; line-height: 24px; height: 48px;  font-size: 14px; }
+.input-wrapper {  width: 352px; margin: 12px 0 0 24px; height: 48px; border: none;border-bottom: 1px solid #e7eaf1; }
 
-    #login_box a { padding-left: 3px; font-size: 15px; }
-    #login_box a:link { color: #f0f0f0; }
-    #login_box a:visited { color: #ccc; text-decoration:none; }
-    #login_box a:hover { color: #FEF7A9; text-decoration:underline; }
-    #login_box a:active { color: #ff7f24; }
+div.header { padding: 24px 0 28px; background: #049cdb; }
+.sysTitle { height: 40px; font-size: 24px; color: #fff; text-align: center; }
+.subTitle { margin-top:4px; font-size: 14px; color: #fff; text-align: center; }
 
-    @media screen and (max-width: 660px) {
-        #login_box a { display: none; }
-    }
-    @media screen and (max-width: 420px) {
-        #login_box { width: 100%; }
-        #login_box input, #bt_login, #login_box h1 { width: 95%; }
-    }
+div.bottonBox>button:hover { background-color: #0064cd; }
+div.bottonBox>button { 
+    width: 352px;
+    height: 34px;
+    background-color: #049cdb;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 3px;
+    border: 1px solid #95B8E7;
+    font-size: 1.3em;
+    margin-top: 48px;
+}
 
-</style>
+a:visited { color: #ccc; text-decoration: none; }
+a:hover { color: #999; text-decoration: underline;}
+a { font-size: 13px; color: #ccc; position: absolute; padding-top: 5px; }
+#a1, #a3 { left: 24px; }
+#a2, #a4 { right: 24px; }
+.bz { margin-top: 12px; color: #ccc; }
 
+#switch, #rswitch 
+{ width: 50px; height: 40px; position: absolute; right: 0px; margin: 10px 20px; opacity: .3;  } 
+.tip { padding-top: 10px; color: red; font-size: 13px; }
+
+  </style>
 </head>
-
 <body>
+
+<div class="modal-wrapper">
+  <div class="modal">
     <div id="login_box">
-        <h1 id="sysTitle">Welcome</h1>
-        <span>
-            <input type="text" id="loginName" placeholder="请输入您的账号" /> <a href='#' onclick='register()'>注册</a>
-        </span>
-        <span>
-            <input type="password" id="password" placeholder="请输入您的密码"/> <a href='#' onclick='forget()'>忘记密码</a>
-        </span>
-        <span class='bottonBox'>
-            <button id='bt_login'>登 陆 系 统</button>
-        </span>
+        <div class="header">
+          <h1 class="sysTitle">它山石-BI</h1>
+          <h2 class="subTitle">有效管理您的数据，让数据价值彰显</h2>
+        </div>
+        <div class="input-wrapper">
+          <input type="text" id="loginName" placeholder="请输入手机号或邮箱"> 
+        </div>
+        <div class="input-wrapper">
+          <img id="switch" onclick="hidePasswd('switch','password')" src="images/visible_y.png" title="显示密码"> 
+          <input type="password" id="password" placeholder="请输入密码"> 
+        </div>
+        <div>
+          <a href="#" onclick="forget()" id="a1">忘记密码?</a>
+          <a href="#" onclick="preRegister()" id="a2">没有账号，注册一个</a>
+        </div>
+        <div class="bottonBox">
+          <button id="bt_login">登 陆 系 统</button>
+        </div>
+        <h3 class="bz">*推荐使用Chrome、FireFox、IE11、Edge浏览器访问本系统</h3>
+        <h2 class="tip"></h2>
     </div>
 
-<script src="tools/tssJS/tssJS.all.js"></script>
-<script src="tools/tssUtils.js"></script>
+    <div id="reg_box">
+        <div class="header">
+          <h1 class="sysTitle">它山石-BI</h1>
+          <h2 class="subTitle">有效管理您的数据，让数据价值彰显</h2>
+        </div>
+        <div class="input-wrapper">
+          <input type="text" id="rloginName" placeholder="请输入手机号或邮箱"> 
+        </div>
+        <div class="input-wrapper">
+          <input type="text" id="ruserName" placeholder="请输入姓名或组织名称"> 
+        </div>
+        <div class="input-wrapper">
+          <img id="rswitch" onclick="hidePasswd('rswitch', 'rpassword')" src="images/visible_y.png" title="显示密码">  
+          <input type="password" id="rpassword" placeholder="请输入密码，8位以上大小写字母和数字"> 
+        </div>
+        <div>
+          <a href="/tss/boubei.com/tss/protocol.html" target="_blank" id="a3">注册即代表同意《卜贝协议》</a>
+          <a href="#" onclick="goLogin()" id="a4">已有账号，立即登录</a>
+        </div>
+        <div class="bottonBox">
+          <button id="bt_reg" onclick="register()">注 册</button>
+        </div>
+        <h3 class="bz">*企业用户注册，请输入企业的简称；个人用户直接填姓名或昵称</h3>
+        <h2 class="tip"></h2>
+    </div>
+  </div>
+</div>
+
+<script src="tools/tssJS/tssJS.js"></script>
+<script src="tools/tssJS/tssJS.ajax.js"></script>
+<!-- <script src="tools/tssUtils.js"></script> -->
 <script src="tools/common/md5.js"></script>
 <script src="login.js"></script>
+
+<script type="text/javascript">
+
+  setTimeout(goLogin, 300);
+
+  function goLogin() {
+    $(".modal").height(400);
+    $("#login_box").show(true);
+    $("#reg_box").hide();
+    $(".tip").text("");
+    
+    var $el = $("#loginName");
+    $( $el.focus() );
+    if( $el.value() ) {
+        $1("loginName").onblur();
+        $("#password").focus();
+    } 
+  }
+
+  function preRegister() {
+    $(".modal").height(450);
+    $("#login_box").hide();
+    $("#reg_box").show(true);
+    $(".tip").text("");
+  }
+
+  function setSysTitle() {
+    $.getJSON( "/tss/param/json/simple/sysTitle", {}, 
+      function(result) {
+          var val;
+          if( result && result.length && result[0] ) {
+              val = result[0];
+          }
+          val && $(".sysTitle").html(val);
+      }, 
+      "GET");
+  }
+
+  function forget() {
+    
+  }
+
+  function hidePasswd(switchEL, pwdEL) {  
+      var switchImg = $1(switchEL);  
+      var passwdEL = $1(pwdEL);  
+      if (passwdEL.type == "password") {  
+          passwdEL.type = "text";  
+          switchImg.src = "images/visible_n.png";  
+          switchImg.title = "隐藏密码";
+      } else {  
+          passwdEL.type = "password";  
+          switchImg.src = "images/visible_y.png";  
+          switchImg.title = "显示密码";
+      }  
+  }  
+
+  function register() {
+    $(".tip").text("");
+
+    var params = {};
+    params.loginName = $1("rloginName").value,
+    params.userName  = $1("ruserName").value,
+    params.password  = $1("rpassword").value;
+    params.domain  = params.userName;
+    
+    if( !params.loginName ) {
+        $.alert("账号不能为空");
+        return $("#rloginName").focus();
+    } 
+    else if( !params.userName ) {
+        $.alert("名称不能为空");
+        return $("#ruserName").focus();
+    }
+    else if( !params.password || params.password.length < 8 ) {
+        $.alert("请输入不少于8个字符的密码");
+        return $("#rpassword").focus();
+    }
+
+    // 获取一个随机数作为验证码
+    $.ajax({
+        url: URL_CHECK_USER,
+        params: {"loginName": "ANONYMOUS"},
+        onresult: function(){
+            params.randomKey = this.getNodeValue("randomKey"); 
+
+            // 注册
+            $.ajax({
+              url : "/tss/reg.in",
+              headers : {"anonymous": "true"},
+              params : params,
+              onsuccess : function() { 
+                  // 自动完成登录
+                  var accountEl = $1("loginName"), passwdEl  = $1("password");
+                  accountEl.value = params.loginName;
+                  passwdEl.value = params.password;
+
+                  $.ajax({
+                      url: URL_CHECK_USER,
+                      params: {"loginName": params.loginName},
+                      onresult: function(){
+                          accountEl.identifier = this.getNodeValue("identifier"),
+                          accountEl.randomKey  = this.getNodeValue("randomKey");
+                          
+                          doLogin(accountEl, passwdEl);         
+                      }
+                  });
+              }
+          });          
+        }
+    });
+  }
+
+  $.alert = function(msg) {
+    $(".tip").text(msg);
+  }
+
+</script>
 
 </body>
 </html>

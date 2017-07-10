@@ -3,7 +3,7 @@ APP_CODE    = "TSS";
 APPLICATION = APP_CODE.toLowerCase();
 CONTEXTPATH = APPLICATION + "/";
 
-var notice_channel = 26;  // 顶部通知跑马灯
+var notice_channel = 2;  // 顶部通知跑马灯 boubei.com = 2
 
 function initUserInfo(callback) {
 	$.ajax({

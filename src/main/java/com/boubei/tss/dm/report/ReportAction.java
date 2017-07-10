@@ -42,7 +42,6 @@ import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.modules.param.ParamService;
 import com.boubei.tss.um.permission.PermissionHelper;
-import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
@@ -58,13 +57,10 @@ import com.boubei.tss.util.URLUtil;
 public class ReportAction extends BaseActionSupport {
     
     @Autowired private ReportService reportService;
-    @Autowired private ILoginService loginService;
     @Autowired private ICommonService commonService;
     
     @RequestMapping("/")
     public void getAllReport(HttpServletResponse response) {
-    	loginService.checkPwdSecurity();
-    	
         List<?> list = reportService.getAllReport();
         TreeEncoder treeEncoder = new TreeEncoder(list, new StrictLevelTreeParser(Report.DEFAULT_PARENT_ID));
         print("SourceTree", treeEncoder);
@@ -120,8 +116,6 @@ public class ReportAction extends BaseActionSupport {
      */
     @RequestMapping("/my")
     public void getMyReports(HttpServletResponse response, Long groupId) {
-    	loginService.checkPwdSecurity();
-	    
 	    List<Report> list;
 	    if(groupId != null) {
 	    	list = reportService.getReportsByGroup(groupId, Environment.getUserId());

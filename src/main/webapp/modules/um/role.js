@@ -80,25 +80,25 @@
             label:"删除",
             callback: function() { delTreeNode(URL_DELETE_NODE); },
             icon:ICON + "icon_del.gif",
-            visible:function() {return !isRootNode() && !isAnonymous() && getOperation("2");}
+            visible:function() {return !isRootNode() && !isSysRole() && getOperation("2");}
         }
         var item3 = {
             label:"编辑",
             callback:function() { editTreeNode(true); },
             icon:ICON + "edit.gif",           
-            visible:function() {return !isRootNode() && !isAnonymous() && getOperation("2");}
+            visible:function() {return !isRootNode() && !isSysRole() && getOperation("2");}
         }
         var item7 = {
             label:"停用",
             callback:function() { stopOrStartTreeNode("1"); },
             icon:ICON + "stop.gif",           
-            visible:function() {return !isRootNode() && !isAnonymous() && !isTreeNodeDisabled() && getOperation("2");}
+            visible:function() {return !isRootNode() && !isSysRole() && !isTreeNodeDisabled() && getOperation("2");}
         }
         var item8 = {
             label:"启用",
             callback:function() { stopOrStartTreeNode("0"); },
             icon:ICON + "start.gif",           
-            visible:function() {return !isRootNode() && !isAnonymous() && isTreeNodeDisabled() && getOperation("2");}
+            visible:function() {return !isRootNode() && !isSysRole() && isTreeNodeDisabled() && getOperation("2");}
         }
         var item9 = {
             label:"新建角色",
@@ -109,7 +109,7 @@
             label:"移动到...",
             callback:moveNodeTo,
             icon:ICON + "move.gif",            
-            visible:function() {return !isRootNode() && !isAnonymous() && getOperation("2");}
+            visible:function() {return !isRootNode() && !isSysRole() && getOperation("2");}
         }
         var item10 = {
             label:"给角色授权",
@@ -122,7 +122,7 @@
             callback:function() { 
                 setRole2Permission("2"); 
             },        
-            visible:function() {return !isRootNode() && !isAnonymous() && getOperation("2");}
+            visible:function() {return !isRootNode() && !isSysRole() && getOperation("2");}
         }
         var item13 = {
             label:"已授用户列表",
@@ -154,7 +154,7 @@
             tree.onTreeNodeDoubleClick = function(ev) {
 				var treeNode = getActiveTreeNode();
 				getTreeOperation(treeNode, function(_operation) {            
-					if( !isRootNode() ) {
+					if( !isRootNode() && !isSysRole()) {
 						var canEdit = checkOperation("2", _operation);
 						editTreeNode(canEdit);
 					}
@@ -172,8 +172,9 @@
         return ("-6" == getTreeNodeId());
     }
 
-    function isAnonymous() {
-        return ("-10000" == getTreeNodeId());
+    function isSysRole() {
+    	var roleId = getTreeNodeId();
+        return "-10000" == roleId || "-8" == roleId || "-9" == roleId;
     }
 	
 	/* 获取节点类型(1角色组/0角色) */

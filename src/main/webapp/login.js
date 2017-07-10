@@ -4,51 +4,23 @@ setTimeout( function() {
     }
 }, 300 );
 
-/*********************** 应用配置 开始 **********************************/
- var 
-    indexPage = "index.html";    /* 登录成功后跳转到的页面 */
- 
- function setSysTitle() {
-    getParam('sysTitle', function(title) {
-        if( title ) {
-            indexPage = "tssbi.html";
-        } else {
-            title = '它山石基础平台';       
-        }
-        
-        $("#sysTitle").html(title);
-     });
- }
+URL_CHECK_USER = "/tss/getLoginInfo.in";
+URL_LOGIN = "/tss/auth/login.do";
 
-/*********************** 应用配置 END **********************************/
-
-URL_GET_USER_NAME = "getLoginInfo.in";
-URL_LOGIN = AUTH_PATH + "login.do";
-
-window.onresize = function() {
-    $("#login_box").center();
-}
-
-$(function(){
-    if(document.body.offsetWidth < 768 || $.isMobile ) {
-        location.href = "mobile/login.html";
-    }
-
-     setSysTitle(); 
-     window.onresize();
-
+$(function() {     
      init();
-     window.onresize();
 });
 
 function init() {
-    var accoutEl = $1("loginName"), passwdEl  = $1("password");
-    accoutEl.onfocus = function() {  passwdEl.disabled = true; }
-    accoutEl.value = $.Cookie.getValue("iUserName") || "";
-    accoutEl.focus();
+    setSysTitle(); 
+
+    var accountEl = $1("loginName"), passwdEl  = $1("password");
+    accountEl.onfocus = function() {  passwdEl.disabled = true; }
+    accountEl.value = $.Cookie.getValue("iUser") || "";
+    accountEl.focus();
 
     $("#bt_login").click ( function() {
-        doLogin(accoutEl, passwdEl);
+        doLogin(accountEl, passwdEl);
     } );
 
     $.Event.addEvent(document, "keydown", function(ev) {
@@ -57,29 +29,25 @@ function init() {
             $("#bt_login").focus();
 
             setTimeout(function() {
-                doLogin(accoutEl, passwdEl);
+                doLogin(accountEl, passwdEl);
             }, 10);
         }
     });
 
-    accoutEl.onblur = function() { 
+    accountEl.onblur = function() { 
         var value = this.value;
-        if( !value ) {
-            return $(accoutEl).focus().notice("请输入账号");
-        }
-        if(accoutEl.identifier) {
-            delete accoutEl.identifier;
-        }
+        if( !value )  return $(accountEl).focus();
+        
         $.ajax({
-            url: URL_GET_USER_NAME,
+            url: URL_CHECK_USER,
             params: {"loginName": value},
             waiting: true,
             onexcption: function() {
-                accoutEl.focus();
+                accountEl.focus();
             },
             onresult: function(){
-                accoutEl.identifier = this.getNodeValue("identifier");
-                accoutEl.randomKey  = this.getNodeValue("randomKey");
+                accountEl.identifier = this.getNodeValue("identifier");
+                accountEl.randomKey  = this.getNodeValue("randomKey");
                 
                 passwdEl.disabled = false;
                 passwdEl.focus();
@@ -88,20 +56,20 @@ function init() {
     }
 }
 
-var doLogin = function(accoutEl, passwdEl) {
-    var identifier = accoutEl.identifier;
-    var randomKey  = accoutEl.randomKey;   
-    var loginName  = accoutEl.value;
+var doLogin = function(accountEl, passwdEl) {
+    var identifier = accountEl.identifier;
+    var randomKey  = accountEl.randomKey;   
+    var loginName  = accountEl.value;
     var password   = passwdEl.value;
     
     if( !loginName ) {
-        return $(accoutEl).focus().notice("请输入账号");
+        return $(accountEl).focus();
     } 
     else if( !password ) {
-        return $(passwdEl).focus().notice("请输入密码");
+        return $(passwdEl).focus();
     }
     else if( !identifier ) {
-        return alert("系统无法登录，服务器异常，请联系管理员。");
+        return $.alert("系统无法登录，服务器异常，请刷新或稍后再尝试。");
     }
 
     $.ajax({
@@ -119,75 +87,13 @@ var doLogin = function(accoutEl, passwdEl) {
             passwdEl.focus();
         },
         onsuccess: function() {
-            $.Cookie.setValue("iUserName", loginName);
-                       
-            checkPasswdSecurity(loginName, password, function(securityLevel) {
-                if( securityLevel >= 3 ) return gotoIndex(loginName);
-
-                $.prompt("因您的密码过于简单或长期未修改，存在安全隐患，请重新设置密码", "输入更安全密码(8位以上大小写字母和数字组合)", function(newPasswd) {
-                    $.prompt("请再次输入新密码", "请再次输入新密码", function(newPasswd2) {
-                        if( newPasswd !== newPasswd2) {
-                            $.alert("两次密码输入不一致，设置失败，请用原密码登录再次重置密码。");
-                            setTimeout( function() { logout(); }, 2000);
-                            return;
-                        }
-
-                        checkPasswdSecurity(loginName, newPasswd, function(level) {
-                            if(level >= 3) {
-                                setNewPassword(loginName, password, newPasswd);
-                            } else {
-                                $.alert("您的新密码还是过于简单，设置失败，请用原密码登录再次重置密码。");
-                                setTimeout( function() { logout(); }, 2000);
-                            }
-                        });
-                    }, "", true);
-                }, "", true);
-            } );      
+            $.Cookie.setValue("iUser", loginName);
+            gotoIndex(loginName);   
         }
     });
 }
 
-function checkPasswdSecurity(loginName, passwd, callback) {
-    $.ajax({
-        url : "/tss/getPasswordStrength.in",
-        params : {"password": passwd, "loginName": loginName}, 
-        onresult : function() {
-            var securityLevel = parseInt(this.getNodeValue("SecurityLevel"));
-            callback(securityLevel);
-        }
-    });
-}
-
-/* 设置新密码 */
-function setNewPassword(loginName, passwd, newPasswd) {
-    $.getJSON("/tss/auth/user/has", {}, function(ui) {
-        var params = {};
-        params.userId = ui[2];
-        params.password = passwd;
-        params.newPassword = newPasswd;
-        $.ajax({
-            url : "/tss/resetPassword.in",
-            params : params,
-            onsuccess : function() { 
-                gotoIndex(loginName);
-            }
-        });
-    }, "GET");  
-}
-
-function logout() {
-    $.ajax({
-        url : "/tss/logout.in",
-        method : "GET",
-        onsuccess : function() { 
-            $.Cookie.del("token", "");
-            $.Cookie.del("token", "/");
-            $.Cookie.del("token", "/tss");
-            $.Cookie.del("token", "/tss/");
-            location.href = "/tss/login.html";
-        }
-    });
-}
+var indexPage = "tssbi.html";    /* 登录成功后跳转到的页面 */
 
 function gotoIndex(loginName) {
     if(loginName === 'Admin') {
@@ -199,14 +105,4 @@ function gotoIndex(loginName) {
     } else {
         window.location.href = indexPage;
     }
-}
-
-/* 找回密码  */
-function forget() {
-    $.openIframePanel("forgetPanel", "重置密码", 460, 300, "modules/um/_forget.html", true);
-}
-
-/* 注册 */
-function register() {
-    $.openIframePanel("registerPanel", "注册新用户", 550, 320, "modules/um/_register.htm", true);
 }

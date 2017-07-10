@@ -456,7 +456,7 @@ public class _Recorder extends BaseActionSupport {
 	/************************************* check permissions：安全级别 > 5 才启用 **************************************/
 	
 	private boolean checkPermission(Long recordId, String permitOption) {
-		if(SecurityUtil.getLevel() < SecurityUtil.LEVEL_6 ) return true;
+		if( !SecurityUtil.isHardMode() ) return true;
 		
 		PermissionHelper helper = PermissionHelper.getInstance();
 		String permissionTable = RecordPermission.class.getName();
@@ -471,7 +471,7 @@ public class _Recorder extends BaseActionSupport {
 	 * @param itemId
 	 */
 	private void checkRowEditable(Long recordId, Long itemId) {
-		if(SecurityUtil.getLevel() < SecurityUtil.LEVEL_6 ) return;
+		if( !SecurityUtil.isHardMode() ) return;
 		
 		boolean flag = false;
 		if( checkPermission(recordId, Record.OPERATION_EDATA) ) {
@@ -490,7 +490,7 @@ public class _Recorder extends BaseActionSupport {
 	 * 因db.select方法里对数据进行了权限过滤，所以能按ID查询出来的都是有权限查看的
 	 */
 	private boolean checkRowVisible(Long recordId, Long itemId) {
-		if(SecurityUtil.getLevel() < SecurityUtil.LEVEL_6 ) return true;
+		if( !SecurityUtil.isHardMode() ) return true;
 		
 		Map<String, String> requestMap = new HashMap<String, String>();
 		requestMap.put("id", EasyUtils.obj2String(itemId));

@@ -141,15 +141,6 @@ function bindTreeSearch(inputElId, treeId) {
 	}
 }
 
-// @Deprecated Tree控件已经自动集成了此功能
-function openDefaultTreeNode(callback) {
-	var searchKey = $.Query.get("_treeNode");
-	if(searchKey) {
-		$.T('tree').searchNode(searchKey);
-		openActiveTreeNode(callback);
-	}
-}
-
 function openActiveTreeNode(callback) {	
 	var tree = $.T('tree');
 	if( tree && tree.getActiveTreeNode() ) {
