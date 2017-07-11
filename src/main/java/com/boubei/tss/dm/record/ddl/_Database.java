@@ -241,10 +241,6 @@ public abstract class _Database {
 			paramsList.add(paramsMap);
 		}
 		
-		// 判断是否是匿名用户。匿名用户（登录超时后变的）不允许新增数据
-		if( Environment.isAnonymous() ) {
-			throw new BusinessException("您当前的登录已超时，请注销后重新登录！");
-		}
 		SQLExcutor.excuteBatch(createInsertSQL(), paramsList , this.datasource);
 		
 		logCUD("", "create", " add some rows: " + valuesMaps);

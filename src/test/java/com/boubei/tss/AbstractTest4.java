@@ -18,6 +18,7 @@ import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.helper.dto.OperatorDTO;
 import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.util.URLUtil;
+import com.boubei.tssbi.ParamsInit;
 
 @ContextConfiguration(
 	  locations={

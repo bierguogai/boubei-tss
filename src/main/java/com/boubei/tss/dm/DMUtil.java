@@ -198,14 +198,14 @@ public class DMUtil {
 		fmDataMap.put(DMConstants.FROM_USER_ID, Environment.getUserInfo(DMConstants.FROM_USER_ID));
 		
 		/* 往dataMap里放入Session里的用户权限、角色、组织等信息，作为宏代码解析。 */
-    	if(Context.getRequestContext() != null) {
+    	try {
     		HttpSession session = Context.getRequestContext().getRequest().getSession();
     		Enumeration<String> keys = session.getAttributeNames();
     		while(keys.hasMoreElements()) {
     			String key = keys.nextElement();
     			fmDataMap.put(key, session.getAttribute(key).toString());
     		}
-    	}
+    	} catch(Exception e) { }
 		
 		return fmDataMap;
     }

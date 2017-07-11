@@ -326,8 +326,10 @@ public class _Recorder extends BaseActionSupport {
     @RequestMapping(value = "/cud/{recordId}", method = RequestMethod.POST)
     @ResponseBody
     public Object cudBatch(HttpServletRequest request, @PathVariable("recordId") Long recordId, String csv) {
-    	_Database _db = getDB(recordId, Record.OPERATION_CDATA);
+    	
     	prepareParams(request, recordId);
+    	
+    	_Database _db = getDB(recordId, Record.OPERATION_CDATA);
     	
 		String[] rows = EasyUtils.split(csv, "\n");
 		List<Map<String, String>> insertList = new ArrayList<Map<String, String>>();

@@ -1,4 +1,4 @@
-package com.boubei.tss;
+package com.boubei.tssbi;
 
 import java.util.ArrayList;
 import java.util.List;

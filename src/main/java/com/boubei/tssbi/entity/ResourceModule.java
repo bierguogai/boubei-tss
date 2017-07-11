@@ -1,4 +1,4 @@
-package com.boubei.cloud.enity;
+package com.boubei.tssbi.entity;
 
 /**
  * 资源（role/group/record/report）模块对应
