@@ -1,8 +1,8 @@
-package com.boubei.tss.dm.record.ddl;
+package com.boubei.tss.dm.ddl;
 
 import java.util.Map;
 
-import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.record.Record;
 
 public class _MySQL extends _Database {

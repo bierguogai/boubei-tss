@@ -9,8 +9,8 @@
 		<column name="poolSize"  caption="最大连接个数" mode="number" inputReg="^\d*$" empty="false" errorMsg="请填入整数数字"/>
 		
 		<column name="driver"  caption="数据库连类型" empty="false" mode="combo" 
-			values="oracle.jdbc.driver.OracleDriver|com.mysql.jdbc.Driver" 
-			texts="Oracle|MySQL"/>
+			values="com.mysql.jdbc.Driver|oracle.jdbc.driver.OracleDriver" 
+			texts="MySQL|Oracle"/>
 		<column name="connUrl"  caption="数据库连接地址" empty="false"/>
 		<column name="connUser" caption="数据库连接账号" empty="false"/>
 		<column name="connPwd"  caption="数据库连接密码" type="password" empty="false" />
@@ -44,7 +44,7 @@
 			<TD><label binding="driver"/></TD>
 			<TD colspan="3">
 				<input binding="driver" style="width:150px;"/>
-				<b style="color: red; padding-left: 8px; display: inline-block;">目前只支持Oracle和MySQL</b>
+				<b style="color: red; padding-left: 8px; display: inline-block;">目前支持的数据库类型：MySQL、Oracle</b>
 			</TD>
 		</TR>
 		<TR>

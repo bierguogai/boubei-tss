@@ -1,4 +1,4 @@
-package com.boubei.tss.dm.data.sqlquery;
+package com.boubei.tss.dm.dml;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -20,10 +20,13 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 
+import com.boubei.tss.EX;
 import com.boubei.tss.cache.Cacheable;
 import com.boubei.tss.cache.JCache;
 import com.boubei.tss.cache.Pool;
-import com.boubei.tss.dm.record.ddl._Database;
+import com.boubei.tss.dm.ddl._Database;
+import com.boubei.tss.dm.ext.query.AbstractSO;
+import com.boubei.tss.dm.ext.query.SOUtil;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.XMLDocUtil;
@@ -115,7 +118,7 @@ public class SQLExcutor {
     private static Pool getDSPool(String datasource) {
     	Pool connpool = JCache.getInstance().getPool(datasource);
         if(connpool == null) {
-        	throw new BusinessException("数据源【" + datasource + "】不存在。");
+        	throw new BusinessException( EX.parse(EX.DM_02, datasource) );
         }
         return connpool;
     }
@@ -201,8 +204,8 @@ public class SQLExcutor {
             }
         } 
         catch (SQLException e) {
-            String exMsg = "异常：" +e.getMessage()+ " ";
-            log.debug(exMsg + "\n   数据源：" + dbUrl + ",\n   参数：" + paramsMap + ",\n   脚本：" + sql);
+            String exMsg = "error: " +e.getMessage()+ " ";
+            log.debug(exMsg + "\n   ds: " + dbUrl + ",\n   params: " + paramsMap + ",\n  script: " + sql);
             throw new BusinessException(exMsg);
         } 
         finally {
@@ -242,7 +245,7 @@ public class SQLExcutor {
 		} catch (SQLException e) {
 			try { conn.rollback(); } catch (Exception e2) { }
 			
-			String errorMsg = "异常：" +e.getMessage();
+			String errorMsg = "error: " +e.getMessage();
 			log.info(errorMsg + " ------ SQL: " + sql);
 			throw new BusinessException(errorMsg);
 			
@@ -298,7 +301,7 @@ public class SQLExcutor {
         	connpool.checkIn(connItem);
         	
         	/* 对于执行出错SQL后的Connetion，做销毁处理（因发现conn.rollback后，conn里缓存数据无法清除，导致数据不一致情况出现）
-        	 * 问题已解决：conn.setAutoCommit成了false，重新设置为true可以解决上面说的问题 */
+        	 * 问题已解决: conn.setAutoCommit成了false，重新设置为true可以解决上面说的问题 */
         	if( hasException ) { 
         		/*
         		connpool.removeObject(connItem.getKey());
@@ -311,11 +314,11 @@ public class SQLExcutor {
     /**
      * 批量执行SQL
      * 
-     * 循环里连续的进行插入操作，在开始时设置了：conn.setAutoCommit(false);  最后才进行conn.commit(),
+     * 循环里连续的进行插入操作，在开始时设置了: conn.setAutoCommit(false);  最后才进行conn.commit(),
      * 这样即使插入的时候报错，修改的内容也不会提交到数据库，而如果没有手动的进行setAutoCommit(false); 
      * 出错时就会造成，前几条插入，后几条没有会形成脏数据。
      * 
-     * 注：设定setAutoCommit(false) 没有在catch中进行Connection的rollBack操作，操作的表就会被锁住，造成数据库死锁。
+     * 注: 设定setAutoCommit(false) 没有在catch中进行Connection的rollBack操作，操作的表就会被锁住，造成数据库死锁。
      */
     public static void excuteBatch(String sql, List<Object[]> paramsList, Connection conn) {
     	if( EasyUtils.isNullOrEmpty(paramsList) ) return;
@@ -345,7 +348,7 @@ public class SQLExcutor {
         	try { conn.rollback(); } 
         	catch (Exception e2) { log.error(e2.getMessage(), e2); }
         	
-        	String errorMsg = "异常：" +e.getMessage();
+        	String errorMsg = "error: " +e.getMessage();
         	log.info(errorMsg + " ------ SQL: " + sql);
             throw new BusinessException(errorMsg);
             

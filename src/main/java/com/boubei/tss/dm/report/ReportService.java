@@ -6,10 +6,11 @@ import java.util.Map;
 import com.boubei.tss.cache.aop.Cached;
 import com.boubei.tss.cache.aop.QueryCached;
 import com.boubei.tss.cache.extension.CacheLife;
-import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.modules.log.Logable;
 import com.boubei.tss.um.permission.filter.PermissionFilter4Create;
 import com.boubei.tss.um.permission.filter.PermissionFilter4Sort;
+import com.boubei.tss.um.permission.filter.PermissionFilter4Update;
 import com.boubei.tss.um.permission.filter.PermissionTag;
 
 public interface ReportService {
@@ -17,7 +18,7 @@ public interface ReportService {
 	Report getReport(Long id);
     Report getReport(Long id, boolean auth);
     
-    Long getReportId(String fname, Object idOrName);
+    Long getReportId(String fname, Object idOrName, int type);
     
     @PermissionTag(
     		resourceType = Report.RESOURCE_TYPE,
@@ -41,8 +42,15 @@ public interface ReportService {
             resourceType = Report.RESOURCE_TYPE,
             operation = Report.OPERATION_EDIT , 
             filter = PermissionFilter4Create.class)
-    @Logable(operateObject="报表",  operateInfo="新增/更新了：${args[0]?default(\"\")}")
-    Report saveReport(Report report);
+    @Logable(operateObject="报表",  operateInfo="新增了：${args[0]?default(\"\")}")
+    Report createReport(Report report);
+    
+    @PermissionTag(
+            resourceType = Report.RESOURCE_TYPE,
+            operation = Report.OPERATION_EDIT , 
+            filter = PermissionFilter4Update.class)
+    @Logable(operateObject="报表",  operateInfo="更新了：${args[0]?default(\"\")}")
+    void updateReport(Report report);
     
     @Logable(operateObject="报表", operateInfo="删除了：${returnVal?default(\"\")}")
     Report delete(Long id);

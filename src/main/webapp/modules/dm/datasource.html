@@ -54,7 +54,7 @@
 
     function checkPermission(treeNode) {
         treeNode = treeNode || $.T("tree").getActiveTreeNode();
-        return treeNode.getAttribute("creatorId") == currentUser || currentUser == "-1";
+        return treeNode.getAttribute("creatorid") == currentUser || currentUser == "-1";
     }
  
     function initMenus() {

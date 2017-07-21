@@ -10,9 +10,9 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import com.boubei.tss.EX;
 import com.boubei.tss.dm.DMUtil;
-import com.boubei.tss.dm.data.sqlquery.SOUtil;
-import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.util.DateUtil;
@@ -53,7 +53,7 @@ public class ReportQuery {
   				list = new ObjectMapper().readValue(paramsConfig, List.class);  
       	        
       	    } catch (Exception e) {  
-      	        throw new BusinessException( report + "参数配置JSON格式存在错误：" + e.getMessage() );
+      	        throw new BusinessException( EX.parse(EX.DM_15, report, e.getMessage()) );
       	    }  
       		
       		for(int i = 0; i < list.size(); i++) {
@@ -64,7 +64,7 @@ public class ReportQuery {
   	        	String paramValue = requestMap.get(paramKy);
 				if ( EasyUtils.isNullOrEmpty(paramValue) ) {
 					if( "false".equals(map.get("nullable")) ) {
-						throw new BusinessException("参数【" + map.get("label") + "】不能为空。");
+						throw new BusinessException(EX.parse(EX.DM_20, map.get("label")));
 					}
 					continue;
 				}
@@ -112,7 +112,7 @@ public class ReportQuery {
 				if (reportScript.indexOf("in (${" + paramKy + "})") > 0 ||
 						reportScript.indexOf("IN (${" + paramKy + "})") > 0) {
 					
-					paramValue = SOUtil.insertSingleQuotes(paramValue); 
+					paramValue = DMUtil.insertSingleQuotes(paramValue); 
 				}
 				// 判断参数是否只用于freemarker解析
 				else if ( !"true".equals(ignore) ) {

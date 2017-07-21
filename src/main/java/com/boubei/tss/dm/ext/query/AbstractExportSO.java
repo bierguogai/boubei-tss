@@ -1,4 +1,4 @@
-package com.boubei.tss.dm.data.sqlquery;
+package com.boubei.tss.dm.ext.query;
 
 /**
  * 需要导出的数据的查询条件

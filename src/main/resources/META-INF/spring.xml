@@ -49,4 +49,6 @@
 		</property>
 	</bean>
 	
+	<bean id="installListener" class="com.boubei.tss.matrix.InstallListener"/>
+	
 </beans>

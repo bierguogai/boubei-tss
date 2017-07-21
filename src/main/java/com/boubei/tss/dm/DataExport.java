@@ -1,4 +1,4 @@
-package com.boubei.tss.dm.data.util;
+package com.boubei.tss.dm;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -18,9 +18,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
-import com.boubei.tss.dm.DMUtil;
-import com.boubei.tss.dm.data.sqlquery.AbstractExportSO;
-import com.boubei.tss.dm.data.sqlquery.AbstractVO;
+import com.boubei.tss.dm.ext.query.AbstractExportSO;
+import com.boubei.tss.dm.ext.query.AbstractVO;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
@@ -151,7 +150,7 @@ public class DataExport {
             for (Object[] row : data) {
             	List<Object> values = new ArrayList<Object>();
             	for(Object value : row) {
-            		String valueS = preCheatVal(value);
+            		String valueS = DMUtil.preCheatVal(value);
 					values.add(valueS); 
             	}
                 fw.write(EasyUtils.list2Str(values));
@@ -168,16 +167,6 @@ public class DataExport {
         } catch (IOException e) {
             throw new BusinessException("export csv error:" + path + ", " + e.getMessage());
         }
-    }
-    
-    public static String preCheatVal(Object value) {
-    	if(value == null) {
-			value = "";
-		}
-		String valueS = value.toString().replaceAll(",", "，"); // 导出时字段含英文逗号会错列
-		valueS = valueS.replaceAll("\r\n", " ").replaceAll("\n", " ");
-		valueS = valueS.replaceAll("\"", "");
-		return valueS; 
     }
     
     // 共Web页面上的表格数据直接导出成csv调用

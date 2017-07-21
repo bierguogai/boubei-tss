@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html> 
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>注册用户引导页</title>
+<link rel="shortcut icon" href="images/tss.ico">
+<link rel="Bookmark" href="images/tss.ico">
+
+<link rel="stylesheet" href="../../tools/tssJS/css/boubei.css">
+<link rel="stylesheet" href="../../tools/tssJS/fonts/icons.css">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/portlet.js"></script>
+
+<style>
+
+html { box-sizing: border-box; }
+html, body { height: 100%; font-family: Arial, sans-serif, "Microsoft Yahei"; }
+
+ul { list-style-type: none; padding: 10px; } 
+ul li { 
+    float:left; position:relative; 
+    width: 25%;     
+    text-align:center;  background-color: #fff;
+} 
+
+ul>li div.module {
+  height: 160px; 
+  border: 1px solid #ccc; border-radius: 5px;
+  padding: 5px;
+  margin: 5px;
+  line-height: 20px;
+}
+ul>li div.module>h2 { padding: 6px; font-size: 120%; }
+ul>li div.module>p { margin-bottom: 3px; line-height: 18px; text-indent: 2em; }
+
+ul>li div.module>.price { position: absolute; bottom: 45px; left: 0; width: 100%; }
+ul>li div.module>.price>b { color: #797BED; font-size: 110%; }
+ul>li div.module>.bts { position: absolute; bottom: 12px; left: 0; width: 100%; }
+ul>li div.module>.bts>button { visibility: hidden; }
+
+
+ul>li:hover>div { background-color: #FEF7A9;}
+.selected>div { background-color: #FEF7A9; }
+
+body>.module { display: none; }
+
+</style>
+
+<script type="text/javascript">
+
+$(function(){
+
+  for(var i=1; i <= 12; i++) {
+    var li = $.createElement("li");
+    $("#list").appendChild(li);
+
+    var item = $("body>div.module")[0].cloneNode(true);
+    $(li).appendChild(item);
+  }
+
+  initList();
+  
+});
+
+function initList() {
+  $.getJSON("/tss/auth/module", {}, function(data) {
+
+    data.each(function(i, item) {
+      var $li = $("ul>li:nth-child(" +(i+1)+ ")");
+      $li.find("div.module>h2").text(item.module);
+      $li.find("div.module>p>span").text( (item.description||"").substring(0, 32) + "...");
+      $li.attr("id", "li" + item.id);
+
+      $li.find("div.module>.bts>button").css("visibility", "visible")
+          .click( function() {
+            selectModule(item.id);
+          });
+    });
+
+    initSelected();
+
+  }, "GET");
+}
+
+function initSelected() {
+    $.getJSON("/tss/auth/module/0", {}, function(data) {
+        data.each(function(i, item) {
+            var $li = $("#li" + item.id).addClass("selected");
+            $li.find("div.module>.bts>button")
+                .text("结束试用")
+                .addClass("orange")
+                .removeClass("blue")
+                .click( function() {
+                    selectModule(item.id, "DELETE");
+                });
+        });
+    }, "GET");
+}
+
+function selectModule(moduleId, method) {
+    $.post("/tss/auth/module/" + moduleId, {}, function(result) {
+        if(result === 'Success') {
+            refresh();
+        }
+    }, method);
+}
+
+function refresh() {
+  tssJS.getJSON("/tss/auth/user/has?refreshFlag=true", {}, 
+      function(info) {
+          window.parent.parent.parent.location.reload();
+      }, 
+  "GET");
+}
+
+</script>
+
+</head>
+
+<body>
+
+<ul id="list">
+
+</ul>
+ 
+<div class="module">
+  <h2>开发中...</h2>
+  <p>
+    <span><i style="color:#ccc">它山石BI，有效管理您的数据，让数据价值彰显。</i></span><br>点击<a>了解更多</a>
+  </p>
+  <div class="price"><i>售价：</i><b>免费</b></div>
+  <div class="bts">
+    <button class="tssbutton blue medium">我要试用</button> 
+  </div>
+</div>
+<!--  作者、上线日期等 -->
+
+</body>
+</html>

@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.boubei.tss.EX;
 import com.boubei.tss.dm.DMUtil;
-import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
-import com.boubei.tss.dm.data.util.DataExport;
+import com.boubei.tss.dm.DataExport;
+import com.boubei.tss.dm.dml.SQLExcutor;
+import com.boubei.tss.dm.report.log.AccessLogRecorder;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.pagequery.PageInfo;
@@ -62,7 +64,7 @@ public class _Reporter extends BaseActionSupport {
     	if( !EasyUtils.isNullOrEmpty(uToken) && !EasyUtils.isNullOrEmpty(uName) ) {
     		Report report = reportService.getReport(reportId, false);
         	if( !DMUtil.checkAPIToken(report, uName, uToken) ) {
-    			throw new BusinessException("令牌验证未获通过，调用接口失败。");
+    			throw new BusinessException(EX.DM_11);
     		}
     	} 
     	
@@ -91,7 +93,7 @@ public class _Reporter extends BaseActionSupport {
 		Object loginUserId = getLoginUserId(requestMap, reportId);
 		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, page, pagesize, loginUserId);
     	
-		DMUtil.outputAccessLog(reportService, reportId, "showAsGrid", requestMap, start);
+		AccessLogRecorder.outputAccessLog(reportService, reportId, "showAsGrid", requestMap, start);
         
         List<IGridNode> list = new ArrayList<IGridNode>();
         for(Map<String, Object> item : excutor.result) {
@@ -139,7 +141,7 @@ public class _Reporter extends BaseActionSupport {
         // 下载上一步生成的附件
         DataExport.downloadFileByHttp(response, exportPath);
         
-        DMUtil.outputAccessLog(reportService, reportId, "exportAsCSV", requestMap, start);
+        AccessLogRecorder.outputAccessLog(reportService, reportId, "exportAsCSV", requestMap, start);
     }
     
     /**
@@ -193,17 +195,17 @@ public class _Reporter extends BaseActionSupport {
     	
     	Long reportId = null;
     	try { // 先假定是报表ID（Long型）
-    		reportId = reportService.getReportId("id", Long.valueOf(report));
+    		reportId = reportService.getReportId("id", Long.valueOf(report), Report.TYPE1);
     	} 
     	catch(Exception e) { }
     	
     	// 按名字再查一遍
     	if(reportId == null) {
     		report = report.replaceFirst("rpn-", ""); // 如果报表的名称为数字，则写法如：rpn-122
-    		reportId = reportService.getReportId("name", report);
+    		reportId = reportService.getReportId("name", report, Report.TYPE1);
     	}
     	if(reportId == null) {
-    		throw new BusinessException("【" + report + "】数据服务不存在。");
+    		throw new BusinessException( EX.parse(EX.DM_18, report) );
     	}
     	
     	String jsonpCallback = request.getParameter("jsonpCallback"); // jsonp是用GET请求
@@ -228,7 +230,7 @@ public class _Reporter extends BaseActionSupport {
         	}
         }
         
-        DMUtil.outputAccessLog(reportService, reportId, "showAsJson", requestMap, start);
+        AccessLogRecorder.outputAccessLog(reportService, reportId, "showAsJson", requestMap, start);
         
         if(page != null) {
         	Map<String, Object> returlVal = new HashMap<String, Object>();

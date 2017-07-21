@@ -40,8 +40,7 @@ html, body { height: 100%; overflow: hidden; }
 .menu ul li:hover ul { display: block; position: absolute; top: 30px; left:0; width: 85px; } 
 .menu ul li:hover a { border-bottom: 1px solid rgba(204,204,204,0.2); }
 
-li.biadmin { display: none; }
-li.bestuser { display: none; }
+li.r9,li.r8,li.ra { display: none; }
 
 #notice {
     position: fixed; top: 5px; left: 200px; color: red;   
@@ -66,6 +65,7 @@ span.max, span.min { display: none; }
 <script type="text/javascript">
 
 /* 用户信息初始化  */
+var roles = [], isSelfDomain = false;
 $(function(){
     initUserInfo(function() {
         resizeIFrame();
@@ -73,8 +73,10 @@ $(function(){
         tssJS.getJSON("/tss/auth/user/has", {}, 
             function(info) {
                 if( info && info[1] ) {
-                    var roles = info[1];
-                    ( roles.contains(59) || roles.contains(-1) ) && $("li.biadmin").show(true);  // BI管理员
+                    roles = info[1], isSelfDomain = (info[0].length && info[0][0][0] == -7);
+                    roles.contains(-8) && !isSelfDomain && $("li.r8").show(true);  // 域管理员(非自注册域)
+                    roles.contains(-9) && $("li.r9").show(true) && $("li.r8").hide();  // 开发者
+                    roles.contains(-1) && $("li.r9,li.r8,li.ra").show(true);  // Admin
                 }
             }, 
         "GET");
@@ -85,6 +87,9 @@ $(function(){
 });
 
 window.onresize = resizeIFrame;
+var resizeIFrame = function resizeIFrame() {
+    $(".tssIFrame").css("height", (document.body.offsetHeight - 33) + "px"); 
+}
 
 function openUrl(url) {
     if (url == "#") return;
@@ -104,20 +109,43 @@ function openUrl(url) {
     $(".tssIFrame").addClass("hidden").removeClass("open");
     $iframe.removeClass("hidden").addClass("open");
 }
+
 function openMsgPage() {
     openUrl('modules/um/message.html');
 }
-var resizeIFrame = function resizeIFrame() {
-    $(".tssIFrame").css("height", (document.body.offsetHeight - 33) + "px"); 
+
+// report_portlet.html  的 feedback()方法调用到这里
+function feedback(module) {
+    openUrl( encodeURI('modules/dm/record.html?_default=系统使用反馈' + (module ? "&udf="+module : "")) );
 }
 
-function feedback(module) {
-    var url = encodeURI('modules/dm/record.html?_default=系统使用反馈' + (module ? "&udf="+module : ""));
-    openUrl(url);
+function feedback2() {
+    openUrl( encodeURI('modules/dm/recorder.html?name=系统使用反馈') );
+}
+
+function manageJob() {
+    openUrl( encodeURI('modules/dm/recorder.html?name=系统定时器') );
+}
+
+function manageETLTask() {
+    openUrl( encodeURI('modules/dm/recorder.html?name=ETL任务') );
+}
+
+function releaseModule() {
+    openUrl( encodeURI('modules/dm/recorder.html?name=功能模块发布') );
+}
+
+function fixUserInfo() {
+    $.openIframePanel("p1", "个人信息", 760, 320, "modules/um/_userInfo.htm", true);
+    tssJS.getJSON("/tss/auth/user/has?refreshFlag=true", {}, function(info) { }, "GET");
+}
+
+function changePasswd() {
+    $.openIframePanel("p2", "修改密码", 440, 300, "modules/um/_password.htm", true);
 }
 
 function showNotice(id, title) {
-    $.openIframePanel("noticePanel", title, 800, 480, "/tss/notice.html?articleId=" + id);
+    $.openIframePanel("noticePanel", title, 960, 480, "/tss/notice.html?articleId=" + id);
 }
 
 tssJS(function(){
@@ -172,6 +200,10 @@ function getBIMenu() {
     tssJS.getJSON( "/tss/auth/rp/my/" + rootId, {},
         function(data) {
 
+            if(data.length == 0) {
+                return openMsgPage();
+            }
+
             data.each( function(i, item) {
                 var id = item[0], pid = item[2], name = item[1], isReport = item[3];
                 items[id] = item;
@@ -180,7 +212,7 @@ function getBIMenu() {
 
                 if( pid == rootId ) { // 一级目录
                     var li = tssJS.createElement("li");
-                    $(li).html("<a href='javascript:void(0)' onclick='openLevelOne(" +id+ ")'>" +name+ "</a>");
+                    $(li).html("<a onclick='openLevelOne(" +id+ ")'>" +name+ "</a>");
                     $("#_bi>ul").appendChild(li);
 
                     _menus[id] = [];
@@ -195,12 +227,12 @@ function getBIMenu() {
                 }
             } );
 
-            openLevelOne(fisrtGroup); // 默认打开第一个报表
+            openLevelOne(fisrtGroup, true); // 默认打开第一个报表
         }
     );
 }
 
-function openLevelOne(id) {
+function openLevelOne(id, firstTime) {
     var fisrtReport;
     globalValiable.list = _menus[id];
     globalValiable.list.each( function(i, _item) {
@@ -212,6 +244,11 @@ function openLevelOne(id) {
         });
         if(fisrtReport) return false;
     } );
+
+        // 域管理员/开发者 初次默认打开引导页， 普通用户不需要
+    if( firstTime && (roles.contains(-8) || roles.contains(-9) || isSelfDomain) ) {
+        return openUrl('more/bi_nav.html?id=' + id);
+    }
 
     openUrl('more/bi_nav.html?id=' + id + (fisrtReport ? "&_default="+fisrtReport : "") );
 }
@@ -227,29 +264,37 @@ function openLevelOne(id) {
     <div class="menu"> 
         <ul> 
             <li id="_bi">
-                <a href='javascript:void(0)'>报表</a>
+                <a onclick="location.reload()">数据管理</a>
                 <ul></ul>
             </li>           
-            <li><a href='javascript:void(0)' onclick="openUrl('modules/dm/record.html')">录入表</a></li>
-            <li class="biadmin"><a href='javascript:void(0)'>系统管理</a>    
-                <ul> 
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/um/group.html')">用户管理</a></li>
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/um/role.html')">角色授权</a> </li>
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/_log/log.htm')">系统日志</a></li>
-                </ul> 
-            </li>  
-            <li id="x1"><a href='javascript:void(0)' onclick="feedback()">使用反馈</a> </li>            
-            <li style="width: 120px;">
-                <a href='javascript:void(0)' 
-                    onclick='$.openIframePanel("p1", "个人信息", 760, 320, "modules/um/_userInfo.htm", true);' id="userInfo">个人信息</a>
+            <!-- 录入表都维护到报表目录里
+            <li class="r8"><a onclick="openUrl('modules/dm/record.html')">录入表</a></li>  
+            -->
+            <li class="r8"><a onclick="openUrl('modules/um/group.html')">用户管理</a></li>
+            <li class="r8"><a onclick="openUrl('modules/cms/channel.html')">发布公告</a></li>
+            <li class="r9">
+                <a>开发管理</a> 
                 <ul>
-                    <li>
-                        <a href='javascript:void(0)' onclick='$.openIframePanel("p2", "修改密码", 440, 300, "modules/um/_password.htm", true);'>修改密码</a>
-                    </li>
-                    <li><a href='javascript:void(0)' onclick="logout()">注销登陆</a></li>
-                    <li><a href='javascript:void(0)' onclick="openMsgPage()">待办事项</a></li> 
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/cms/channel.html')">发布公告</a></li>
-                    <li><a href='index.portal' target="_self">返回门户</a></li>
+                    <li><a onclick="openUrl('modules/dm/datasource.html')">数据源</a></li>
+                    <li><a onclick="openUrl('modules/um/role.html')">设置角色</a> </li>
+                    <li><a onclick="openUrl('modules/dm/record.html')">录入表</a></li> 
+                    <li><a onclick="openUrl('modules/dm/report.html')">报表管理</a></li>
+                    <li><a onclick="releaseModule()">功能发布</a> </li>
+                    <li><a onclick="manageJob()">定时Job</a> </li>
+                    <li><a onclick="manageETLTask()">ETL任务</a> </li>                   
+                    <li><a onclick="openUrl('modules/_log/log.htm')">系统日志</a></li>
+                </ul>
+            </li>  
+            <li class="r9"><a href='http://www.boubei.com' target="_blank">卜贝官网</a></li>          
+            <li style="width: 100px;">
+                <a onclick='fixUserInfo()' id="userInfo">个人信息</a>
+                <ul>
+                    <li><a onclick="logout()">注销登陆</a></li>
+                    <li><a onclick='changePasswd()'>修改密码</a></li>                    
+                    <li><a onclick="openMsgPage()">站内消息</a></li> 
+                    <li><a onclick="feedback2()">问题建议</a></li>
+                    <li class="r8"><a href='http://www.boubei.com' target="_blank">卜贝官网</a></li>
+                    <li class="ra"><a href='index.html' target="_blank">Admin</a></li>
                 </ul>
             </li>            
         </ul>  
@@ -263,6 +308,10 @@ function openLevelOne(id) {
         <div id="s2"></div>
     </div>
 </div>
+
+<script type="text/javascript">
+    $(".top li>a[onclick]").attr("href", "javascript:void(0)");
+</script>
  
 </body>
 </html>

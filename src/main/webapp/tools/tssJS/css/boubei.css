@@ -28,7 +28,7 @@ html {
   box-sizing: border-box;
 }
 body {
-  font-family: Arial, Helvetica, '微软雅黑', sans-serif;
+  font-family: Arial, sans-serif, "Microsoft Yahei";
   font-size: 12px;
 }
 *,
@@ -990,7 +990,7 @@ WorkSpace\:Box WorkSpace\:PageStep .tssbutton {
   outline: none;
   text-align: center;
   text-decoration: none;
-  font: 1.4em/100% Arial, Helvetica, '微软雅黑', sans-serif;
+  font: 1.4em/100% Arial, sans-serif, "Microsoft Yahei";
   padding: .5em 2em .5em;
   border-radius: 3px;
   letter-spacing: 1px;

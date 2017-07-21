@@ -82,8 +82,7 @@ var _operation = ['1','2','3','4','5'],
     userName, 
     userGroups = [], 
     userRoles = [], 
-    userAssistGroups = [],
-    uName, uToken;
+    userAssistGroups = [];
 
 // 监听器
 var preListener, // 在表单保存前触发，如不通过，则终止保存
@@ -113,8 +112,6 @@ $(function() {
     recordId = $.Query.get("id");
     recordName = $.Query.get("name");
     openItemId = $.Query.get("itemId");
-    uName = $.Query.get("uName");
-    uToken = $.Query.get("uToken");
 
     if(!recordId && recordName) {
         $.post(URL_GET_RECORD_ID, {"name": decodeURI(recordName)}, function(result) {
@@ -129,7 +126,7 @@ $(function() {
 
 function getOperation() {
     getSourceOperation(recordId, function(operations) {
-        _operation = (operations||'').split(',');;
+        _operation = (operations||'').split(',');
         init();
     });
 }
@@ -138,8 +135,6 @@ function getOperation() {
 function init() {
     // 先取用户权限信息，Grid定制依赖具体权限
     var params = {};
-    if(uName) params.uName = uName;
-    if(uToken) params.uToken = uToken;
 
     $.ajax({
         url : URL_GET_USER_HAS,

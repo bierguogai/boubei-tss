@@ -40,15 +40,14 @@ function dbsx() {
     ondata: function() {
       var num = this.getResponseJSON();
       if(num > 0) {
-        $.tssTip("您的站内信箱里有<b> " + num + " </b>条新的待办事项，<a href='javascript:void(0)' onclick='openMsgPage()'>点击查看。</a>");
+        $.tssTip("您的站内信箱里有<b> " + num + " </b>条新的消息，<a href='javascript:void(0)' onclick='openMsgPage()'>点击查看。</a>");
       }
     }
   });
 }
 
 function feedback() {
-	var url = encodeURI('modules/dm/record.html?_default=系统使用反馈');
-  	window.open(url);
+	window.open( encodeURI('modules/dm/record.html?_default=系统使用反馈') );
 }
 
 /* 禁止鼠标右键 

@@ -293,7 +293,7 @@ var nextDay = subDateS(toDate(today), -1);
         { field: 'hitLong', title: '已运行时间', width: 75 },
         { field: 'datasource', title: '数据源', width: 80 },
         { field: 'rpCache', title: '报表缓存', width: 65 },
-        { field: 'creator', title: '创建人', width: 60, hidden: true }
+        { field: 'creator', title: '开发者', width: 60, hidden: false }
     ];
     $.each(FIELDS_3, function(i, field){
         field.align = field.align||"center";

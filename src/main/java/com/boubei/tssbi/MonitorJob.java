@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.boubei.tss.dm.DMConstants;
-import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.modules.timer.AbstractJob;
 import com.boubei.tss.util.MailUtil;
 
@@ -81,7 +81,9 @@ public class MonitorJob extends AbstractJob {
 		log.info("monitoring Apache finished. ");
 	}
 	
-	// 访问 param/json/simple/sysTitle、si/version 服务，返回object数组，以检查 Tomcat是否正常
+	/** 
+	 * 访问 param/json/simple/sysTitle、si/version 服务，返回object数组，以检查 Tomcat是否正常 
+	 */
 	void monitoringTomcat() {
 		MonitorUtil.monitoringRestfulUrl("http://" +domain+ "/tss/si/version", null);
 		MonitorUtil.monitoringRestfulUrl("http://" +domain+ "/tss/param/json/simple/sysTitle", keyword);

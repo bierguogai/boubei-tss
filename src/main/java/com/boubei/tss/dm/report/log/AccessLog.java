@@ -1,4 +1,4 @@
-package com.boubei.tss.dm.log;
+package com.boubei.tss.dm.report.log;
 
 import java.io.Serializable;
 import java.util.Date;

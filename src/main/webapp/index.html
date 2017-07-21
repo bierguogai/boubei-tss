@@ -89,6 +89,9 @@ window.onload = function() {
 }
 
 window.onresize = resizeIFrame;
+var resizeIFrame = function resizeIFrame() {
+    $(".tssIFrame").css("height", (document.body.offsetHeight - 30) + "px");
+}
 
 function openUrl(url) {
     if (url == "#") return;
@@ -112,29 +115,35 @@ function openUrl(url) {
 function openMsgPage() {
     openUrl('modules/um/message.html');
 }
-var resizeIFrame = function resizeIFrame() {
-    $(".tssIFrame").css("height", (document.body.offsetHeight - 30) + "px");
-}
 
 // report_portlet.html  的 feedback()方法调用到这里
 function feedback(module) {
-    var url = encodeURI('modules/dm/record.html?_default=系统使用反馈' + (module ? "&udf="+module : ""));
-    openUrl(url);
+    openUrl( encodeURI('modules/dm/record.html?_default=系统使用反馈' + (module ? "&udf="+module : "")) );
 }
 
 function manageJob() {
-    var url = encodeURI('modules/dm/recorder.html?name=系统定时器');
-    openUrl(url);
+    openUrl( encodeURI('modules/dm/recorder.html?name=系统定时器') );
 }
 
 function manageETLTask() {
-    var url = encodeURI('modules/dm/recorder.html?name=ETL任务');
-    openUrl(url);
+    openUrl( encodeURI('modules/dm/recorder.html?name=ETL任务') );
 }
 
 function manageToken() {
-    var url = encodeURI('modules/dm/recorder.html?name=对外用户令牌发放');
-    openUrl(url);
+    openUrl( encodeURI('modules/dm/recorder.html?name=对外用户令牌发放') );
+}
+
+function releaseModule() {
+    openUrl( encodeURI('modules/dm/recorder.html?name=功能模块发布') );
+}
+
+function fixUserInfo() {
+    $.openIframePanel("p1", "个人信息", 760, 320, "modules/um/_userInfo.htm", true);
+    tssJS.getJSON("/tss/auth/user/has?refreshFlag=true", {}, function(info) { }, "GET");
+}
+
+function changePasswd() {
+    $.openIframePanel("p2", "修改密码", 440, 300, "modules/um/_password.htm", true);
 }
 
 // ----------------------------------------- 顶部跑马灯公告栏 ----------------------------------------------------
@@ -195,55 +204,54 @@ tssJS(function(){
     <div class="logo"></div>
     <div class="menu"> 
         <ul> 
-            <li><a href='javascript:void(0)' onclick="openMsgPage()">站内消息</a></li> 
-            <li><a href='javascript:void(0)'>数据管理</a>    
+            <li><a onclick="openMsgPage()">站内消息</a></li> 
+            <li><a>数据管理</a>    
                 <ul> 
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/dm/report.html')">数据报表</a></li> 
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/dm/record.html')">录入表</a> </li>
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/cms/channel.html')">栏目文章</a></li>
+                    <li><a onclick="openUrl('modules/dm/report.html')">数据报表</a></li> 
+                    <li><a onclick="openUrl('modules/dm/record.html')">录入表</a> </li>
+                    <li><a onclick="openUrl('modules/cms/channel.html')">栏目文章</a></li>
                 </ul> 
             </li>  
-            <li><a href='javascript:void(0)'>用户权限</a>    
+            <li><a>用户权限</a>    
                 <ul> 
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/um/group.html')">用户管理</a></li> 
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/um/role.html')">角色授权</a></li> 
-                    <li class="other"><a href='javascript:void(0)' onclick="openUrl('modules/um/subauth.html')">权限转授</a></li> 
-                    <li class="other"><a href='javascript:void(0)' onclick="openUrl('modules/um/resource.html')">应用资源</a></li>  
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/um/online.html')">在线用户</a></li> 
+                    <li><a onclick="openUrl('modules/um/group.html')">用户管理</a></li> 
+                    <li><a onclick="openUrl('modules/um/role.html')">角色授权</a></li> 
+                    <li class="other"><a onclick="openUrl('modules/um/subauth.html')">权限转授</a></li> 
+                    <li class="other"><a onclick="openUrl('modules/um/resource.html')">应用资源</a></li>  
+                    <li><a onclick="openUrl('modules/um/online.html')">在线用户</a></li> 
                 </ul> 
             </li> 
-            <li class="other"><a href='javascript:void(0)'>门户管理</a>    
+            <li class="other"><a>门户管理</a>    
                 <ul> 
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/portal/structure.html')">门户结构</a></li> 
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/portal/component.html')">门户组件</a></li> 
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/portal/release.html')">门户发布</a> </li>
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/portal/navigator.html')">菜单导航</a></li> 
+                    <li><a onclick="openUrl('modules/portal/structure.html')">门户结构</a></li> 
+                    <li><a onclick="openUrl('modules/portal/component.html')">门户组件</a></li> 
+                    <li><a onclick="openUrl('modules/portal/release.html')">门户发布</a> </li>
+                    <li><a onclick="openUrl('modules/portal/navigator.html')">菜单导航</a></li> 
                 </ul>
             </li> 
-            <li><a href='javascript:void(0)'>系统辅助</a>    
+            <li><a>系统辅助</a>    
                 <ul> 
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/_log/log.htm')">日志查询</a></li> 
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/_param/param.htm')">系统参数</a></li> 
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/_cache/cache.htm')">缓存监控</a></li> 
-                    <li><a href='javascript:void(0)' onclick="openUrl('more/x/xn.html')">性能监控</a> </li>
-                    <li><a href='javascript:void(0)' onclick="openUrl('modules/dm/datasource.html')">数据源</a></li>
-                    <li><a href='javascript:void(0)' onclick="manageJob()">定时Job</a> </li>
-                    <li><a href='javascript:void(0)' onclick="manageETLTask()">ETL任务</a> </li>
-                    <li><a href='javascript:void(0)' onclick="manageToken()">令牌管理</a> </li>
-                    <li><a href='javascript:void(0)' onclick="openUrl('more/x/feedback.html')">查看反馈</a></li>
+                    <li><a onclick="openUrl('modules/_log/log.htm')">日志查询</a></li> 
+                    <li><a onclick="openUrl('modules/_param/param.htm')">系统参数</a></li> 
+                    <li><a onclick="openUrl('modules/_cache/cache.htm')">缓存监控</a></li> 
+                    <li><a onclick="openUrl('more/x/xn.html')">性能监控</a> </li>
+                    <li><a onclick="openUrl('modules/dm/datasource.html')">数据源</a></li>
+                    <li><a onclick="manageJob()">定时Job</a> </li>
+                    <li><a onclick="manageETLTask()">ETL任务</a> </li>
+                    <li><a onclick="manageToken()">令牌管理</a> </li>
+                    <li><a onclick="releaseModule()">功能发布</a> </li>
+                    <li><a onclick="openUrl('more/x/feedback.html')">查看反馈</a></li>
                 </ul>
             </li>   
             <li>
-                <a href='javascript:void(0)' 
-                    onclick='$.openIframePanel("p1", "个人信息", 760, 320, "modules/um/_userInfo.htm", true);' id="userInfo">个人信息</a>
+                <a onclick='fixUserInfo()' id="userInfo">个人信息</a>
                 <ul>
-                    <li><a href='javascript:void(0)' onclick='$.openIframePanel("p2", "修改密码", 440, 300, "modules/um/_password.htm", true);'>修改密码</a></li>
-                    <li><a href='javascript:void(0)' onclick="logout()"> 注销登陆</a></li> 
-                    <li><a href='index.portal' target="_self">返回门户</a></li>
+                    <li><a onclick='changePasswd()'>修改密码</a></li>
+                    <li><a onclick="logout()"> 注销登陆</a></li> 
                     <li><a href='tssbi.html' target="_self">进入BI</a></li>
+                    <li><a href='http://www.boubei.com' target="_blank">卜贝官网</a></li>
                 </ul>
             </li>
-            
         </ul>  
     </div> 
 </div>
@@ -254,6 +262,10 @@ tssJS(function(){
         <div id="s2"></div>
     </div>
 </div>
+
+<script type="text/javascript">
+    $(".top li>a[onclick]").attr("href", "javascript:void(0)");
+</script>
  
 </body>
 </html>

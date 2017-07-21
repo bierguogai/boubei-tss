@@ -218,8 +218,6 @@ var refresh  = $.Query.get("refresh");
 var leftBar  = $.Query.get("leftBar"); 
 var reportId = $.Query.get("id") || 497; 
 var fixedParams;
-var uName = $.Query.get("uName");
-var uToken = $.Query.get("uToken");
 
 /* http://localhost:8088/tss/modules/dm/report_portlet.html?leftBar=true&refresh=3&id=501&param1=today-10
    从邮件里打开 或 从文章里打开 */
@@ -259,14 +257,9 @@ function init() {
     getZanNum(2);
     getZanNum(3);
     
-    var params = {};
-    if(uName) params.uName = uName;
-    if(uToken) params.uToken = uToken;
-
     $.ajax({
         url: report_info_url,
         method: 'get',
-        params: params,
         type : "json",
         ondata: function() {
             var defines = this.getResponseJSON();

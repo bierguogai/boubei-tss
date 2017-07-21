@@ -230,7 +230,7 @@
         var treeNode = $.T("tree").getActiveTreeNode();
 		var treeID = treeNode.id;
 		var treeName = treeNode.name;
-		var parentID = treeNode.parent.id;
+		var parentID = treeNode.getAttribute("roleGroupId") || treeNode.parent.id;
 
 		var callback = {};
 		callback.onTabChange = function() {

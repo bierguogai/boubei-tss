@@ -1,14 +1,22 @@
-package com.boubei.tss.dm.log;
+package com.boubei.tss.dm.report.log;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.boubei.tss.dm.DMConstants;
-import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
-import com.boubei.tss.dm.data.sqlquery.SqlConfig;
+import com.boubei.tss.dm.DMUtil;
+import com.boubei.tss.dm.dml.SQLExcutor;
+import com.boubei.tss.dm.dml.SqlConfig;
+import com.boubei.tss.dm.report.Report;
+import com.boubei.tss.dm.report.ReportService;
+import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.modules.param.ParamConstants;
+import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.cache.extension.workqueue.AbstractTask;
 import com.boubei.tss.cache.extension.workqueue.OutputRecordsManager;
@@ -69,4 +77,45 @@ public class AccessLogRecorder extends OutputRecordsManager {
             SQLExcutor.excuteBatch(script, paramsMapList, DMConstants.LOCAL_CONN_POOL);
         }
     }
+    
+	public static void outputAccessLog(String cnName, String name, 
+			String methodName, Map<String, String> requestMap, long start) {
+		
+		String params = "";
+		for(Entry<String, String> entry : requestMap.entrySet()) {
+			params += entry.getKey() + "=" + entry.getValue() + ", ";
+		}
+        params = DMUtil.cutParams(params);
+		
+		// 方法的访问日志记录成败不影响方法的正常访问，所以对记录日志过程中各种可能异常进行try catch
+        try {
+            AccessLog log = new AccessLog();
+            log.setClassName(cnName);
+    		log.setMethodName( methodName );
+    		log.setMethodCnName( name );
+            log.setAccessTime( new Date(start) );
+            log.setRunningTime( System.currentTimeMillis() - start );
+            log.setParams(params);
+            
+            // 记录访问人，没有则记为匿名访问
+            Long userId = (Long) EasyUtils.checkNull(Environment.getUserId(), UMConstants.ANONYMOUS_USER_ID);
+			log.setUserId(userId);
+			log.setIp( Environment.getClientIp() );
+
+            AccessLogRecorder.getInstanse().output(log);
+        } 
+        catch(Exception e) { }
+	}
+	
+	/** 记录下报表的访问信息。 */
+	public static void outputAccessLog(ReportService reportService, Long reportId, 
+			String methodName, Map<String, String> requestMap, long start) {
+		
+		Report report = reportService.getReport(reportId);
+		boolean ignoreLog = ParamConstants.FALSE.equals(report.getNeedLog());
+		if( !ignoreLog ) {
+			String reportName = report.getName();
+			AccessLogRecorder.outputAccessLog("Report-"+reportId, reportName, methodName, requestMap, start);
+		}
+	}
 }

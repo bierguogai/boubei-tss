@@ -18,17 +18,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.boubei.tss.EX;
 import com.boubei.tss.cache.Cacheable;
 import com.boubei.tss.cache.Pool;
 import com.boubei.tss.cache.extension.CacheHelper;
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DMUtil;
-import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
-import com.boubei.tss.dm.data.util.DataExport;
-import com.boubei.tss.dm.record.ddl._Database;
+import com.boubei.tss.dm.DataExport;
+import com.boubei.tss.dm.ddl._Database;
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.record.file.RecordAttach;
 import com.boubei.tss.dm.record.permission.RecordPermission;
 import com.boubei.tss.dm.record.permission.RecordResource;
+import com.boubei.tss.dm.report.log.AccessLogRecorder;
 import com.boubei.tss.framework.SecurityUtil;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.exception.ExceptionEncoder;
@@ -59,7 +61,7 @@ public class _Recorder extends BaseActionSupport {
 			flag = flag || checkPermission( recordId, permitOption );
 		}
 		if(!flag) {
-			throw new BusinessException("权限不足，操作失败。");
+			throw new BusinessException(EX.DM_09);
 		}
 		
 		Pool cache = CacheHelper.getLongCache();
@@ -77,7 +79,7 @@ public class _Recorder extends BaseActionSupport {
     public Object getDefine(@PathVariable("recordId") Long recordId) {
 		Record record = recordService.getRecord(recordId);
 		if(!record.isActive()) {
-			throw new BusinessException("该录入表已被停用，无法再录入数据！");
+			throw new BusinessException(EX.DM_10);
 		}
 		
         return new Object[] { 
@@ -99,7 +101,7 @@ public class _Recorder extends BaseActionSupport {
     	if( !EasyUtils.isNullOrEmpty(uToken) && !EasyUtils.isNullOrEmpty(uName) ) {
     		Record record = recordService.getRecord(recordId);
         	if( !DMUtil.checkAPIToken(record, uName, uToken) ) {
-    			throw new BusinessException("令牌验证未获通过，调用接口失败。");
+    			throw new BusinessException(EX.DM_11);
     		}
     	} 
 		                                                                                                                                                                                                                                                 
@@ -154,11 +156,29 @@ public class _Recorder extends BaseActionSupport {
     public List<Map<String, Object>> showAsJSON(HttpServletRequest request, 
     		@PathVariable("recordId") Long recordId, @PathVariable("page") int page) {
     	
+    	// 如果同时传递了录入表名，先检查下按recordId是否能取到record，取不到则尝试用名字取
+    	String recordName = request.getParameter("recordName");
+    	if( !EasyUtils.isNullOrEmpty(recordName)  ) {
+    		try {
+    			recordService.getRecord(recordId);
+    		} catch(Exception e) {
+    			recordId = recordService.getRecordID(recordName, Record.TYPE1);
+    		}
+    	}
+    	
     	Map<String, String> requestMap = prepareParams(request, recordId);
     	int _pagesize = getPageSize(requestMap, PAGE_SIZE*20);
     	
         _Database _db = getDB(recordId);
         return _db.select( page, _pagesize, requestMap ).result;
+    }
+    
+    @RequestMapping("/json/{recordId}")
+    @ResponseBody
+    public List<Map<String, Object>> showAsJSON(HttpServletRequest request, 
+    		@PathVariable("recordId") Long recordId) {
+
+        return showAsJSON(request, recordId, 1);
     }
     
     private int getPageSize(Map<String, String> m, int defaultSize) {
@@ -192,7 +212,7 @@ public class _Recorder extends BaseActionSupport {
 		String exportPath = DataExport.exportCSV(fileName, ex.result, _db.fieldNames);
         DataExport.downloadFileByHttp(response, exportPath);
 
-        DMUtil.outputAccessLog("record-" + recordId, _db.recordName, "exportAsCSV", requestMap, start);
+        AccessLogRecorder.outputAccessLog("record-" + recordId, _db.recordName, "exportAsCSV", requestMap, start);
     }
 	
     @RequestMapping(value = "/{recordId}", method = RequestMethod.POST)
@@ -268,7 +288,7 @@ public class _Recorder extends BaseActionSupport {
     	
     	// 检查用户对当前记录是否有编辑权限，防止篡改别人创建的记录
 		if( !checkPermission(recordId, Record.OPERATION_EDATA) && !checkPermission(recordId, Record.OPERATION_CDATA) ) {
-			throw new BusinessException("您对此录入表没有维护权限");
+			throw new BusinessException(EX.DM_12);
 		}
     	
 		getDB(recordId).updateBatch(ids, field, value);
@@ -325,9 +345,10 @@ public class _Recorder extends BaseActionSupport {
      */
     @RequestMapping(value = "/cud/{recordId}", method = RequestMethod.POST)
     @ResponseBody
-    public Object cudBatch(HttpServletRequest request, @PathVariable("recordId") Long recordId, String csv) {
+    public Object cudBatch(HttpServletRequest request, @PathVariable("recordId") Long recordId) {
     	
-    	prepareParams(request, recordId);
+    	Map<String, String> requestMap = prepareParams(request, recordId);
+    	String csv = requestMap.get("csv");
     	
     	_Database _db = getDB(recordId, Record.OPERATION_CDATA);
     	
@@ -397,7 +418,7 @@ public class _Recorder extends BaseActionSupport {
 		
 		// 检查用户对当前记录是否有查看权限
 		if( !checkRowVisible(recordId, itemId) ) {
-			throw new BusinessException("您对此记录没有浏览权限");
+			throw new BusinessException(EX.DM_08);
 		}
 		
 		return recordService.getAttachList(recordId, itemId);
@@ -411,7 +432,7 @@ public class _Recorder extends BaseActionSupport {
 		
 		// 检查用户对当前记录是否有查看权限
 		if( !checkRowVisible(recordId, itemId) ) {
-			throw new BusinessException("您对此记录没有浏览权限");
+			throw new BusinessException(EX.DM_08);
 		}
 		
 		List<?> list = recordService.getAttachList(recordId, itemId);
@@ -425,7 +446,7 @@ public class _Recorder extends BaseActionSupport {
 		
 		RecordAttach attach = recordService.getAttach(id);
 		if(attach == null) {
-			throw new BusinessException("该附件不存在，可能已被删除!");
+			throw new BusinessException(EX.DM_06);
 		}
 		
 		// 检查用户对当前附件所属记录是否有编辑权限
@@ -443,12 +464,12 @@ public class _Recorder extends BaseActionSupport {
 		
 		RecordAttach attach = recordService.getAttach(id);
 		if(attach == null) {
-			throw new BusinessException("该附件不存在，可能已被删除!");
+			throw new BusinessException(EX.DM_06);
 		}
 		
 		// 检查用户对当前附件所属记录是否有查看权限
 		if( !checkRowVisible(attach.getRecordId(), attach.getItemId()) ) {
-			throw new BusinessException("您对此附件没有查看权限");
+			throw new BusinessException(EX.DM_07);
 		} 
 		
 		FileHelper.downloadFile(response, attach.getAttachPath(), attach.getName());
@@ -462,9 +483,7 @@ public class _Recorder extends BaseActionSupport {
 		
 		PermissionHelper helper = PermissionHelper.getInstance();
 		String permissionTable = RecordPermission.class.getName();
-		List<String> permissions = helper.getOperationsByResource(recordId, permissionTable, RecordResource.class);
-		
-		return permissions.contains( permitOption );
+		return helper.checkPermission(recordId, permissionTable, RecordResource.class, permitOption);
 	}
 	
 	/**
@@ -484,7 +503,7 @@ public class _Recorder extends BaseActionSupport {
 		}
 		
 		if(!flag) {
-			throw new BusinessException("您对此数据记录【" +itemId+ "】没有维护权限，无法修改或删除。");
+			throw new BusinessException(EX.parse(EX.DM_05, itemId));
 		}
 	}
 	

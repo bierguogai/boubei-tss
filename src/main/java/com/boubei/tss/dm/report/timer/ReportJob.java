@@ -13,10 +13,10 @@ import javax.mail.internet.MimeUtility;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
-import com.boubei.tss.dm.DMUtil;
-import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
-import com.boubei.tss.dm.data.util.DataExport;
+import com.boubei.tss.dm.DataExport;
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.report.ReportService;
+import com.boubei.tss.dm.report.log.AccessLogRecorder;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.modules.timer.AbstractJob;
@@ -143,7 +143,7 @@ public class ReportJob extends AbstractJob {
 		Map<String, String> paramsMap = rr.reportParams.get(index);
 		long start = System.currentTimeMillis();
 		SQLExcutor ex = reportService.queryReport(reportId, paramsMap, 0, 10*10000, start);
-		DMUtil.outputAccessLog(reportService, reportId, "showAsMail", paramsMap, start); // 记录日志
+		AccessLogRecorder.outputAccessLog(reportService, reportId, "showAsMail", paramsMap, start); // 记录日志
 		
 		String url = "/tss";
 		try {

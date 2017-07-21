@@ -1,4 +1,4 @@
-package com.boubei.tss.dm.record.ddl;
+package com.boubei.tss.dm.record;
 
 import java.util.Date;
 

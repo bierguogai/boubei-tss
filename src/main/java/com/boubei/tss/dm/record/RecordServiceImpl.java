@@ -6,10 +6,14 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.boubei.tss.dm.record.ddl._Database;
+import com.boubei.tss.EX;
+import com.boubei.tss.dm.ddl._Database;
 import com.boubei.tss.dm.record.file.RecordAttach;
+import com.boubei.tss.dm.record.permission.RecordPermission;
+import com.boubei.tss.dm.record.permission.RecordResource;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.modules.param.ParamConstants;
+import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.util.EasyUtils;
 
 @Service("RecordService")
@@ -23,19 +27,27 @@ public class RecordServiceImpl implements RecordService {
 	public Record getRecord(Long id) {
 		Record record = recordDao.getEntity(id);
 		if(record == null) {
-			throw new BusinessException("ID=" + id + "的录入表不存在。");
+			throw new BusinessException(EX.parse(EX.DM_13, id));
 		}
         recordDao.evict(record);
         return record;
 	}
 	
-	public Long getRecordID(String recordName) {
-		String hql = "select o.id from Record o where o.name = ? and type = 1 order by o.decode";
-		List<?> list = recordDao.getEntities(hql, recordName); 
-		if(EasyUtils.isNullOrEmpty(list)) {
-			throw new BusinessException("没有找到名为【" +recordName+ "】的录入表");
+	public Long getRecordID(String recordName, int type) {
+		String hql = "select o.id from Record o where o.name = ? and type = ? order by o.id desc"; // 如有重名取最新一个
+		List<?> list = recordDao.getEntities(hql, recordName, type); 
+		for(Object id : list) {
+			Long recordId = EasyUtils.obj2Long(id);
+			
+			PermissionHelper helper = PermissionHelper.getInstance();
+			String permissionTable = RecordPermission.class.getName();
+			if( helper.checkPermission(recordId, permissionTable, RecordResource.class, 
+					Record.OPERATION_CDATA, Record.OPERATION_VDATA, Record.OPERATION_EDATA) ) {
+				return recordId;
+			}
 		}
-		return (Long) list.get(0);
+		
+		throw new BusinessException(EX.parse(EX.DM_14, recordName));
 	}
 	
 	public _Database getDB(Long recordId) {
@@ -64,37 +76,35 @@ public class RecordServiceImpl implements RecordService {
 		return recordDao.getChildrenById(recordId);
 	}
 
-	public Record saveRecord(Record record) {
-		if( EasyUtils.isNullOrEmpty(record.getTable()) ) {
-			record.setTable("dm_rc_" + Math.abs(record.getName().hashCode()));
-		}
-		
-		if ( record.getId() == null ) {
-            record.setSeqNo(recordDao.getNextSeqNo(record.getParentId()));
-            recordDao.create(record);
-            
-            if(Record.TYPE1 == record.getType() && !record.inSysTable() ) {
-            	_Database _db = _Database.getDB(record);
-            	_db.createTable();
-            }
+	public Record createRecord(Record record) {
+        record.setSeqNo(recordDao.getNextSeqNo(record.getParentId()));
+        recordDao.create(record);
+        
+        if(Record.TYPE1 == record.getType() && !record.inSysTable() ) {
+        	_Database _db = _Database.getDB(record);
+        	_db.createTable();
         }
-        else {
-        	Record _old = recordDao.getEntity(record.getId());
-        	recordDao.evict(_old);
-        	
-        	String oldDatasource = _old.getDatasource();
-        	_old.setDatasource(record.getDatasource());
-			_Database _db = _Database.getDB(_old); // 数据库类型从MySQL变成了Oracle，这里获取到的将是_Oracle
-			_db.datasource = oldDatasource;
-			
-        	recordDao.refreshEntity(record);
-        	
-        	if(Record.TYPE1 == record.getType()) {
-        		_db.updateTable(record);
-        	}
-        }
- 
+
         return record;
+	}
+	
+	public void updateRecord(Record record) {
+		if(Record.TYPE0 == record.getType()) { // 分组
+			recordDao.refreshEntity(record);
+			return;
+    	}
+		
+    	Record _old = recordDao.getEntity(record.getId());
+    	recordDao.evict(_old);
+    	
+    	String oldDatasource = _old.getDatasource();
+    	_old.setDatasource(record.getDatasource());
+		_Database _db = _Database.getDB(_old); // eg：数据库类型从MySQL变成了Oracle，这里获取到的将是_Oracle
+		_db.datasource = oldDatasource;
+		
+    	recordDao.refreshEntity(record);
+    	
+    	_db.updateTable(record);
 	}
 
 	public Record delete(Long id) {

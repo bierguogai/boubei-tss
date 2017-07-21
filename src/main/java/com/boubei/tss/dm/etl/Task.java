@@ -12,7 +12,7 @@ import javax.persistence.Lob;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
-import com.boubei.tss.dm.record.ddl.AbstractRecordTable;
+import com.boubei.tss.dm.record.AbstractRecordTable;
 
 /**
  * 1、report --> record   WashDataJob
@@ -24,6 +24,9 @@ import com.boubei.tss.dm.record.ddl.AbstractRecordTable;
 @Table(name = "dm_etl_task")
 @SequenceGenerator(name = "task_sequence", sequenceName = "task_sequence", initialValue = 1, allocationSize = 10)
 public class Task extends AbstractRecordTable {
+	
+	public static String STATUS_ON  = "opened"; 
+	public static String STATUS_OFF = "closed";
 	
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "task_sequence")
@@ -63,7 +66,7 @@ public class Task extends AbstractRecordTable {
 	private Date startDay;
 	
 	// 重复抽取最近X日内的数据，这几日的数据可能上一日的抽取又有了新的变化
-	private Integer repeatDays;
+	private Integer repeatDays = 0;
 	
 	// 重抽数据前先执行这个SQL | ByID ETL时用以获取已有数据的最大ID
 	private String preRepeatSQL;

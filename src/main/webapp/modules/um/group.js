@@ -1,3 +1,5 @@
+// 组移动只能在同域下移动、新增一个整枝更新组域的功能
+
     /* 后台响应数据节点名称 */
     XML_MAIN_TREE = "GroupTree";
     XML_USER_LIST = "SourceList";
@@ -109,8 +111,15 @@
         return ("-7"==id );
     }
     
-    function editable() {
-        return !isTreeRoot() && getTreeNodeId() > 0 && getOperation("2");
+    function editable(includeRoot) {
+        var isRoot = false, 
+            treeNodeID = getTreeNodeId();
+
+        if(!includeRoot) {
+            var rootList = $.T("tree").rootList;
+            isRoot = rootList[0].id == treeNodeID;
+        }
+        return !isTreeRoot() && treeNodeID > 0 && getOperation("2") && !isRoot;
     }
 
     function initTreeMenu(){
@@ -131,7 +140,7 @@
             label:"编辑",
             callback:editGroupInfo,
             icon:ICON + "edit.gif",
-            visible:function(){return editable();}
+            visible:function(){return editable(true);}
         }
         var item4 = {
             label:"删除",
@@ -147,7 +156,7 @@
         var item7 = {
             label:"新建用户",
             callback:addNewUser,
-            visible:function(){ return !isTreeRoot() && isMainGroup() && editable(); }
+            visible:function(){ return !isTreeRoot() && isMainGroup() && editable(true); }
         }
         var item8 = {
             label:"浏览用户",
@@ -171,7 +180,7 @@
         var item12 = {
             label:"辅助功能",
             callback:null,
-            visible:function() { return isMainGroup() && editable(); }
+            visible:function() { return isMainGroup() && editable(true); }
         }
         var subitem12_1 = {
             label:"初始化密码...",
@@ -286,8 +295,14 @@
             var groupTreeNode = this.getNodeValue(XML_MAIN_TREE);
             $.cache.XmlDatas[CACHE_MAIN_TREE] = groupTreeNode;
             var tree = $.T("tree", groupTreeNode);
-
-            showUserList(defaultOpenId || -7);
+            var rootList = tree.rootList;
+            if(rootList.length) {
+                var rootId = rootList[0].id;
+                if(rootId == '-2') {
+                    rootId = -7;
+                }
+                showUserList(defaultOpenId || rootId);
+            }
 
             tree.onTreeNodeActived = function(ev){ onTreeNodeActived(ev); }
             tree.onTreeNodeDoubleClick = function(ev){
@@ -590,7 +605,8 @@
             var user2RoleGridNode = this.getNodeValue(XML_USER_TO_ROLE_EXIST_TREE);
             
             // 过滤掉 系统级用户组 和 角色组
-            disableTreeNodes(user2GroupTreeNode, "treeNode[id^='-']");
+            disableTreeNodes(user2GroupTreeNode, "treeNode[id='-2']");
+            disableTreeNodes(user2GroupTreeNode, "treeNode[id='-3']");
             disableTreeNodes(user2RoleTreeNode,  "treeNode[isGroup='1']");
  
             $.cache.XmlDatas[userID + "." + XML_USER_INFO] = userInfoNode;

@@ -11,6 +11,7 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
+import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.framework.persistence.IEntity;
 import com.boubei.tss.util.EasyUtils;
 
@@ -96,7 +97,7 @@ public class TaskLog implements IEntity {
 	}
 
 	public void setDetail(String detail) {
-		this.detail = detail;
+		this.detail = DMUtil.preCheatVal(detail);
 	}
 
 	public String getDataDay() {

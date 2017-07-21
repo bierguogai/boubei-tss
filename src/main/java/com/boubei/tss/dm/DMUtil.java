@@ -10,33 +10,24 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 
+import com.boubei.tss.EX;
 import com.boubei.tss.PX;
-import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
-import com.boubei.tss.dm.log.AccessLog;
-import com.boubei.tss.dm.log.AccessLogRecorder;
-import com.boubei.tss.dm.report.Report;
-import com.boubei.tss.dm.report.ReportService;
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.report.ScriptParser;
 import com.boubei.tss.dm.report.ScriptParserFactory;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Environment;
-import com.boubei.tss.framework.sso.IOperator;
-import com.boubei.tss.framework.sso.IdentityCard;
-import com.boubei.tss.framework.sso.TokenUtil;
 import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.web.display.xform.XFormEncoder;
 import com.boubei.tss.modules.param.Param;
-import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.param.ParamManager;
-import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.permission.IResource;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.DateUtil;
@@ -85,14 +76,12 @@ public class DMUtil {
 	public static boolean checkAPIToken(IResource r, String uName, String uToken) {
 		ILoginService loginService = (ILoginService) Global.getBean("LoginService");
 		
+		// 分别按资源的ID及名称 + uName 搜索一遍令牌
 		List<String> tokenList = loginService.searchTokes(uName, r.getId().toString(), r.getResourceType()); 
 		tokenList.addAll( loginService.searchTokes(uName, r.getName(), r.getResourceType()) );
- 
+		
     	if( tokenList.contains(uToken) ) {
-    		IOperator user = loginService.getOperatorDTOByLoginName(uName);
-    		String token = TokenUtil.createToken(uToken, user.getId());
-    		IdentityCard card = new IdentityCard(token, user);
-    		Context.initIdentityInfo(card); 
+    		loginService.mockLogin(uName, uToken);
     		return true;
     	}
     	return false;
@@ -101,13 +90,15 @@ public class DMUtil {
 	// 注：通过tssJS.ajax能自动过滤params里的空值，jQuery发送的ajax请求则不能
     public static Map<String, String> getRequestMap(HttpServletRequest request, boolean isGet) {
     	Map<String, String[]> parameterMap = request.getParameterMap();
-    	Map<String, String> requestMap = new LinkedHashMap<String, String>();
     	boolean isJetty = "org.eclipse.jetty.server.Request".equals( request.getClass().getName() );
+    	boolean hasUToken = parameterMap.containsKey("uToken");
+    	
+    	Map<String, String> requestMap = new LinkedHashMap<String, String>();
     	for(String key : parameterMap.keySet()) {
     		String[] values = parameterMap.get(key);
 			String value = null;
 			
-			if(isGet && !isJetty ) { // tomcat7, (not jetty)
+			if( (isGet || hasUToken ) && !isJetty ) { // (tomcat7 or httpClientCall) and (not jetty) 
 				try {
 					value = new String(values[0].getBytes("ISO-8859-1"), "UTF-8"); 
 				} catch (UnsupportedEncodingException e) {
@@ -148,6 +139,31 @@ public class DMUtil {
   		return new String[] { value };
 	}
 	
+    /** 为逗号分隔的每一个值加上单引号 */
+    public static String insertSingleQuotes(String param) {
+        if (param == null) return null;
+        
+        // 支持列表in查询，分隔符支持中英文逗号、中英文分号、空格、顿号
+        param = param.replaceAll("，", ",").replaceAll(" ", ",").replaceAll("、", ",");
+        if (param.contains(",")) {
+            return "\'" + param.replaceAll(",", "\',\'") + "\'";
+
+        } else {
+            return "\'" + param + "\'";
+        }
+    }
+    
+    /** 导出数据到CSV文件中时，需要对字段值里包含的特殊符号进行处理，以便可以在Excel中正常打开 */
+    public static String preCheatVal(Object value) {
+    	if(value == null) {
+			value = "";
+		}
+		String valueS = value.toString().replaceAll(",", "，"); // 导出时字段含英文逗号会错列
+		valueS = valueS.replaceAll("\r\n", " ").replaceAll("\n", " "); // 替换掉换行符
+		valueS = valueS.replaceAll("\"", ""); // 替换掉英文双引号
+		return valueS; 
+    }
+	
   	public static Object preTreatValue(String value, Object type) {
   		if(type == null || value == null) {
   			return value;
@@ -169,7 +185,7 @@ public class DMUtil {
   			
   			Date dateObj = DateUtil.parse(value);
   			if(dateObj == null) {
-  				throw new BusinessException("日期【" + value + "】格式有误，请检查。");
+  				throw new BusinessException( EX.parse(EX.DM_01, value) );
   			} 
   			return new Timestamp(dateObj.getTime());
   		}
@@ -196,6 +212,9 @@ public class DMUtil {
       	fmDataMap.put(DMConstants.USER_ID, EasyUtils.obj2String(Environment.getUserId()));
       	fmDataMap.put(DMConstants.USER_CODE, Environment.getUserCode());
 		fmDataMap.put(DMConstants.FROM_USER_ID, Environment.getUserInfo(DMConstants.FROM_USER_ID));
+		
+		// 加入域账号过滤录入表条件的标准片段
+		fmDataMap.put(DMConstants.FILTER_BY_DOMAIN, "<#if USERS_OF_DOAMIN??> and creator in (${USERS_OF_DOAMIN}) </#if>");
 		
 		/* 往dataMap里放入Session里的用户权限、角色、组织等信息，作为宏代码解析。 */
     	try {
@@ -272,53 +291,7 @@ public class DMUtil {
 		 * */
 	}
 	
-	/**
-	 * 记录下报表的访问信息。
-	 */
-	public static void outputAccessLog(ReportService reportService, Long reportId, 
-			String methodName, Map<String, String> requestMap, long start) {
-		
-		Report report = reportService.getReport(reportId);
-		String reportName = report.getName();
-		
-		// 过滤掉定时刷新类型的报表
-		boolean ignoreLog = ParamConstants.FALSE.equals(report.getNeedLog());
-		if( !ignoreLog ) {
-			outputAccessLog("Report-"+reportId, reportName, methodName, requestMap, start);
-		}
-	}
-	
-	public static void outputAccessLog(String cnName, String name, 
-			String methodName, Map<String, String> requestMap, long start) {
-		
-		String params = "";
-		for(Entry<String, String> entry : requestMap.entrySet()) {
-			params += entry.getKey() + "=" + entry.getValue() + ", ";
-		}
-        params = cutParams(params);
-		
-		// 方法的访问日志记录成败不影响方法的正常访问，所以对记录日志过程中各种可能异常进行try catch
-        try {
-            AccessLog log = new AccessLog();
-            log.setClassName(cnName);
-    		log.setMethodName( methodName );
-    		log.setMethodCnName( name );
-            log.setAccessTime( new Date(start) );
-            log.setRunningTime( System.currentTimeMillis() - start );
-            log.setParams(params);
-            
-            // 记录访问人，没有则记为匿名访问
-            Long userId = (Long) EasyUtils.checkNull(Environment.getUserId(), UMConstants.ANONYMOUS_USER_ID);
-			log.setUserId(userId);
-			log.setIp( Environment.getClientIp() );
-
-            AccessLogRecorder.getInstanse().output(log);
-        } 
-        catch(Exception e) {
-        	log.error("记录报表/录入【" + name + "." + methodName + "】访问日志时出错：" + e.getMessage());
-        }
-	}
-	
+	// 当参数值大于500个字符时，截断参数
 	public static String cutParams(String params) {
 		if (params != null && params.length() > 500) {
             params = params.substring(0, 500);

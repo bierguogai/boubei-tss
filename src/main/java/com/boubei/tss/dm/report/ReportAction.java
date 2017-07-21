@@ -20,10 +20,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.boubei.tss.EX;
 import com.boubei.tss.PX;
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DMUtil;
-import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.report.permission.ReportPermission;
 import com.boubei.tss.dm.report.permission.ReportResource;
 import com.boubei.tss.dm.report.timer.ReportJob;
@@ -257,7 +258,7 @@ public class ReportAction extends BaseActionSupport {
     public void getAllReportGroups(HttpServletResponse response) {
         List<?> list = reportService.getAllReportGroups();
         TreeEncoder treeEncoder = new TreeEncoder(list, new StrictLevelTreeParser(Report.DEFAULT_PARENT_ID));
-        treeEncoder.setNeedRootNode(true);
+        treeEncoder.setNeedRootNode(false);
         print("SourceTree", treeEncoder);
     }
     
@@ -284,6 +285,7 @@ public class ReportAction extends BaseActionSupport {
             Long parentId = parentIdValue == null ? Report.DEFAULT_PARENT_ID : EasyUtils.obj2Long(parentIdValue);
             map.put("parentId", parentId);
             map.put("type", type);
+            map.put("needLog", ParamConstants.TRUE);
             xformEncoder = new XFormEncoder(uri, map);
         } 
         else {
@@ -302,7 +304,12 @@ public class ReportAction extends BaseActionSupport {
     @RequestMapping(method = RequestMethod.POST)
     public void saveReport(HttpServletResponse response, Report report) {
         boolean isnew = (null == report.getId());
-        reportService.saveReport(report);
+        if(isnew) {
+        	reportService.createReport(report);
+        } else {
+        	reportService.updateReport(report);
+        }
+        
         doAfterSave(isnew, report, "SourceTree");
     }
     
@@ -337,10 +344,10 @@ public class ReportAction extends BaseActionSupport {
     public void subscribe(HttpServletResponse response, @PathVariable("id") Long id, @PathVariable("state") int state) {
         Report report = reportService.getReport(id);
         if( EasyUtils.isNullOrEmpty(report.getScript()) ) {
-        	throw new BusinessException("此报表没有包含任何查询脚本，无法被订阅。");
+        	throw new BusinessException(EX.DM_19);
         }
         report.setMailable(state);
-        reportService.saveReport(report);
+        reportService.updateReport(report);
         printSuccessMessage();
     }
  
@@ -402,7 +409,7 @@ public class ReportAction extends BaseActionSupport {
 			
 			// 可推送的报表自动设置为允许订阅
 			report.setMailable(ParamConstants.TRUE);
-	        reportService.saveReport(report);
+	        reportService.updateReport(report);
 		}
 		else {
 			jobParamItem.setValue(value);

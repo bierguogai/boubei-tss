@@ -1,4 +1,4 @@
-package com.boubei.tss.dm.record.ddl;
+package com.boubei.tss.dm.ddl;
 
 import com.boubei.tss.dm.record.Record;
 

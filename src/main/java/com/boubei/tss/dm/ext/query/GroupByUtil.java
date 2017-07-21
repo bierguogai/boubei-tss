@@ -1,4 +1,4 @@
-package com.boubei.tss.dm.data.util;
+package com.boubei.tss.dm.ext.query;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.boubei.tss.EX;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.EasyUtils;
@@ -25,7 +26,7 @@ public class GroupByUtil {
             return new HashMap<String, Object>();
         }
     	if(dimensions == null || dimensions.length < 1) {
-    		throw new BusinessException("参数个数不对。" + dimensions);
+    		throw new BusinessException(EX.DM_03 + dimensions);
     	}
     	
     	Map<String, Object> resultMap = new HashMap<String, Object>();
@@ -69,7 +70,7 @@ public class GroupByUtil {
             return new HashMap<String, Object>();
         }
     	if(dimensions == null || dimensions.length < 1) {
-    		throw new BusinessException("参数个数不对。" + dimensions);
+    		throw new BusinessException(EX.DM_03 + dimensions);
     	}
     	
     	Map<String, Object> resultMap = new HashMap<String, Object>();

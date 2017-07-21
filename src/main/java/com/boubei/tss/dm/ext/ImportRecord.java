@@ -76,12 +76,10 @@ public class ImportRecord implements AfterUpload {
                 record.setTable( table.substring(table.indexOf(".") + 1) ); // 去掉表空间|schema
             }
             
-            String remark = "导入前原ID = " + oldId + " .\n " + EasyUtils.obj2String(record.getRemark());
-            record.setRemark(remark);
             Integer status = record.getDisabled();
-            recordService.saveRecord(record);
+            recordService.createRecord(record);
             record.setDisabled(status);
-            recordService.saveRecord(record);
+            recordService.createRecord(record);
             
             idMapping.put(oldId, record.getId());
         }

@@ -1,4 +1,4 @@
-package com.boubei.tss.dm.data.sqlquery;
+package com.boubei.tss.dm.ext.query;
 
 import java.io.Serializable;
 

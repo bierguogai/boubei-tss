@@ -9,6 +9,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
+import com.boubei.tss.EX;
 import com.boubei.tss.PX;
 import com.boubei.tss.cache.AbstractPool;
 import com.boubei.tss.cache.Cacheable;
@@ -64,10 +65,10 @@ public class QueryCacheInterceptor implements MethodInterceptor {
 			if( !IS_BUSY ) { // 第一次出现时，已经紧张了无需提醒
 				IS_BUSY = true;
 				String qCacheInfo = qCache.getUsing().toString();
-				log.info( "当前应用服务器资源紧张：" + qCacheInfo);
-				MailUtil.send("当前应用服务器资源紧张，请速登陆系统查看。", qCacheInfo);
+				log.info( EX.CACHE_1 + ": " + qCacheInfo);
+				MailUtil.send(EX.CACHE_1, qCacheInfo);
 			}
-			throw new BusinessException("当前应用服务器资源紧张，请稍后再查询。" + X + ">" + V);
+			throw new BusinessException(EX.CACHE_1 + X + ">" + V);
 		} 
 		else {
 			IS_BUSY = false;
@@ -80,7 +81,7 @@ public class QueryCacheInterceptor implements MethodInterceptor {
 			Object limitArg = (args.length > limit ? args[limit] : "" );
 			int count = countService(qCache, targetMethod.getName(), limitArg);
 			if(count > V*0.25) {
-				throw new BusinessException("当前您查询的数据服务[" +limitArg+ "]响应缓慢，前面还有" +count+ "个人在等待，请稍后再查询。");
+				throw new BusinessException(EX.parse(EX.CACHE_4, limitArg, count));
 			}
 		}
         
@@ -94,7 +95,7 @@ public class QueryCacheInterceptor implements MethodInterceptor {
 		if (qcItem != null) {
 			String _visitors = EasyUtils.obj2String(qcItem.getValue());
 			if( Arrays.asList( _visitors.split(",") ).contains(visitor) ) {
-				throw new BusinessException("您当前点击的查询正在处理中，请您耐心等待，不要反复查询。" + Arrays.asList(args));
+				throw new BusinessException(EX.CACHE_2 + Arrays.asList(args));
 			}
 			
 			qcItem.update( _visitors + "," + visitor ); // 记录是哪几个人、及第几个到访
@@ -108,7 +109,7 @@ public class QueryCacheInterceptor implements MethodInterceptor {
 				
 				// 超过10分钟，说明执行非常缓慢，则不再继续等待，同时抛错提示用户。
 				if(System.currentTimeMillis() - start > MAX_QUERY_TIME) {
-					throw new BusinessException("本次请求执行缓慢，请稍后再查询。");
+					throw new BusinessException(EX.CACHE_3);
 				}
 			}
 			

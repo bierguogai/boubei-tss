@@ -1,4 +1,4 @@
-package com.boubei.tss.dm.record.ddl;
+package com.boubei.tss.dm.ddl;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -15,11 +15,12 @@ import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.dom4j.Document;
 
+import com.boubei.tss.EX;
 import com.boubei.tss.cache.Cacheable;
 import com.boubei.tss.cache.JCache;
 import com.boubei.tss.cache.Pool;
 import com.boubei.tss.dm.DMUtil;
-import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.record.Record;
 import com.boubei.tss.dm.record.permission.RecordPermission;
 import com.boubei.tss.dm.record.permission.RecordResource;
@@ -111,8 +112,7 @@ public abstract class _Database {
    			return list;
    	    } 
    		catch (Exception e) {  
-   	        String errorMsg = "【" + recordName + "】的参数配置有误，JSON格式存在错误，请检查修正后再保存。具体原因：" + e.getMessage();
-			throw new BusinessException(errorMsg);
+			throw new BusinessException( EX.parse(EX.DM_15, recordName, e.getMessage()) );
    	    } 
 	}
 	
@@ -260,7 +260,7 @@ public abstract class _Database {
 	public void update(Long id, Map<String, String> valuesMap) {
 		Map<String, Object> old = get(id);
 		if( old == null ) {
-			throw new BusinessException("修改出错，该记录不存在，可能已经被删除。");
+			throw new BusinessException(EX.DM_16);
 		}
 		
 		// 如果_version值不为空，则用其实现乐观锁控制
@@ -269,7 +269,7 @@ public abstract class _Database {
 			int version1 = EasyUtils.obj2Int(_version);
 			int version2 = EasyUtils.obj2Int(old.get("version"));
 			if( version1 < version2 ) {
-				throw new BusinessException("修改异常，该记录在你修改期间已经被其它人修改过了，请关闭后刷新列表，再重新进行修改。");
+				throw new BusinessException(EX.DM_17);
 			}
 		}
 		
@@ -425,8 +425,11 @@ public abstract class _Database {
 			}
 		}
 		
+		/* 
+		 * 如果用户的域不为空，则只筛选出该域下用户创建的记录
+		 * 只有单机部署的BI允许无域（百世快运这类）；SAAS部署必须每个组都要有域，每个人必属于某个域。Admin不属于任何域
+		 */
 		String _customizeTJ = (String) EasyUtils.checkNull(this.customizeTJ, " 1=1 ");
-		// 如果用户的域不为空，则只筛选出该域下用户创建的记录
 		_customizeTJ += " <#if USERS_OF_DOAMIN??> and creator in (${USERS_OF_DOAMIN}) </#if> ";
 		condition += " and ( " + DMUtil.customizeParse(_customizeTJ + " or -1 = ${userId} ") + " ) ";
 		
@@ -497,11 +500,13 @@ public abstract class _Database {
         
         // 判断是否显示这5列
         if( (this.customizeTJ+"").indexOf("showCUV") >= 0 ) {
-        	sb.append("<column name=\"createtime\"  caption=\"创建时间\" sortable=\"true\"/>").append("\n");
-            sb.append("<column name=\"creator\"  caption=\"创建人\" sortable=\"true\"/>").append("\n");
-            sb.append("<column name=\"updatetime\"  caption=\"更新时间\" sortable=\"true\"/>").append("\n");
-            sb.append("<column name=\"updator\"  caption=\"更新人\" sortable=\"true\"/>").append("\n");
-            sb.append("<column name=\"version\"  caption=\"更新次数\" />").append("\n");
+        	sb.append("<column name=\"createtime\"  caption=\"创建时间\" sortable=\"true\" width=\"60px\"/>").append("\n");
+            sb.append("<column name=\"creator\"  caption=\"创建人\" sortable=\"true\" width=\"40px\"/>").append("\n");
+            sb.append("<column name=\"updatetime\"  caption=\"更新时间\" sortable=\"true\" width=\"60px\"/>").append("\n");
+            sb.append("<column name=\"updator\"  caption=\"更新人\" sortable=\"true\" width=\"40px\"/>").append("\n");
+            sb.append("<column name=\"version\"  caption=\"更新次数\" width=\"30px\"/>").append("\n");
+        } else {
+        	sb.append("<column name=\"creator\" display=\"none\"/>").append("\n");
         }
         
         // ID列默认隐藏
@@ -524,7 +529,7 @@ public abstract class _Database {
 		
 		Pool connpool = JCache.getInstance().getPool(datasource);
 		if(connpool == null) {
-			throw new BusinessException("数据源【" + datasource + "】不存在");
+			throw new BusinessException( EX.parse(EX.DM_02, datasource) );
 		}
         Cacheable connItem = connpool.checkOut(0);
         Connection conn = (Connection) connItem.getValue();

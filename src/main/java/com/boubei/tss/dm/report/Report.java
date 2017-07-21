@@ -197,9 +197,7 @@ public class Report extends OperateInfo implements IXForm, IDecodable, IResource
         if( this.id.longValue() < 0 || (this.levelNo < 2 && isActive()) ) {
         	map.put("_open", "true");
         }
-        if( EasyUtils.obj2String(this.remark).indexOf("open") >= 0 ) {
-        	map.put("_open", "true");
-        }
+        map.put("_open", String.valueOf( (this.remark+"").indexOf("open") >= 0) );
  
         return map;
     }

@@ -1289,11 +1289,11 @@
         });
     };
 
-    $.post = function(url, params, callback) {
+    $.post = function(url, params, callback, method) {
         $.ajax({
             url : url,
             type : "json",
-            method : "POST",
+            method : method || "POST",
             params : params,
             waiting : true, 
             ondata : function() { 

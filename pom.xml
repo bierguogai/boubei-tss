@@ -292,7 +292,7 @@
 				<db.username>tssbiu1</db.username>
 				<db.password>www.boubei.com</db.password>
 				<db.url>boubei.com:3306/xbi</db.url>
-				<tomcat.url>127.0.0.1:9090</tomcat.url>
+				<tomcat.url>www.boubei.com:9090</tomcat.url>
 			</properties>
 		</profile>
 		
@@ -308,7 +308,7 @@
 				<log.level>info</log.level>
 				<db.username>tssbiu1</db.username>
 				<db.password>www.boubei.com</db.password>
-				<db.url>boubei.com:3306/tss_init</db.url>
+				<db.url>boubei.com:3306/ebi</db.url>
 				<tomcat.url>127.0.0.1:9091</tomcat.url>
 			</properties>
 		</profile>

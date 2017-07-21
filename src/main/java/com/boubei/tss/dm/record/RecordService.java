@@ -2,18 +2,19 @@ package com.boubei.tss.dm.record;
 
 import java.util.List;
 
-import com.boubei.tss.dm.record.ddl._Database;
+import com.boubei.tss.dm.ddl._Database;
 import com.boubei.tss.dm.record.file.RecordAttach;
 import com.boubei.tss.modules.log.Logable;
 import com.boubei.tss.um.permission.filter.PermissionFilter4Create;
 import com.boubei.tss.um.permission.filter.PermissionFilter4Sort;
+import com.boubei.tss.um.permission.filter.PermissionFilter4Update;
 import com.boubei.tss.um.permission.filter.PermissionTag;
 
 public interface RecordService {
 
     Record getRecord(Long id);
     
-    Long getRecordID(String recordName);
+    Long getRecordID(String recordName, int type);
     
     _Database getDB(Long recordId);
     
@@ -43,8 +44,15 @@ public interface RecordService {
             resourceType = Record.RESOURCE_TYPE,
             operation = Record.OPERATION_EDIT , 
             filter = PermissionFilter4Create.class)
-    @Logable(operateObject="录入表",  operateInfo="新增/更新了：${args[0]?default(\"\")}")
-    Record saveRecord(Record record);
+    @Logable(operateObject="录入表",  operateInfo="新增了：${args[0]?default(\"\")}")
+    Record createRecord(Record record);
+    
+    @PermissionTag(
+            resourceType = Record.RESOURCE_TYPE,
+            operation = Record.OPERATION_EDIT , 
+            filter = PermissionFilter4Update.class)
+    @Logable(operateObject="录入表",  operateInfo="修改了：${args[0]?default(\"\")}")
+    void updateRecord(Record record);
     
     @Logable(operateObject="录入表", operateInfo="删除了：${returnVal?default(\"\")}")
     Record delete(Long id);

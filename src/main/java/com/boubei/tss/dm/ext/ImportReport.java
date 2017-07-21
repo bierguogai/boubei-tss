@@ -71,12 +71,11 @@ public class ImportReport implements AfterUpload {
             	report.setDatasource(dataSource);
             }
             
-            String remark = "导入前原ID = " + oldId + " .\n " +  EasyUtils.obj2String(report.getRemark());
-            report.setRemark(remark);
             Integer status = report.getDisabled();
-            reportService.saveReport(report);
-            report.setDisabled(status);
-            reportService.saveReport(report);
+            reportService.createReport(report);
+            
+            report.setDisabled(status); // 因默认创建分组都是停用状态，但导入分组不需要，保留原来状态
+            reportService.updateReport(report);
             
             idMapping.put(oldId, report.getId());
         }

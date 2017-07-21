@@ -1,7 +1,7 @@
 package com.boubei.tss.dm.ext;
 
 import com.boubei.tss.dm.DMConstants;
-import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.modules.timer.AbstractJob;
 import com.boubei.tss.um.service.IUserService;

@@ -8,7 +8,8 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
+import com.boubei.tss.EX;
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.framework.SecurityUtil;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.sso.Environment;
@@ -31,8 +32,7 @@ public class ReportServiceImpl implements ReportService {
         }
         
         if(report == null) {
-        	String errMsg = "数据服务【" + id + "】无法访问，可能已被删除。";
-			throw new BusinessException(errMsg);
+			throw new BusinessException( EX.parse(EX.DM_18, id) );
         }
         reportDao.evict(report);
         return report;
@@ -48,9 +48,9 @@ public class ReportServiceImpl implements ReportService {
 		return this.getReport(id, auth);
     }
     
-	public Long getReportId(String fname, Object idOrName) {
-		String hql = "select o.id from Report o where o." +fname+ " = ? and type = 1 order by o.decode";
-		List<?> list = reportDao.getEntities(hql, idOrName); 
+	public Long getReportId(String fname, Object idOrName, int type) {
+		String hql = "select o.id from Report o where o." +fname+ " = ? and type = ? order by o.decode";
+		List<?> list = reportDao.getEntities(hql, idOrName, type); 
 		if(EasyUtils.isNullOrEmpty(list)) {
 			return null;
 		}
@@ -72,21 +72,21 @@ public class ReportServiceImpl implements ReportService {
         return (List<Report>) reportDao.getEntities("from Report o where o.type = ? order by o.decode", Report.TYPE0);
     }
 
-    public Report saveReport(Report report) {
-        if ( report.getId() == null ) {
-            Long parentId = report.getParentId();
-            Report parent = reportDao.getEntity(parentId);
-            if( (parent == null || parent.isActive() ) && report.isGroup() ) {
-            	report.setDisabled( ParamConstants.TRUE ); // 报表默认为停用，组看父组的状态
-            }
-            
-			report.setSeqNo(reportDao.getNextSeqNo(parentId));
-            reportDao.create(report);
+    public Report createReport(Report report) {
+        Long parentId = report.getParentId();
+        Report parent = reportDao.getEntity(parentId);
+        if( (parent == null || parent.isActive() ) && report.isGroup() ) {
+        	report.setDisabled( ParamConstants.TRUE ); // 报表默认为停用，组看父组的状态
         }
-        else {
-        	reportDao.refreshEntity(report);
-        }
+        
+		report.setSeqNo(reportDao.getNextSeqNo(parentId));
+        reportDao.create(report);
+
         return report;
+    }
+    
+    public void updateReport(Report report) {
+    	reportDao.refreshEntity(report);
     }
     
     public Report delete(Long id) {

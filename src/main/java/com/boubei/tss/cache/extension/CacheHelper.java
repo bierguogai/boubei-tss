@@ -32,6 +32,9 @@ public class CacheHelper {
 		return JCache.getInstance().getPool(CacheLife.NODEAD.toString());
 	}
 	
+	/**
+	 * 按照关键字刷新指定缓存池中的对象
+	 */
 	public static void flushCache(String poolName, String likeKey) {
 		Pool pool = JCache.getInstance().getPool(poolName);
 		Set<Object> keys = pool.listKeys();

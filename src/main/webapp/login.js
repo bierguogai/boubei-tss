@@ -96,10 +96,6 @@ var doLogin = function(accountEl, passwdEl) {
 var indexPage = "tssbi.html";    /* 登录成功后跳转到的页面 */
 
 function gotoIndex(loginName) {
-    if(loginName === 'Admin') {
-        indexPage = 'index.html';
-    }
-
     if(window.parent && window.parent != window.self) {
         window.parent.location.href = indexPage;
     } else {

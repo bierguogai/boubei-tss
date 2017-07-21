@@ -1,4 +1,4 @@
-package com.boubei.tss.dm.data.sqlquery;
+package com.boubei.tss.dm.ext.query;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,7 +31,7 @@ public class SOUtil {
             }
 
             if (key.endsWith("Codes")) {
-                value = insertSingleQuotes(value.toString());
+                value = DMUtil.insertSingleQuotes(value.toString());
             }
             noNullProperties.put(key, value);
 		}
@@ -55,24 +55,6 @@ public class SOUtil {
 		
 		return parametersMap;
 	}
-	
-    /**
-     * 为逗号分隔的每一个值加上单引号
-     */
-    public static String insertSingleQuotes(String param) {
-        if (param == null) {
-            return null;
-        }
-        
-        // 支持列表in查询，分隔符支持中英文逗号、中英文分号、空格、顿号
-        param = param.replaceAll("，", ",").replaceAll(" ", ",").replaceAll("、", ",");
-        if (param.contains(",")) {
-            return "\'" + param.replaceAll(",", "\',\'") + "\'";
-
-        } else {
-            return "\'" + param + "\'";
-        }
-    }
 	
     public static String freemarkerParse(String script, AbstractSO so) {
     	return DMUtil.freemarkerParse(script, SOUtil.getProperties(so));

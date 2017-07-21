@@ -25,6 +25,7 @@ import com.boubei.tss.framework.web.display.tree.StrictLevelTreeParser;
 import com.boubei.tss.framework.web.display.tree.TreeEncoder;
 import com.boubei.tss.framework.web.display.xform.XFormEncoder;
 import com.boubei.tss.framework.web.mvc.BaseActionSupport;
+import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.um.permission.PermissionHelper;
 import com.boubei.tss.util.EasyUtils;
 
@@ -56,14 +57,14 @@ public class RecordAction extends BaseActionSupport {
     public void getAllRecordGroups(HttpServletResponse response) {
         List<?> list = recordService.getAllRecordGroups();
         TreeEncoder treeEncoder = new TreeEncoder(list, new StrictLevelTreeParser(Record.DEFAULT_PARENT_ID));
-        treeEncoder.setNeedRootNode(true);
+        treeEncoder.setNeedRootNode(false);
         print("SourceTree", treeEncoder);
     }
     
 	@RequestMapping(value = "/id", method = RequestMethod.POST)
     @ResponseBody
     public Object getRecordID( String name ) {
-		return recordService.getRecordID(name);
+		return recordService.getRecordID(name, Record.TYPE1);
     }
     
     @RequestMapping(value = "/detail/{type}")
@@ -89,6 +90,9 @@ public class RecordAction extends BaseActionSupport {
             Long parentId = parentIdValue == null ? Record.DEFAULT_PARENT_ID : EasyUtils.obj2Long(parentIdValue);
             map.put("parentId", parentId);
             map.put("type", type);
+            map.put("needLog", ParamConstants.TRUE);
+            map.put("needFile", ParamConstants.TRUE);
+            map.put("batchImp", ParamConstants.TRUE);
             xformEncoder = new XFormEncoder(uri, map);
         } 
         else {
@@ -107,11 +111,15 @@ public class RecordAction extends BaseActionSupport {
     @RequestMapping(method = RequestMethod.POST)
     public void saveRecord(HttpServletResponse response, Record record) {
         boolean isnew = (null == record.getId());
-        recordService.saveRecord(record);
+        if(isnew) {
+        	recordService.createRecord(record);
+        } 
+        else {
+        	recordService.updateRecord(record);
+        	String cacheKey = "_db_record_" + record.getId();
+    		CacheHelper.getLongCache().destroyByKey(cacheKey);
+        }
         
-		String cacheKey = "_db_record_" + record.getId();
-		CacheHelper.getLongCache().destroyByKey(cacheKey);
-		
         doAfterSave(isnew, record, "SourceTree");
     }
     

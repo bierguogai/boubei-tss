@@ -67,7 +67,9 @@ div.bottonBox>button {
     border: 1px solid #95B8E7;
     font-size: 1.3em;
     margin-top: 48px;
+    letter-spacing: 3px;
 }
+#b1_reg, #b2_reg, #b3_reg { width: 30%; }
 
 a:visited { color: #ccc; text-decoration: none; }
 a:hover { color: #999; text-decoration: underline;}
@@ -78,7 +80,7 @@ a { font-size: 13px; color: #ccc; position: absolute; padding-top: 5px; }
 
 #switch, #rswitch 
 { width: 50px; height: 40px; position: absolute; right: 0px; margin: 10px 20px; opacity: .3;  } 
-.tip { padding-top: 10px; color: red; font-size: 13px; }
+h2.tip { padding: 10px 10px 0 10px; color: red; font-size: 13px; }
 
   </style>
 </head>
@@ -99,11 +101,11 @@ a { font-size: 13px; color: #ccc; position: absolute; padding-top: 5px; }
           <input type="password" id="password" placeholder="请输入密码"> 
         </div>
         <div>
-          <a href="#" onclick="forget()" id="a1">忘记密码?</a>
-          <a href="#" onclick="preRegister()" id="a2">没有账号，注册一个</a>
+          <a href="javascript:void(0)" onclick="forget()" id="a1">忘记密码?</a>
+          <a href="javascript:void(0)" onclick="preRegister()" id="a2">没有账号，注册一个</a>
         </div>
         <div class="bottonBox">
-          <button id="bt_login">登 陆 系 统</button>
+          <button id="bt_login">登陆系统</button>
         </div>
         <h3 class="bz">*推荐使用Chrome、FireFox、IE11、Edge浏览器访问本系统</h3>
         <h2 class="tip"></h2>
@@ -126,12 +128,14 @@ a { font-size: 13px; color: #ccc; position: absolute; padding-top: 5px; }
         </div>
         <div>
           <a href="/tss/boubei.com/tss/protocol.html" target="_blank" id="a3">注册即代表同意《卜贝协议》</a>
-          <a href="#" onclick="goLogin()" id="a4">已有账号，立即登录</a>
+          <a href="javascript:void(0)" onclick="goLogin()" id="a4">已有账号，立即登录</a>
         </div>
         <div class="bottonBox">
-          <button id="bt_reg" onclick="register()">注 册</button>
+          <button id="b1_reg" onclick="register(-7)">用户注册</button>
+          <button id="b2_reg" onclick="register(-8)">企业注册</button>
+          <button id="b3_reg" onclick="register(-9)">开发者注册</button>
         </div>
-        <h3 class="bz">*企业用户注册，请输入企业的简称；个人用户直接填姓名或昵称</h3>
+        <h3 class="bz">*企业用户注册，请输入企业简称；个人用户和开发者填姓名或昵称</h3>
         <h2 class="tip"></h2>
     </div>
   </div>
@@ -144,6 +148,10 @@ a { font-size: 13px; color: #ccc; position: absolute; padding-top: 5px; }
 <script src="login.js"></script>
 
 <script type="text/javascript">
+
+  if(document.body.offsetWidth < 768 || $.isMobile ) {
+    location.href = "mobile/login.html";
+  }
 
   setTimeout(goLogin, 300);
 
@@ -198,14 +206,20 @@ a { font-size: 13px; color: #ccc; position: absolute; padding-top: 5px; }
       }  
   }  
 
-  function register() {
+  function register(role) {
     $(".tip").text("");
 
     var params = {};
     params.loginName = $1("rloginName").value,
     params.userName  = $1("ruserName").value,
     params.password  = $1("rpassword").value;
-    params.domain  = params.userName;
+    if(role === -8) {
+      params.domain  = params.userName;
+    }
+    if(role === -9) {
+      // return $.alert("本站暂不支持开发者注册，可在开发环境 http://www.boubei.com:9090/tss 下注册体验");
+      params.isDev  = "true";
+    }
     
     if( !params.loginName ) {
         $.alert("账号不能为空");

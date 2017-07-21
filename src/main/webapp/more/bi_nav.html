@@ -66,15 +66,16 @@ a:hover { text-decoration:underline; }
 
 var report_portlet_url = "../modules/dm/report_portlet.html?leftBar=true&id=",
 	record_portlet_url = "../modules/dm/recorder.html?id=",
-	onlyOpenTitle = "今日一览",
+	onlyOpenTitle = "默认首页",
 	_menus;
 
-var _default = tssJS.Query.get("_default");
+var id = tssJS.Query.get("id"),
+    _default = tssJS.Query.get("_default");
 if( _default ) {
 	_default = report_portlet_url + _default;
 } 
 else {
-	_default = "x/xn.html";
+	_default = (id == "-1" ? "" : "x/domain.html");
 }
 
 $(function(){
@@ -82,7 +83,7 @@ $(function(){
 	_menus = globalV.list;
 
 	initMenu();
-	$("#if1").attr("src", _default);
+	_default && $("#if1").attr("src", _default);
 });
 
 //初始化左侧
@@ -147,7 +148,7 @@ function refreshTab(tab){
     var currtab_title = currentTab.panel('options').title;
     
     var src;
-    if(currtab_title === '今日一览') {
+    if(currtab_title === onlyOpenTitle) {
     	src = _default;
     }
     else {
@@ -231,7 +232,7 @@ function showSearchDialog() {
   
 	<div region="center" id="mainPanle">
 	  <div id="tabs" class="easyui-tabs" fit="true" border="false" data-options="tools:'#tab-tools'">
-			<div title="今日一览" style="text-align: center; ">		
+			<div title="默认首页" style="text-align: center; ">		
 				<iframe frameborder="0" id="if1" style="width:100%;height:100%;"></iframe>
 			</div>
 		</div>

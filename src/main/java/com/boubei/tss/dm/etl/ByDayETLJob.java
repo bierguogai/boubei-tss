@@ -11,8 +11,8 @@ import java.util.Set;
 
 import org.quartz.DisallowConcurrentExecution;
 
-import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
-import com.boubei.tss.dm.record.ddl._Database;
+import com.boubei.tss.dm.ddl._Database;
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.report.Report;
 import com.boubei.tss.dm.report.ReportQuery;
 import com.boubei.tss.framework.persistence.pagequery.PageInfo;
@@ -126,6 +126,9 @@ public class ByDayETLJob extends AbstractETLJob {
         // 分页查询，批量插入
         String target = task.getTargetScript();
         for(int pageNum = 1; pageNum <= totalPages; pageNum++) {
+        	
+        	checkTask(task.getId()); // 每次循环开始前先检查任务是否被人为关停了
+        	
         	ex = ReportQuery.excute(report, paramsMap, pageNum, PAGE_SIZE);
         	
         	List<Map<Integer, Object>> list1 = new ArrayList<Map<Integer, Object>>();

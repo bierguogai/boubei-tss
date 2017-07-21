@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.quartz.DisallowConcurrentExecution;
 
-import com.boubei.tss.dm.data.sqlquery.SQLExcutor;
+import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.report.Report;
 import com.boubei.tss.dm.report.ReportQuery;
 import com.boubei.tss.framework.persistence.pagequery.PageInfo;
@@ -33,6 +33,7 @@ public class ByIDETLJob extends AbstractETLJob {
 			}
 		} catch(Exception e) { }
 		
+		// 如果没有设置，则取日志里记录下来的最大ID
 		String hql = "select max(maxID) from TaskLog where taskId = ? and exception='no'";
 		List<?> list = commonService.getList(hql, task.getId());
 		Object maxId = null;
@@ -47,7 +48,7 @@ public class ByIDETLJob extends AbstractETLJob {
 		Long maxID = EasyUtils.obj2Long( getMaxID(task) );
 		maxID = Math.max(maxID, task.getStartID()); // 如果任务上设置的ID大于日志里记录的最大ID，则说明是人为单独设置了任务上的ID
 		
-		log.info(task.getName() + " is starting! 【 " + maxID + "】" );
+		log.info(task.getName() + " is starting! 【" + maxID + "】" );
 		
 		long start = System.currentTimeMillis();
 		TaskLog tLog = new TaskLog(task);
@@ -98,6 +99,9 @@ public class ByIDETLJob extends AbstractETLJob {
         Long maxID = startID;
         String target = task.getTargetScript();
         for(int pageNum = 1; pageNum <= totalPages; pageNum++) {
+        	
+        	checkTask(task.getId()); // 每次循环开始前先检查任务是否被人为关停了
+        	
         	long start = System.currentTimeMillis();
         	ex = ReportQuery.excute(report, paramsMap, pageNum, PAGE_SIZE);
         	

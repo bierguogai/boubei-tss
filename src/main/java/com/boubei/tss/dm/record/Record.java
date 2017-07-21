@@ -142,10 +142,7 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
         map.put("icon", "images/" + (TYPE0 == type ? "folder.gif" : "record_" + getDisabled() + ".png") );
         map.put("disabled", getDisabled());
         map.put("batchImp", this.batchImp);
-        
-        if( EasyUtils.obj2String(this.remark).indexOf("open") >= 0 ) {
-        	map.put("_open", "true");
-        }
+        map.put("_open", String.valueOf( (this.remark+"").indexOf("open") >= 0) );
  
         return map;
     }
