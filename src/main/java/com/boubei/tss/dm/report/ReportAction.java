@@ -106,7 +106,7 @@ public class ReportAction extends BaseActionSupport {
     		Long reportId = report.getId();
     		String name = report.getName();
 			Long parentId = report.getParentId();
-			result.add(new Object[] { reportId, name, parentId, report.getType() });
+			result.add(new Object[] { reportId, name, parentId, report.getType(), report.getLevelNo() });
     	}
     	
 		return result;

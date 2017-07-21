@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html> 
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>行驶里程——按天累积</title>
+
+<link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link rel="stylesheet" href="src/bi.css">
+
+<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssJS/tssJS.jsonp.js"></script>
+<script src="../../tools/tssJS/tssJS.data.js"></script>
+<script src="../../more/bi_template/tssJS.chart.js"></script>
+
+<script src="../../tools/easyui/jquery.min.js"></script>
+<script src="../../tools/easyui/jquery.easyui.min.js"></script>
+<script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+
+<script src="../../tools/echarts/echarts-all-2.1.10.js"></script>
+
+<script src="src/common.js"></script>
+<script src="../../tools/util_date.js"></script>
+
+<STYLE type="text/css">
+
+</STYLE>
+
+<script type="text/javascript">
+
+
+$(function(){
+	var params = getParams();
+	if(params.param8) delete params.param6; // 优先用月份
+    if(params.param9) delete params.param7; 
+
+    var carId = tssJS.Query.get("carId"); 
+    if(carId) {
+    	params.param5 = carId;
+    }
+    
+    query(params);
+});
+
+function query(params) {
+	params = params || {};
+
+	tssJS.getJSON( json_url(19), params, function(data) {
+        if(data.length == 0) {
+            return $.messager.show({ title: '提示', msg: '没有查到任何数据，请调整查询条件后再查询。'});
+        }
+        
+        appendCarInfo(data, function(){
+        	data = filterByPermission(data);
+
+        	showChart(data);
+        });
+	}, "POST", true);
+}
+
+function showChart(data) {
+
+    var result = tssJS.Data.groupby(data, "日期", "总里程");
+    result = result.reverse().slice(0, 15).reverse();
+    
+    var result1 = [], result2 = [], labels = [];
+
+    result.each(function(i, item){
+        var day = item["日期"].substring(5, 10);
+        if( !labels.contains(day) ) {
+        	labels.push(day);
+        	result1[i] = 0;
+        }
+
+        if(i == 0) {
+        	result1[i] = item["总里程"]; 
+        } else {
+        	result1[i] = result1[i-1] + item["总里程"]; 
+        }
+
+        result1[i] = Math.round( result1[i] );
+        result2[i] = Math.round( result1[i] / (i+1) );
+    });
+
+    var chartObj = echarts.init($1("canvas1"));
+    var option = {
+	    tooltip : {
+	        trigger: 'axis'
+	    },
+	    calculable : false,
+	    legend: {
+	        data:['累积平均', '累积公里数']
+	    },
+	    xAxis : [
+	        {
+	            type : 'category',
+	            data : labels
+	        }
+	    ],
+	    yAxis : [
+	        { type : 'value', name : '累积平均（公里）' },
+	        { type : 'value', name : '累积公里数' }
+	    ],
+	    series : [
+	        { name:'累积平均', type:'line', data: result2, yAxisIndex: 0 },
+	        { name:'累积公里数', type:'bar', data: result1, yAxisIndex: 1, barWidth: 18 }
+	    ]
+	};
+
+	chartObj.setOption(option);                
+}
+	
+</script>
+
+
+</head>
+
+<body>
+    <div id="main" class="easyui-layout" fit="true" >
+        <div id="d1" data-options="region:'center'" border="false">
+        	<div id='canvas1' style="height: 100%;"></div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html> 
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>共建车队KPI</title>
+
+<link rel="stylesheet" href="../../tools/tssJS/css/boubei.css">
+<link rel="stylesheet" href="src/bi.css">
+
+<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssJS/tssJS.jsonp.js"></script>
+<script src="../../tools/tssJS/tssJS.data.js"></script>
+
+<script src="../../tools/easyui/jquery.min.js"></script>
+<script src="../../tools/easyui/jquery.easyui.min.js"></script>
+<script src="../../tools/easyui/datagrid-filter.js"></script>
+<script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+
+<script src="src/common.js"></script>
+<script src="../../tools/util_date.js"></script>
+
+<STYLE type="text/css">
+#x2, #x3 { margin-left: 30px; text-decoration: underline;}
+#x4 { margin-left: 30px; color: red; }
+
+</STYLE>
+
+<script type="text/javascript">
+
+var globalValiable = window.parent.globalValiable;
+var month = globalValiable ? globalValiable.queryParams.param1 : new Date().format('yyyy-MM');
+var fromDay = month + "-01", 
+    lastDay = getLastDayOfMonth( toDate(fromDay) ),
+	_lastDay = toDate( lastDay ),
+	toDay = subDateS( _lastDay, 0),
+	days = _lastDay.getDate(),
+	daily_lc = {};
+
+var dg1;
+$(function() {
+	dg1 = $('#t1').datagrid({
+        fit : true,
+        fitColumns : true,
+        rownumbers : true,
+        nowrap: true,
+        singleSelect : false,
+        remoteSort : false,
+        multiSort: true,
+        // sortName : "综合排名",
+        // sortOrder : "asc",
+        columns : [FIELDS_1, FIELDS_2],
+        data: [],
+        onClickCell: function(index, field, value) {
+            if(field == 'carnum') {
+            	showCar(value);
+            }           
+        },
+        rowStyler:function(rowIndex, row) {  
+            if( !row.lc ){  
+                return ' background-color:#eee; ';  
+            } 
+        }
+    });
+
+    // dg1.datagrid('enableFilter');
+
+	$("#x1").text("【" +month+ "】");
+	tssJS("#x2").click(function(){
+		window.parent.showQueryForm();
+	});
+	tssJS("#x3").click(function(){
+		showGrid2();
+	});
+	initCarsInfo(showGrid);
+
+	// 取出里程日报里的里程数据
+	tssJS.getJson(json_url(18), {"param8": month, "param9": month}, function(data) {
+		data.each(function(i,item) {
+			daily_lc[item.carnum] = item["总里程"];
+		});
+
+	}, "POST");
+});
+
+var FIELDS_1 = [        
+        { field: '承运商', title: '承运商', width : 80, sortable: true }, 
+        { title: '车辆信息', width : 100},
+        { title: '百公里油耗（L/KM）', width : 100},
+        { field: 'avg_speed', title: '平均时速<br>（KM/H）', width : 65, align: "right", sortable: true},
+        { title: '安全项（次）'},
+        { field: '综合得分', title: '综合得分', width : 60, align: "right", sortable: true},   
+        { field: '综合排名', title: '综合<br>排名', width : 40, sortable: true, styler: cellStyler1},   
+        { field: 'lc', title: '月累计<br>公里数', width : 65, align: "right"}
+    ],
+    FIELDS_2 = [
+        { field: 'carnum', title: '车牌号', styler: stylerCursor},
+        { field: 'brand', title: '品牌', width : 60},
+        { field: 'avg_oil', title: '月均油耗', width : 60, sortable: true},
+		{ field: '考核油耗', title: '考核油耗' },	
+		{ field: '油耗差', sortable: true, styler: cellStyler2},	
+		{ field: '排名1',  title: '排名', width : 40, sortable: true},
+		{ field: '急刹车', title: '急刹车', width : 50, sortable: true},	
+		{ field: '超转速', title: '超转速', width : 50, sortable: true},	
+		{ field: '合计' },	
+		{ field: '排名2',  title: '排名', width : 40, sortable: true},
+		{ field: '事故' },	
+		{ field: '排名3',  title: '排名', width : 40, sortable: true},
+		{ field: '怠速占比', title: '怠速占比', width : 60},
+		{ field: '排名4',  title: '排名', width : 40, sortable: true},
+		{ field: '空挡滑行', title: '空挡滑行', width : 65},	
+		{ field: '日均空挡滑行', title: '日均空挡滑行', width : 75},	
+		{ field: '排名5',  title: '排名', width : 40, sortable: true}
+    ];   
+
+
+$.each(FIELDS_1, function(i, field){
+    field.align = field.align || "center";
+    if(i == 1) field.colspan = 2;
+    else if(i == 2) field.colspan = 4;
+    else if(i == 4) field.colspan = 11;
+    else field.rowspan = 2;
+});
+$.each(FIELDS_2, function(i, field){
+	field.title = field.title || field.field;
+	field.align = field.align || "right";
+});
+function cellStyler1(value,row,index){
+    if(value <= 3) return 'background-color: rgb(51,205,77);';
+    if(value > maxPM - 3)  return 'background-color: rgb(251,23,5);';
+}
+function cellStyler2(value,row,index){
+    if(value > 0) return 'background-color: rgb(255,190,190);';
+}
+
+function showGrid() {
+	/*
+	if( tssJS.Cookie.getValue("_g4") == "17.5米" ) {
+		getFromG7();
+	}
+	*/
+	getFromBI()
+}
+
+function getFromBI() {
+	tssJS.getJson(json_url(64), {"param1": month}, function(data) {
+		getKTHX(data);
+
+	}, "POST");	
+}
+
+function getFromG7() {
+	var url = "/tss/auth/etl/1";
+	tssJS.getJson(url, {"day": fromDay+" 00:00 - "+lastDay+" 23:59"}, function(data) {
+		data.each(function(i, item) {
+			item["急刹车"] = item.suddenly_brakenum;
+			item["超转速"] = item.enginespeed_num;
+			item["怠速占比"] = (item.idling_time_percent||"0").split('%')[0];
+			item.lc = item.total_stance;
+			item.runtime = item.run_time;
+			item.worktime = item.work_time;
+		});
+
+		getKTHX(data);
+		
+	}, "POST", true);
+}
+
+function getKTHX(data) {
+	tssJS.getJson(json_url(51), {"param6": fromDay, "param7": toDay, "param10": 'kthx_c'}, function(data2) {
+
+		data2.each(function(i, item) {
+			var car = carnumMap[item.carnum];
+			car["空挡滑行"] = item.num;
+		});
+
+		appendCarInfo(data, function() {
+	        data = filterByPermission(data);
+	        doShow(data);
+	    });
+
+	}, "POST", true);
+}
+
+var maxPM = 0, cysPM = [];
+function doShow(data) {
+	var result = [], result2 = [];
+	data.each(function(i, item) {
+		var car = carnumMap[item.carnum];
+		if(!car) return true;
+		if ( car.sxsj && toDate(car.sxsj) > _lastDay ) return true;
+
+		item["承运商"] = car.org;
+		item["brand"] = car.brand;
+		if( !item.lc ) {
+			result2.push(item);
+			return true;
+		}
+		result.push(item);
+
+		item["空挡滑行"] = car["空挡滑行"] || 0;
+		item["日均空挡滑行"] = (item["空挡滑行"] / days).toFixed(1);
+
+		item["考核油耗"] = car["ck_oil"] || (isJKCar(item.brand) ? 28.0 : 29.0);
+		item["油耗差"] = (item["avg_oil"] - item["考核油耗"]).toFixed(2);
+		item["合计"] = parseInt(item["急刹车"]||0) + parseInt(item["超转速"]||0);
+		item["idle_per"] = parseFloat( item["怠速占比"] );
+		item["怠速占比"] = item["怠速占比"] + "%";
+		
+		var avg_speed = (item.lc / ( (item.runtime||1)/3600) ).toFixed(2);
+		item.avg_speed = avg_speed > 100 ? (item.lc / ( (item.worktime||1)/3600) ).toFixed(2) : avg_speed;
+
+		item.lc = daily_lc[car.carnum] || item.lc; // 优先用车辆里程日报的数据
+
+		item["事故"] = 0;
+		item["排名3"] = 1;
+	});
+
+    sort(result, '油耗差', '排名1');
+    sort(result, '合计', '排名2');
+    sort(result, 'idle_per', '排名4');
+    sort(result, '日均空挡滑行', '排名5');
+
+    result.each(function(i, item) {
+		item["综合得分"] = (item["排名1"]*0.4 + item["排名2"]*0.2 + item["排名4"]*0.2 + item["排名5"]*0.2).toFixed(1);
+	});
+	sort(result, '综合得分', '综合排名');
+	result.each(function(i, item) {
+		maxPM = Math.max(maxPM, item['综合排名']);
+	});
+
+	var _result = [];
+	result.each(function(n, x){
+		_result.push(x);
+	});
+	result2.each(function(n, x){
+		_result.push(x);
+	});
+
+	dg1.datagrid("loadData", _result);
+	// mergeGridColCells(dg1, "承运商");  // 纵向合并表格
+
+	cysPM = tssJS.Data.groupby(result, "承运商", "综合得分");
+	cysPM.each(function(i, row) {
+		row["车辆数"] = 0;
+		result.each(function(j, item) {
+			if(item["承运商"] == row["承运商"]){
+				row["车辆数"] += 1;
+			}
+		});
+		row["综合得分"] = Math.round(row["综合得分"]*100/row["车辆数"])/100;
+	});
+	sort(cysPM, '综合得分', '综合排名');
+}
+
+JK_CAR_TYPES = ["奔驰", "沃尔沃", "斯堪尼亚"];
+function isJKCar(brand) {
+	var flag = false;
+	JK_CAR_TYPES.each(function(i, item) {
+		if (brand.indexOf(item) >= 0) {
+			flag = true;
+		}
+	});
+	return flag;
+}
+
+var FIELDS_3 = [        
+        { field: '承运商', width : 120}, 
+        { field: '车辆数', width : 100},
+        { field: '综合得分', width : 100},   
+        { field: '综合排名', width : 80}
+    ];
+$.each(FIELDS_3, function(i, field){
+	field.title = field.title || field.field;
+	field.align = field.align || "center";
+});
+function showGrid2() {
+	$('#dlg').dialog( {"modal": true} ).dialog('open').dialog('center');
+	$('#t2').datagrid({
+        fit : true,
+        fitColumns : true,
+        rownumbers : true,
+        columns : [FIELDS_3],
+        data: cysPM
+    });
+}
+
+</script>
+
+
+</head>
+
+<body>
+
+    <div id="main" class="easyui-layout" fit="true" >
+        <div data-options="region:'center'" border="false">
+	        <table id="t1" border="false" title="共建车队<b id='x1'></b>月KPI<a id='x2' href='#'>查询其它月份<a><a id='x3' href='#'>查看承运商综合排名<a><i id='x4'>注：底下灰色部分车辆没有采集到数据，设备可能存在异常</i>"></table>
+        </div>
+    </div>
+
+    <div id="dlg" style="width:450px;height:400px;" closed="true" title="承运商综合排名">
+    	<table id="t2" style="height:350px;"></table>
+    </div>
+
+</body>
+</html>

@@ -35,6 +35,7 @@
 
 	<mvc:resources mapping="/_mobile/**" location="/_mobile/"/>
 	<mvc:resources mapping="/pages/**" location="/pages/"/> 
+	<mvc:resources mapping="/cloud/**" location="/cloud/"/>
 	
 	<mvc:resources mapping="/*.html" location="/"/>  
 	<mvc:resources mapping="/*.htm" location="/"/>  

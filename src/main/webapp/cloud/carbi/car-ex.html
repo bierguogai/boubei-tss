@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html> 
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>安全驾驶情况</title>
+
+<link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link rel="stylesheet" href="src/bi.css">
+
+<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssJS/tssJS.jsonp.js"></script>
+<script src="../../tools/tssJS/tssJS.data.js"></script>
+<script src="../../more/bi_template/tssJS.chart.js"></script>
+
+<script src="../../tools/easyui/jquery.min.js"></script>
+<script src="../../tools/easyui/jquery.easyui.min.js"></script>
+<script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+
+<script src="../../tools/echarts/echarts-all-2.1.10.js"></script>
+
+<script src="src/common.js"></script>
+<script src="../../tools/util_date.js"></script>
+
+<STYLE type="text/css">
+
+#canvasContainer {
+    display: inline-block;
+    width: 70%;
+}
+#tgDiv {
+    display: inline-block;
+    width: 29%;
+    vertical-align: top;
+    height: 95%;
+}
+#tg1 {
+    width:100%; 
+}
+
+</STYLE>
+
+<script type="text/javascript">
+
+$(function(){
+	// 使得 easyui-tabs 高度自适应
+　　$("#tabs").tabs({ 
+　　　　width:  $("#tabs").parent().width(), 
+　　　　height: $("#tabs").parent().height() 
+　　}); 
+    $("#tabs").tabs("select", 1);
+    $("#tabs").tabs("select", 0);
+
+	var params = getParams();
+    if(params.param8) delete params.param6; // 优先用月份
+    if(params.param9) delete params.param7; 
+
+    query(params);
+});
+
+function query(params) {
+
+	tssJS.getJSON( json_url(32), params, function(data) {
+        if(!data || data.length == 0) {
+            return $.messager.show({ title: '提示', msg: '没有查到任何数据，请调整查询条件后再查询。'});
+        }
+        
+        appendCarInfo(data, function(){
+        	data = filterByPermission(data);
+        	
+        	showChart(data);
+        	showGrid(data);
+        });
+	}, "POST", true);
+}
+
+function showGrid(data) {
+	var _data = tssJS.Data.groupby(data, "org,carnum", "num"),
+		foot = {"carnum": "合计", "num": 0, "超速": 0, "疲劳驾驶": 0, "空挡滑行": 0, "急加速": 0, "急刹车": 0, "急转弯": 0};
+
+	_data.each(function(i, item0){
+        data.each(function(j, item) {
+        	if( item["org"]+item["carnum"] == item0["org"]+item0["carnum"] ) {
+        		if( item.name == '超速' ) {
+        			item0["超速"] = (item0["超速"]||0) + item.num;
+        			foot["超速"] += item.num;
+        		}
+		        if( item.name == '疲劳驾驶' ) {
+		        	item0["疲劳驾驶"] = (item0["疲劳驾驶"]||0) + item.num;
+		        	foot["疲劳驾驶"] += item.num;
+		        }
+		        if( item.name == '空挡滑行' ) {
+		        	item0["空挡滑行"] = (item0["空挡滑行"]||0) + item.num;
+		        	foot["空挡滑行"] += item.num;
+		        }
+		        if( item.name == '急加速' ) {
+		        	item0["急加速"] = (item0["急加速"]||0) + item.num;
+		        	foot["急加速"] += item.num;
+		        }
+		        if( item.name == '急刹车' ) {
+		        	item0["急刹车"] = (item0["急刹车"]||0) + item.num;
+		        	foot["急刹车"] += item.num;
+		        }
+		        if( item.name == '急转弯' ) {
+		        	item0["急转弯"] = (item0["急转弯"]||0) + item.num;
+		        	foot["急转弯"] += item.num;
+		        }
+		        foot["num"] += item.num;
+        	}
+        });
+    });
+
+    var dg1 = $('#tg1').datagrid({
+        fit : true,
+        fitColumns : false,
+        rownumbers : true,
+        remoteSort : false,
+        showFooter: true,
+        sortName : "num",
+        sortOrder : "desc",
+        data: {"rows": _data, "footer": [foot]},
+        columns:[FIELDS_1],
+        toolbar: [ 
+            { text: '导出明细', iconCls : 'icon-save', handler : _export, id: "btn1" }
+        ] 
+    });
+}
+
+var FIELDS_1 = [
+            {title:'车辆', field:'carnum', width: '70px', align:'center'},
+            {title:'总次数', field:'num', width: '55px', align:'right', sortable: true},
+            {title:'急刹车', field:'急刹车', width: '50px', align:'right', sortable: true},
+            {title:'急加速', field:'急加速', width: '50px', align:'right', sortable: true},
+            {title:'急转弯', field:'急转弯', width: '50px', align:'right', sortable: true},
+            {title:'超速', field:'超速', width: '50px', align:'right', sortable: true},
+            {title:'空挡滑行', field:'空挡滑行', width: '55px', align:'right', sortable: true},
+            {title:'疲劳驾驶', field:'疲劳驾驶', width: '55px', align:'right', sortable: true},
+            {title:'机构', field:'org', width: '100px',  align:'center', sortable: true}
+        ]
+
+function _export() {
+    var header = FIELDS_1;
+
+    var data = [];
+    $.each( $('#tg1').datagrid("getRows"), function(index, row) {
+        data.push(row);
+    });
+
+    if(data.length == 0) {
+        $.messager.show({ title: '提示', msg: '没有任何数据可以导出，请先查询' });
+    }
+
+    tssJS.Data.data2CSV("CAN", header, data);
+}
+
+function showChart(data) {
+	if( data.length == 0 ) {
+		return $.messager.show({ title: '提示', msg: '没有找到任何数据。'});
+	}
+
+	var map = {}, v0 = [], vx = [], labels = [],
+		v1 = [], v2 = [], v3 = [], v4 = [], v5 = [], v6 = [], v7 = [];
+
+    data.each(function(i, item){
+        var day = item["日期"].substring(5, 10);
+        if( !labels.contains(day) ) {
+        	labels.push(day);
+        	
+        	map[day] = [0, 1200, 0, 0, 0, 0, 0, 0];
+        }
+
+        map[day][0] += item.num;
+        if( item.name == '超速' ) map[day][2] += item.num;
+        if( item.name == '疲劳驾驶' ) map[day][3] += item.num;
+        if( item.name == '空挡滑行' ) map[day][4] += item.num;
+        if( item.name == '急加速' ) map[day][5] += item.num;
+        if( item.name == '急刹车' ) map[day][6] += item.num;
+        if( item.name == '急转弯' ) map[day][7] += item.num;
+    });
+
+    labels.each(function(i, day) {
+    	var v = map[day];
+    	v0[i] = v[0];
+    	vx[i] = v[1];
+    	v1[i] = v[2];
+    	v2[i] = v[3];
+    	v3[i] = v[4];
+    	v4[i] = v[5];
+    	v5[i] = v[6];
+    	v6[i] = v[7];
+    	v7[i] = v[0] - v[2] - v[4];
+    });
+
+    var chartObj = echarts.init($1("canvas1"));
+    option = {
+	    tooltip : {
+	        trigger: 'axis'
+	    },
+	    calculable : true,
+	   	toolbox: {
+	        show : true,
+	        feature : {
+	            saveAsImage : {show: true}
+	        }
+	    },
+	    legend: {
+	        data:['疲劳驾驶', '急加速', '急刹车', '急转弯']
+	    },
+	    xAxis : [
+	        {
+	            type : 'category',
+	            splitLine : {show : false},
+	            data : labels
+	        }
+	    ],
+	    yAxis : [
+	        {
+	            type : 'value',
+	            position: 'left'
+	        }
+	    ],
+	    series : [
+	        {
+	            name:'疲劳驾驶',
+	            type:'bar',
+	            barWidth: 15,
+	            tooltip : {trigger: 'item'},
+	            stack: '警告',
+	            data: v2
+	        },
+	        {
+	            name:'急加速',
+	            type:'bar',
+	            tooltip : {trigger: 'item'},
+	            stack: '警告',
+	            data: v4
+	        },
+	        {
+	            name:'急刹车',
+	            type:'bar',
+	            tooltip : {trigger: 'item'},
+	            stack: '警告',
+	            data: v5
+	        },
+	        {
+	            name:'急转弯',
+	            type:'bar',
+	            tooltip : {trigger: 'item'},
+	            stack: '警告',
+	            data: v6
+	        }
+	    ]
+	};
+
+	chartObj.setOption(option);   
+
+	chartObj = echarts.init($1("canvas2"));
+    option = {
+	    tooltip : {
+	        trigger: 'axis'
+	    },
+	    calculable : true,
+	   	toolbox: {
+	        show : true,
+	        feature : {
+	            saveAsImage : {show: true}
+	        }
+	    },
+	    legend: {
+	        data:['超速', '空挡滑行', '总次数']
+	    },
+	    xAxis : [
+	        {
+	            type : 'category',
+	            splitLine : {show : false},
+	            data : labels
+	        }
+	    ],
+	    yAxis : [
+	        {
+	            type : 'value',
+	            position: 'left'
+	        }
+	    ],
+	    series : [
+	        {
+	            name:'超速',
+	            barWidth: 15, 
+	            type:'bar',
+	            tooltip : {trigger: 'item'},
+	            stack: '警告',
+	            data: v1
+	        },
+	        {
+	            name:'空挡滑行',
+	            type:'bar',
+	            tooltip : {trigger: 'item'},
+	            stack: '警告',
+	            data: v3
+	        },
+	        {
+	            name:'总次数',
+	            type:'line',
+	            data: v0
+	        }
+	    ]
+	};
+
+	chartObj.setOption(option);              
+}
+	
+</script>
+
+
+</head>
+
+<body>
+    <div id="main" class="easyui-layout" fit="true" >
+        <div id="dataContainer" data-options="region:'center'" border="false">
+        	<div id='canvasContainer' style="height: 100%;">
+        		<div id='canvas1' style="height: 50%;"></div>
+        		<div id='canvas2' style="height: 50%;"></div>
+        	</div>
+        	<div id="tgDiv">
+                <div id="tabs" class="easyui-tabs" border="true" >
+                    <div title="车辆明细" border="false" >
+                        <table id="tg1" border="false"></table>
+                    </div>
+                    <div title="" border="false" >
+                        <table id="tg2" border="false"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

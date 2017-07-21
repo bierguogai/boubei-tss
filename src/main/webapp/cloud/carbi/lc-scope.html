@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html> 
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>行驶里程——区间分布</title>
+
+<link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link rel="stylesheet" href="src/bi.css">
+
+<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssJS/tssJS.jsonp.js"></script>
+<script src="../../tools/tssJS/tssJS.data.js"></script>
+<script src="../../more/bi_template/tssJS.chart.js"></script>
+
+<script src="../../tools/easyui/jquery.min.js"></script>
+<script src="../../tools/easyui/jquery.easyui.min.js"></script>
+<script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+
+<script src="../../tools/echarts/echarts-all-2.1.10.js"></script>
+
+<script src="src/common.js"></script>
+<script src="../../tools/util_date.js"></script>
+
+<STYLE type="text/css">
+
+#x3 { position: absolute; right: 100px; z-index: 10001; }
+
+</STYLE>
+
+<script type="text/javascript">
+
+
+$(function(){
+
+	$("#slider1").slider({
+		onComplete: function(value) {
+			showChart(value);
+		}
+	});
+
+	var params = getParams();
+    if(params.param8) delete params.param6; // 优先用月份
+    if(params.param9) delete params.param7; 
+
+    query(params);
+});
+
+var _data;
+function query(params) {
+	params = params || {};
+
+	tssJS.getJSON( json_url(65), params, function(data) {
+        if(data.length == 0) {
+            return $.messager.show({ title: '提示', msg: '没有查到任何数据，请调整查询条件后再查询。'});
+        }
+        
+        appendCarInfo(data, function(){
+        	_data = filterByPermission(data);
+
+        	showChart();
+        });
+	});
+}
+
+function showChart(_scope) {
+	var data = _data;
+    var result1 = [], result2 = {}, max = data[0]["总里程"], n = _scope || 500;
+    for(var scope = 0; scope <= max + n; scope += n) {
+    	var x = [scope + n, 0];
+    	data.each(function(i, item){
+	        var val = item["总里程"];
+	        if( val && val >= scope && val < scope + n) {
+	        	x[1] += 1;
+	        	result2[x[0]] = result2[x[0]] || [];
+	        	result2[x[0]].push(item);
+	        }
+	    });
+    	x[1] && result1.push(x);
+    }
+
+    var chartObj = echarts.init($1("canvas1"));
+
+	var option = {
+	    tooltip : {
+	        trigger: 'axis',
+	        showDelay : 0,
+	        axisPointer:{
+	            show: true,
+	            type : 'cross',
+	            lineStyle: {
+	                type : 'dashed',
+	                width : 1
+	            }
+	        }, 
+	        formatter: function (params) {
+	        	var scope = params["2"][0];
+	        	var x = result2[scope];
+	        	var res = [];
+	        	x && x.each && x.each(function(i, item) {
+	        		res.push( item.org + "，" + item.carnum + "，总里程 = " + item["总里程"] );
+	        	})
+	        	return res.join("<br>");
+	        }
+	    },
+	   	toolbox: {
+	        show : true,
+	        feature : {
+	            saveAsImage : {show: true}
+	        }
+	    },
+	    legend: {
+	        data:['里程区间分布']
+	    },
+	    xAxis : [
+	        {
+	            type : 'value',
+	            splitNumber: 10,
+	            scale: true
+	        }
+	    ],
+	    yAxis : [
+	        {
+	            type : 'value',
+	            splitNumber: 4,
+	            scale: true
+	        }
+	    ],
+	    series : [
+	        {
+	            name:'里程区间分布',
+	            type:'scatter',
+	            symbolSize: function (value){
+	                return Math.max( Math.round(value[1]/4), 5 );
+	            },
+	            itemStyle : { normal: {label : {show: true, formatter: function(a, b, c){
+	            	// console.log(c);
+	            	return c[1];
+	            }, position: 'top'}}},
+	            data: result1
+	        }
+	    ]
+	};
+
+	chartObj.setOption(option);                
+}
+
+function openMLC() {
+	window.parent.parent.addTab("行驶里程-按月累积", "bi/lc-month.html");
+}
+
+</script>
+
+
+</head>
+
+<body>
+    <div id="main" class="easyui-layout" fit="true" >
+        <div id="dataContainer" data-options="region:'center'" border="false" title="">
+        	<div id='canvas1' style="height: 85%;"></div>
+        	<div style="padding-left: 100px; height: 50px;">
+	            <input id="slider1" class="easyui-slider" style="width:800px;" data-options="
+	                showTip:true, min: 1, max: 5000, value: 500, 
+	                rule: [0,'|',1000,'|',2000,'|',3000,'|',4000,'|',5000]
+	            ">
+	            <a href="#" class="easyui-linkbutton" id='x3' onclick="openMLC();">查看里程月报表</a>
+	        </div>
+        </div>
+    </div>
+
+</body>
+</html>
