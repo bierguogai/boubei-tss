@@ -108,7 +108,7 @@ input[name='_g6'] { margin-left: 8px; }
                 <td>
                 	<input id="_g8" class="easyui-combobox" style="width: 80px;">
                 </td>
-                <td class="label">其它:</td>
+                <td class="label">进口国产:</td>
                 <td>
                     <input id="_g7" class="easyui-combobox" style="width: 70px; ">
                 </td>
@@ -133,7 +133,7 @@ BASE_JSONP_URL = TOMCAT_URL + '/tss/data/jsonp/';
 function json_url(id) { return BASE_JSON_URL + id; }
 function jsonp_url(id) { return BASE_JSONP_URL + id; }
 
-var now = toDate("2017-06-01"),
+var now = toDate("2017-06-30"),
     cday = now.format("yyyy-MM-dd"), 
     cyear = now.getFullYear(), 
     cmonth = now.format("yyyy-MM"),
@@ -317,18 +317,18 @@ function initGroupParams() {
         var params = {};
         if(org) params.param1 = org;
         
-        $('#_g2').combobox( {panelHeight: '120px', url: json_url(27), queryParams: params, multiple:true} );
+        params.param2 = "xianlu";
+        $('#_g2').combobox( {panelHeight: '120px', url: json_url(26), queryParams: params, multiple:true} );
+        params.param2 = "brand";
         $('#_g3').combobox( {panelHeight: '100px', url: json_url(26), queryParams: params, editable: true} );
-        $('#_g4').combobox( {panelHeight: '80px', url: json_url(16), queryParams: params, editable: true, 
-            onLoadSuccess: function() {
-                $('#_g4').combobox("setValue", "17.5米");
-            }
-        } );     
-        $('#_g5').combobox( {panelHeight: '88px', url: json_url(14), queryParams: params, valueField: "name"} ); 
+        params.param2 = "carlen";
+        $('#_g4').combobox( {panelHeight: '80px', url: json_url(26), queryParams: params, editable: true } );  
+        params.param2 = "carnum";   
+        $('#_g5').combobox( {panelHeight: '88px', url: json_url(26), queryParams: params, valueField: "name"} ); 
     }
 
-    $('#_g7').combobox( {panelHeight: '60px', url: json_url(60), queryParams: {"param1": "jkgc"} } ); 
-    $('#_g8').combobox( {panelHeight: '60px', url: json_url(60), queryParams: {"param1": "qdlx"} } ); 
+    $('#_g7').combobox( {panelHeight: '60px', url: json_url(26), queryParams: {"param2": "jkgc"} } ); 
+    $('#_g8').combobox( {panelHeight: '60px', url: json_url(26), queryParams: {"param2": "qdlx"} } ); 
 
     // 车线模糊过滤
     $('#_g2').combobox({
@@ -342,7 +342,7 @@ function initGroupParams() {
     var ui = parent.parent.globalV ? parent.parent.globalV.userInfo : [];
     var roles = ui[1] || [], org = ui[4]||"";
 
-    tssJS.getJSON(json_url(17), {}, function(data) {
+    tssJS.getJSON(json_url(26), {"param2": "org"}, function(data) {
         $('#_g1').combobox( {
             panelHeight: '160px', 
             editable: true,

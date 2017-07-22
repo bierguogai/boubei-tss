@@ -62,6 +62,8 @@ $(function(){
     if(params.param8) delete params.param6; // 优先用月份
     if(params.param9) delete params.param7; 
 
+    params.param8 = '2017-01';
+
     query(params);
 }); 
 
@@ -69,7 +71,7 @@ var data;
 function query(params) {
 	params = params || {};
 
-	tssJS.getJSON( json_url(32), params, function(result) {
+	tssJS.getJSON( json_url(31), params, function(result) {
         if(result.length == 0) {
             return $.messager.show({ title: '提示', msg: '没有查到任何数据，请调整查询条件后再查询。'});
         }

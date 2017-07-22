@@ -48,7 +48,7 @@ $(function(){
 function query(params) {
 	params = params || {};
 
-	tssJS.getJSON( json_url(19), params, function(data) {
+	tssJS.getJSON( json_url(29), params, function(data) {
         if(data.length == 0) {
             return $.messager.show({ title: '提示', msg: '没有查到任何数据，请调整查询条件后再查询。'});
         }
@@ -64,7 +64,6 @@ function query(params) {
 function showChart(data) {
 
     var result = tssJS.Data.groupby(data, "日期", "总里程");
-    result = result.reverse().slice(0, 15).reverse();
     
     var result1 = [], result2 = [], labels = [];
 

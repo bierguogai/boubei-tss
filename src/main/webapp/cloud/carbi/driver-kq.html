@@ -61,14 +61,14 @@ $(function(){
 });
 
 function query(params) {
-	tssJS.getJSON( json_url(21), params, function(data) {
+	tssJS.getJSON( json_url(33), params, function(data) {
         if(data.length == 0) {
             return $.messager.show({ title: '提示', msg: '没有查到任何数据，请调整查询条件后再查询。'});
         }
         showChart(data);
 	}, "POST", true);
 
-    tssJS.getJSON( json_url(33), params, function(data) {
+    tssJS.getJSON( json_url(34), params, function(data) {
         if(data.length > 0) {
             showGrid(data);
         }

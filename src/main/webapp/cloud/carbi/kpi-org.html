@@ -80,7 +80,7 @@ $(function(){
     params.param3 = _params.param3;
     params.param4 = _params.param4;
 
-    var url = "/tss/data/json/" + 70;  // uat id=68
+    var url = json_url(48);
 
     $.getJSON(url, params, function(data) {
         show(data, params.param2);

@@ -63,7 +63,7 @@ $(function(){
 
 function query(params) {
 
-	tssJS.getJSON( json_url(45), params, function(data) {
+	tssJS.getJSON( json_url(52), params, function(data) {
         if(!data || data.length == 0) {
             return $.messager.show({ title: '提示', msg: '没有查到任何数据，请调整查询条件后再查询。'});
         }
@@ -78,18 +78,16 @@ function query(params) {
 }
 
 function showGrid(data) {
-	var _data = tssJS.Data.groupby(data, "org,carnum", "num"),
-		foot = {"carnum": "合计", "num": 0, "超速": 0, "空挡滑行": 0, "急刹车": 0};
+	var _data = tssJS.Data.groupby(data, "org,carnum", "超速,空挡滑行,急刹车"),
+		foot = {"carnum": "合计", "总次数": 0, "超速": 0, "空挡滑行": 0, "急刹车": 0};
 
-	_data.each(function(i, item0){
-        data.each(function(j, item) {
-        	foot["超速"] += item["超速"];
-        	foot["空挡滑行"] += item["空挡滑行"];
-        	foot["急刹车"] += item["急刹车"];
+	_data.each(function(i, item){
+        foot["超速"] += item["超速"];
+        foot["空挡滑行"] += item["空挡滑行"];
+        foot["急刹车"] += item["急刹车"];
 
-        	item["总次数"] = item["超速"] + item["空挡滑行"] + item["急刹车"];
-        	foot["合计"] += item["总次数"];
-        });
+        item["总次数"] = item["超速"] + item["空挡滑行"] + item["急刹车"];
+        foot["总次数"] += item["总次数"];
     });
 
     var dg1 = $('#tg1').datagrid({
@@ -98,7 +96,7 @@ function showGrid(data) {
         rownumbers : true,
         remoteSort : false,
         showFooter: true,
-        sortName : "num",
+        sortName : "总次数",
         sortOrder : "desc",
         data: {"rows": _data, "footer": [foot]},
         columns:[FIELDS_1],
@@ -110,7 +108,7 @@ function showGrid(data) {
 
 var FIELDS_1 = [
             {title:'车辆', field:'carnum', width: '70px', align:'center'},
-            {title:'总次数', field:'num', width: '55px', align:'right', sortable: true},
+            {title:'总次数', field:'总次数', width: '55px', align:'right', sortable: true},
             {title:'急刹车', field:'急刹车', width: '50px', align:'right', sortable: true},
             {title:'超速', field:'超速', width: '50px', align:'right', sortable: true},
             {title:'空挡滑行', field:'空挡滑行', width: '55px', align:'right', sortable: true},
@@ -152,9 +150,14 @@ function showChart(data) {
 
     labels.each(function(i, day) {
     	var v = map[day];
-    	v1[i] = item["超速"];
-    	v2[i] = item["空挡滑行"];
-    	v3[i] = item["急刹车"];
+        v1[i] = 0;
+        v2[i] = 0;
+        v3[i] = 0;
+        v.each(function(j, item) {
+            v1[i] += item["超速"];
+            v2[i] += item["空挡滑行"];
+            v3[i] += item["急刹车"];
+        });
     });
 
     var chartObj = echarts.init($1("canvas2"));
@@ -193,17 +196,17 @@ function showChart(data) {
 	        },
 	        {
 	            name:'空挡滑行',
-	            type:'bar',
-	            tooltip : {trigger: 'item'},
-	            stack: '警告',
+	            type:'line',
+	            // tooltip : {trigger: 'item'},
+	            // stack: '警告',
 	            data: v2
 	        },
 	        {
 	            name:'超速',
 	            barWidth: 15, 
 	            type:'bar',
-	            tooltip : {trigger: 'item'},
-	            stack: '警告',
+	            // tooltip : {trigger: 'item'},
+	            // stack: '警告',
 	            data: v3
 	        }
 	    ]

@@ -32,7 +32,7 @@
 <script type="text/javascript">
 
 var globalValiable = window.parent.globalValiable;
-var month = globalValiable ? globalValiable.queryParams.param1 : new Date().format('yyyy-MM');
+var month = globalValiable ? globalValiable.queryParams.param1 : cday.format('yyyy-MM');
 var fromDay = month + "-01", 
     lastDay = getLastDayOfMonth( toDate(fromDay) ),
 	_lastDay = toDate( lastDay ),
@@ -50,8 +50,6 @@ $(function() {
         singleSelect : false,
         remoteSort : false,
         multiSort: true,
-        // sortName : "综合排名",
-        // sortOrder : "asc",
         columns : [FIELDS_1, FIELDS_2],
         data: [],
         onClickCell: function(index, field, value) {
@@ -66,8 +64,6 @@ $(function() {
         }
     });
 
-    // dg1.datagrid('enableFilter');
-
 	$("#x1").text("【" +month+ "】");
 	tssJS("#x2").click(function(){
 		window.parent.showQueryForm();
@@ -78,7 +74,7 @@ $(function() {
 	initCarsInfo(showGrid);
 
 	// 取出里程日报里的里程数据
-	tssJS.getJson(json_url(18), {"param8": month, "param9": month}, function(data) {
+	tssJS.getJson(json_url(28), {"param8": month, "param9": month}, function(data) {
 		data.each(function(i,item) {
 			daily_lc[item.carnum] = item["总里程"];
 		});
@@ -137,40 +133,14 @@ function cellStyler2(value,row,index){
 }
 
 function showGrid() {
-	/*
-	if( tssJS.Cookie.getValue("_g4") == "17.5米" ) {
-		getFromG7();
-	}
-	*/
-	getFromBI()
-}
-
-function getFromBI() {
-	tssJS.getJson(json_url(64), {"param1": month}, function(data) {
+	tssJS.getJson(json_url(36), {"param1": month}, function(data) {
 		getKTHX(data);
 
 	}, "POST");	
 }
 
-function getFromG7() {
-	var url = "/tss/auth/etl/1";
-	tssJS.getJson(url, {"day": fromDay+" 00:00 - "+lastDay+" 23:59"}, function(data) {
-		data.each(function(i, item) {
-			item["急刹车"] = item.suddenly_brakenum;
-			item["超转速"] = item.enginespeed_num;
-			item["怠速占比"] = (item.idling_time_percent||"0").split('%')[0];
-			item.lc = item.total_stance;
-			item.runtime = item.run_time;
-			item.worktime = item.work_time;
-		});
-
-		getKTHX(data);
-		
-	}, "POST", true);
-}
-
 function getKTHX(data) {
-	tssJS.getJson(json_url(51), {"param6": fromDay, "param7": toDay, "param10": 'kthx_c'}, function(data2) {
+	tssJS.getJson(json_url(35), {"param6": fromDay, "param7": toDay, "param10": 'kthx_c'}, function(data2) {
 
 		data2.each(function(i, item) {
 			var car = carnumMap[item.carnum];

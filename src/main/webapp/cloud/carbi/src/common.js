@@ -44,19 +44,19 @@ function clone(from, to){
 
 function showCar(carnum) {
     if(window.parent.addTab) {
-        window.parent.addTab("车辆【"+carnum+"】信息", "bi/_car.html?carId=" + encodeURIComponent(carnum));
+        window.parent.addTab("车辆【"+carnum+"】信息", "/tss/cloud/carbi/_car.html?carId=" + encodeURIComponent(carnum));
     }
     else if(window.parent.parent.addTab) { // 在report_portlet.html打开，则框架页在网上第三级
-        window.parent.parent.addTab("车辆【"+carnum+"】信息", "bi/_car.html?carId=" + encodeURIComponent(carnum));
+        window.parent.parent.addTab("车辆【"+carnum+"】信息", "/tss/cloud/carbi/_car.html?carId=" + encodeURIComponent(carnum));
     }
 }
 
 function showXianlu(xianlu) {
     if(window.parent.addTab) {
-        window.parent.addTab("线路【"+xianlu+"】信息", "bi/_xianlu.html?xianlu=" + encodeURIComponent(xianlu));
+        window.parent.addTab("线路【"+xianlu+"】信息", "/tss/cloud/carbi/_xianlu.html?xianlu=" + encodeURIComponent(xianlu));
     }
     else if(window.parent.parent.addTab) { 
-        window.parent.parent.addTab("线路【"+xianlu+"】信息", "bi/_xianlu.html?xianlu=" + encodeURIComponent(xianlu));
+        window.parent.parent.addTab("线路【"+xianlu+"】信息", "/tss/cloud/carbi/_xianlu.html?xianlu=" + encodeURIComponent(xianlu));
     }
 }
 

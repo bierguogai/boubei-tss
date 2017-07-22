@@ -90,10 +90,12 @@ $(function(){
 function initMenu() {
 	$("#nav").accordion({animate:true, fit:true, border:false});
 
-	var selectedPanelname = '';
+	var selectedPanelname = '', index = 0;
 	$.each(_menus, function(i, menu1) {
-
-	  	var menu1Name = "&nbsp;&nbsp;" + menu1[1];
+		var menu1Name = "&nbsp;&nbsp;" + menu1[1];
+		if( (!menu1.children || menu1.children.length == 0) && menu1Name.indexOf("开发目录") >= 0) {
+			return true;
+		}
 
 		var menuHTML = [];
 		menuHTML.push('<ul class="navlist">');
@@ -111,7 +113,8 @@ function initMenu() {
 			content: menuHTML.join('\n'),
       	});
 
-		if( i==0 ) selectedPanelname = menu1Name;
+		if( index==0 ) selectedPanelname = menu1Name;
+		index++;
     });
 
 	$('#nav').accordion('select', selectedPanelname);

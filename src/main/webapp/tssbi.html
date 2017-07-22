@@ -193,7 +193,9 @@ tssJS(function(){
 
 // ----------------------------------- 获取BI报表一级菜单 -----------------------------------
 var globalValiable = {},
-    _menus = {}, items = {}, rootId = 0,
+    _menus = {}, 
+    items = {}, 
+    rootId = 0,
     fisrtGroup;
 
 function getBIMenu() {
@@ -218,12 +220,27 @@ function getBIMenu() {
                     _menus[id] = [];
                     fisrtGroup = fisrtGroup || id;
                 }
-                else if( !isReport ) { // 二级目录
-                    _menus[pid] && _menus[pid].push(item);
-                    item.children = [];
+                else if( !isReport ) { 
+                    var brothers = _menus[pid];
+                    if(brothers) {
+                        brothers.push(item); // 二级目录
+                    }
+                    else { // 三级目录，直接升级为二级，方便开发者定义多模块
+                        var parent = items[pid];
+                        if(parent) {
+                            var uncles = _menus[parent[2]];
+                            uncles && uncles.push(item);
+                        }
+                    }
                 }
                 else if( isReport ) {  // 报表
-                    items[pid] && items[pid].children && items[pid].children.push(item);
+                    var parent = items[pid];
+                    if(parent) {
+                        if( !parent.children ) {
+                            parent.children = []; // 没有任何报表的二级目录将被过滤掉
+                        }
+                        parent.children.push(item);
+                    } 
                 }
             } );
 

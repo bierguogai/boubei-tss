@@ -51,7 +51,7 @@ function query(params) {
 	params = params || {};
 
     tssJS.showWaitingLayer();
-	tssJS.getJSON( json_url(32), params, function(data) {
+	tssJS.getJSON( json_url(31), params, function(data) {
         if(data.length == 0) {
             return $.messager.show({ title: '提示', msg: '没有查到任何数据，请调整查询条件后再查询。'});
         }
