@@ -65,13 +65,14 @@ span.max, span.min { display: none; }
 <script type="text/javascript">
 
 /* 用户信息初始化  */
-var roles = [], isSelfDomain = false;
+var roles = [], userHas, isSelfDomain = false;
 $(function(){
     initUserInfo(function() {
         resizeIFrame();
 
         tssJS.getJSON("/tss/auth/user/has", {}, 
             function(info) {
+                userHas = info;
                 if( info && info[1] ) {
                     roles = info[1], isSelfDomain = (info[0].length && info[0][0][0] == -7);
                     roles.contains(-8) && !isSelfDomain && $("li.r8").show(true);  // 域管理员(非自注册域)

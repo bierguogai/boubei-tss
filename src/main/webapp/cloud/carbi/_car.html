@@ -39,6 +39,10 @@ $(function(){
     params = getParams();
     delete params.param8; // 只用日期，不用月份
     delete params.param9; 
+    delete params.param1; // 不要承运商等其它维度
+    delete params.param2;
+    delete params.param3;
+    delete params.param4;
 
     var carId = tssJS.Query.get("carId"); 
     params.param5 = decodeURIComponent( carId || params.param5|| '京AAZ152' );

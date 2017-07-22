@@ -134,7 +134,7 @@ function showChart(_scope) {
 	            name:'里程区间分布',
 	            type:'scatter',
 	            symbolSize: function (value){
-	                return Math.max( Math.round(value[1]/3), 4 );
+	                return Math.max( Math.round(value[1]/2), 4 );
 	            },
 	            itemStyle : { normal: {label : {show: true, formatter: function(a, b, c){
 	            	// console.log(c);

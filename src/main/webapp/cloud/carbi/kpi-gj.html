@@ -133,26 +133,28 @@ function cellStyler2(value,row,index){
 }
 
 function showGrid() {
-	tssJS.getJson(json_url(36), {"param1": month}, function(data) {
+	tssJS.getJson(json_url(36), {"param1": month, "param2": tssJS.Cookie.getValue("_g1")}, function(data) {
 		getKTHX(data);
 
 	}, "POST");	
 }
 
 function getKTHX(data) {
-	tssJS.getJson(json_url(35), {"param6": fromDay, "param7": toDay, "param10": 'kthx_c'}, function(data2) {
+	tssJS.getJson(json_url(35), 
+		{"param2": tssJS.Cookie.getValue("_g1"), "param6": fromDay, "param7": toDay, "param10": 'kthx_c'}, 
+		function(data2) {
 
-		data2.each(function(i, item) {
-			var car = carnumMap[item.carnum];
-			car["空挡滑行"] = item.num;
-		});
+			data2.each(function(i, item) {
+				var car = carnumMap[item.carnum];
+				car["空挡滑行"] = item.num;
+			});
 
-		appendCarInfo(data, function() {
-	        data = filterByPermission(data);
-	        doShow(data);
-	    });
+			appendCarInfo(data, function() {
+		        data = filterByPermission(data);
+		        doShow(data);
+		    });
 
-	}, "POST", true);
+		}, "POST", true);
 }
 
 var maxPM = 0, cysPM = [];

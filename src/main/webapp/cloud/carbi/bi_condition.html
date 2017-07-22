@@ -339,8 +339,8 @@ function initGroupParams() {
     });
 
     // 机构切换后，需对车辆等进行重新过滤
-    var ui = parent.parent.globalV ? parent.parent.globalV.userInfo : [];
-    var roles = ui[1] || [], org = ui[4]||"";
+    var roles = parent.parent.parent.roles || [];
+    var org = parent.parent.parent.userHas[4];
 
     tssJS.getJSON(json_url(26), {"param2": "org"}, function(data) {
         $('#_g1').combobox( {
@@ -350,17 +350,16 @@ function initGroupParams() {
             onChange: function( newOrg, oldOrg ) {
                 initByOrg(newOrg);
             },
-            value: roles.contains(2) ? org : null
+            value: roles.contains(12) ? org : null
         });
 
         var defaultSelected;
-        if( roles.contains(2) ) { // 承运商登录                
+        if( roles.contains(12) ) { // 承运商登录，12是承运商角色的ID                
             $('#_g1').combobox("readonly", true);
             defaultSelected = org;
         } 
         initByOrg(defaultSelected);
-    }); 
-            
+    });     
 }
 
 function hideQueryForm() {
