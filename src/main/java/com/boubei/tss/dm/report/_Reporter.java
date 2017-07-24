@@ -56,9 +56,10 @@ public class _Reporter extends BaseActionSupport {
 	
     /**
      * 1、完成接口调用时令牌校验 & 自动登录
-     * 2、根据每个报表的具体配置来确定使用具体的缓存策略。可分为：不缓存、按用户缓存、按参数缓存。
+     * 2、根据每个报表的具体配置来确定使用具体的缓存策略。可分为：不缓存、按用户缓存、按参数缓存、按域缓存。
+     * 注：加入企业域后，SQL里带上了${filterByDomain}，需要再加一种，按域缓存
      */
-    private Object getLoginUserId(Map<String, String> requestMap, Long reportId) {
+    private Object checkLoginAndCache(Map<String, String> requestMap, Long reportId) {
     	/* 其它系统调用接口时，传入其在TSS注册的用户ID; 检查令牌，令牌有效则自动完成登陆 */
     	String uName  = requestMap.get("uName"), uToken = requestMap.get("uToken");
     	if( !EasyUtils.isNullOrEmpty(uToken) && !EasyUtils.isNullOrEmpty(uName) ) {
@@ -69,17 +70,17 @@ public class _Reporter extends BaseActionSupport {
     	} 
     	
     	/* 如果传入的参数要求不取缓存的数据，则返回当前时间戳作为userID，以触发缓存更新。*/
-    	Long userId;
+    	Object cacheFlag;
     	if( "true".equals(requestMap.get("noCache")) ) {
-    		userId = System.currentTimeMillis(); // 按时间戳缓存，白存了，永远无法再次命中
+    		cacheFlag = System.currentTimeMillis(); // 按时间戳缓存，白存了，永远无法再次命中
     	}
     	else if( "true".equals(requestMap.get("uCache")) ) {
-    		userId = Environment.getUserId();  // 按【用户 + 参数】缓存
+    		cacheFlag = Environment.getUserId();  // 按【用户 + 参数】缓存
     	}
     	else {
-    		userId = -1L; // 只按查询【参数】缓存
+    		cacheFlag = EasyUtils.checkNull(Environment.getDomain(), -1L); // 只按查询【参数】缓存
     	}
-    	return userId;
+    	return cacheFlag;
     }
  
     @RequestMapping("/{reportId}/{page}/{pagesize}")
@@ -90,8 +91,8 @@ public class _Reporter extends BaseActionSupport {
     	
     	long start = System.currentTimeMillis();
     	Map<String, String> requestMap = DMUtil.getRequestMap(request, false);
-		Object loginUserId = getLoginUserId(requestMap, reportId);
-		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, page, pagesize, loginUserId);
+		Object cacheFlag = checkLoginAndCache(requestMap, reportId);
+		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, page, pagesize, cacheFlag);
     	
 		AccessLogRecorder.outputAccessLog(reportService, reportId, "showAsGrid", requestMap, start);
         
@@ -119,8 +120,8 @@ public class _Reporter extends BaseActionSupport {
         
     	long start = System.currentTimeMillis();
     	Map<String, String> requestMap = DMUtil.getRequestMap(request, true);
-		Object loginUserId = getLoginUserId(requestMap, reportId);
-		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, page, pagesize, loginUserId);
+		Object cacheFlag = checkLoginAndCache(requestMap, reportId);
+		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, page, pagesize, cacheFlag);
 		
 		String fileName = reportId + "-" + start + ".csv";
         String exportPath;
@@ -219,8 +220,8 @@ public class _Reporter extends BaseActionSupport {
     	int _page = page != null ? EasyUtils.obj2Int(page) : 1;
     			
     	long start = System.currentTimeMillis();
-        Object loginUserId = getLoginUserId(requestMap, reportId);
-		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, _page, _pagesize, loginUserId);
+        Object cacheFlag = checkLoginAndCache(requestMap, reportId);
+		SQLExcutor excutor = reportService.queryReport(reportId, requestMap, _page, _pagesize, cacheFlag);
         
         // 对一些转换为json为报错的类型值进行预处理
         for(Map<String, Object> row : excutor.result ) {

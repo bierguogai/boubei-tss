@@ -709,6 +709,7 @@ function delAttach() {
         $.ajax({
             url: URL_ATTACH_DELETE + attachId,
             method: 'DELETE',
+            waiting: true,
             onsuccess: function() {
                 $.G("attachGrid").deleteSelectedRow();
             }

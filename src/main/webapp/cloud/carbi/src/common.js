@@ -10,7 +10,7 @@ function jsonp_url(id) { return BASE_JSONP_URL + id; }
 var user_info = {}, preMonth, fromTime, toTime, orgs;
 var carnumMap;
 function initCarsInfo(callback) {
-    tssJS.getJSON( json_url(27), {}, function(data) {
+    tssJS.getJSON( json_url(27), {"uCache": "true"}, function(data) {
         carnumMap = {};
         data.each(function(i, item) {
             delete item.name;

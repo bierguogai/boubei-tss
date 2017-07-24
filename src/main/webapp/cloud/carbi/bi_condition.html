@@ -140,6 +140,12 @@ var now = toDate("2017-06-30"),
     cweek = getWeekNumber(now),
     cseason = Math.ceil( (now.getMonth()+1)/3 );
 
+
+var roles = parent.parent.parent.roles || [];
+var org = parent.parent.parent.userHas[4];
+var isCYS = roles.contains(12) && !roles.contains(11); // 是否为承运商/登录，12是承运商角色的ID   
+
+
 $(document).ready(function(){
     initParams(true);
 
@@ -339,9 +345,6 @@ function initGroupParams() {
     });
 
     // 机构切换后，需对车辆等进行重新过滤
-    var roles = parent.parent.parent.roles || [];
-    var org = parent.parent.parent.userHas[4];
-
     tssJS.getJSON(json_url(26), {"param2": "org"}, function(data) {
         $('#_g1').combobox( {
             panelHeight: '160px', 
@@ -350,11 +353,11 @@ function initGroupParams() {
             onChange: function( newOrg, oldOrg ) {
                 initByOrg(newOrg);
             },
-            value: roles.contains(12) ? org : null
+            value: isCYS ? org : null
         });
 
         var defaultSelected;
-        if( roles.contains(12) ) { // 承运商登录，12是承运商角色的ID                
+        if( isCYS ) {              
             $('#_g1').combobox("readonly", true);
             defaultSelected = org;
         } 
@@ -418,6 +421,10 @@ function updateParams(sync) {
     var keys = ["_g1", "_g2", "_g3", "_g4", "_g5", "_g7", "_g8", "_day1", "_day2", "_week1", "_week2", "_season1", "_season2", "_month1", "_month2", "_year1", "_year2"];
     var values = {};
     keys.each(function(i, key) {
+        if( isCYS && key == '_g1') {
+            return true;
+        }
+
         values[key] = tssJS.Cookie.getValue(key)||"";
         if(key == '_day1' || key == '_day2') {
             $("#" + key).textbox("setValue", values[key]);
@@ -429,10 +436,6 @@ function updateParams(sync) {
             }
         }
     });
-
-    var _g6Val = (tssJS.Cookie.getValue("_g6")||"").split(",");
-    $("#g61").prop("checked", _g6Val.contains("快递"));
-    $("#g62").prop("checked", _g6Val.contains("快运"));
 
     return values;
 }

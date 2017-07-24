@@ -145,7 +145,7 @@ public class ReportServiceImpl implements ReportService {
     }
     
   	public SQLExcutor queryReport(Long reportId, Map<String, String> requestMap, 
-  			int page, int pagesize, Object loginUserId) {
+  			int page, int pagesize, Object cacheFlag) {
     	
     	Report report = this.getReport(reportId);
     	return ReportQuery.excute(report, requestMap, page, pagesize);

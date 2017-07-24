@@ -105,6 +105,10 @@ function openUrl(url) {
 
         resizeIFrame();
         $iframe.attr("src", url);
+    } 
+    else { // 打开内嵌页的leftBar，如果有的话
+        var sonWindow = $iframe[0].contentWindow;
+        sonWindow.openPalette && sonWindow.openPalette();
     }
 
     $(".tssIFrame").addClass("hidden").removeClass("open");

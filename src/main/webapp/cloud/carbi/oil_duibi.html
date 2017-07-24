@@ -104,7 +104,11 @@ function duibi(field, title, canvasID, f, _d) {
             {
                 type : 'category',
                 splitLine : {show : false},
-                data : labels
+                data : labels,
+                axisLabel : {    
+                    rotate: 15, // 倾斜度
+                    textStyle: { fontSize: 14 }
+                }
             }
         ],
         yAxis : [

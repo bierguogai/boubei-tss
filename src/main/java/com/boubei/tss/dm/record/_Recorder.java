@@ -381,7 +381,7 @@ public class _Recorder extends BaseActionSupport {
 				}
 			}
 		}
-    	_db.insertBatch(insertList);
+    	_db.insertBatch(insertList); // 所有新增是一个事务的，但删除和修改不在一个事务内
     	
     	Map<String, Object> rtMap = new HashMap<String, Object>();
     	rtMap.put("created", insertList.size());
