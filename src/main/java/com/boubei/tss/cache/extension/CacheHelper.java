@@ -2,6 +2,7 @@ package com.boubei.tss.cache.extension;
 
 import java.util.Set;
 
+import com.boubei.tss.EX;
 import com.boubei.tss.PX;
 import com.boubei.tss.cache.JCache;
 import com.boubei.tss.cache.Pool;
@@ -45,11 +46,10 @@ public class CacheHelper {
 		}
 	}
 	
-	
 	public static Param getCacheParamGroup(ParamService paramService) {
 		Param paramGroup = paramService.getParam(PX.CACHE_PARAM);
 		if(paramGroup == null) {
-			paramGroup = ParamManager.addParamGroup(ParamConstants.DEFAULT_PARENT_ID, "缓存池配置");
+			paramGroup = ParamManager.addParamGroup(ParamConstants.DEFAULT_PARENT_ID, EX.CACHE_CONFIG);
 			paramGroup.setCode(PX.CACHE_PARAM);
 	        paramService.saveParam(paramGroup);
 		}

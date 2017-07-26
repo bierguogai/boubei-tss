@@ -48,7 +48,7 @@ public abstract class OutputRecordsManager {
             tpool = JCache.getInstance().getThreadPool();
         } catch(Exception e) {
             isReady = false;
-            log.error("初始化【" + this.getClass() + "】时获取线程池时出错。", e);
+            log.error("[" + this.getClass() + "] getThreadPool failed", e);
         }
         
         // 启动定时输出日志的守护线程
@@ -112,7 +112,7 @@ public abstract class OutputRecordsManager {
                         flush();   
                     }
                 } catch (InterruptedException e) {
-                    log.error("运行OutputRecordsManager.FlushThread线程时出错！", e);
+                    log.error(" OutputRecordsManager.FlushThread run failed", e);
                 }
             }
         }

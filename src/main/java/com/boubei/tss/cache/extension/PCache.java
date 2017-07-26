@@ -63,7 +63,7 @@ public class PCache implements ParamListener {
   			attrs = objectMapper.readValue(newConfig, Map.class);
 		} 
     	catch (Exception e) {  
-			throw new BusinessException("CACHE_PARAM【" + cacheCode + "】的参数配置有误。\n" + newConfig, e);
+			throw new BusinessException("CACHE_PARAM[" + cacheCode + "] config has error: \n" + newConfig, e);
   	    } 
     	
     	CacheStrategy strategy = new CacheStrategy();

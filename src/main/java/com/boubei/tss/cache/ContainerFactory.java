@@ -13,7 +13,6 @@ import com.boubei.tss.util.BeanUtil;
 
 /**
  * 池容器工厂类。
- * 
  */
 public class ContainerFactory {
 	
@@ -33,6 +32,10 @@ public class ContainerFactory {
 		// 调用构造方法：XXContainer(String name)
 		Object instance = BeanUtil.newInstanceByName(className,
 				new Class[] { String.class }, new Object[] { containerName });
+		
+		if (!Container.class.isAssignableFrom(instance.getClass())) {
+			throw new RuntimeException(className + " did not implements Container interface.");
+		}
 
 		return (Container) instance;
 	}

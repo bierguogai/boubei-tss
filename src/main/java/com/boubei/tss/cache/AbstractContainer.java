@@ -12,7 +12,6 @@ package com.boubei.tss.cache;
 
 /**
  * 缓冲池容器抽象超类。
- * 
  */
 public abstract class AbstractContainer implements Container {
 
@@ -23,9 +22,7 @@ public abstract class AbstractContainer implements Container {
 	}
 
 	public Cacheable getByAccessMethod(int accessMethod) {
-	    if(size() == 0) {
-	        return null;
-	    }
+	    if(size() == 0) return null;
 	    
 		Object item = null;
 		switch (accessMethod) {
@@ -64,14 +61,12 @@ public abstract class AbstractContainer implements Container {
  
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append("\n----------------【" + name + "】池中数据项列表，共【" + size() + "】个 --------------\n");
+		sb.append("\n----------------list [" + name + "] items，count = " + size() + " --------------\n");
 		for (Cacheable item : valueSet()) {
-			if (item != null) {
-				sb.append("  key: ").append(item.getKey());
-				sb.append(", value: ").append(item.getValue());
-				sb.append(", life: ").append( item.getHitLong() / Math.max(item.getHit(), 1) );
-				sb.append(", hit: ").append(item.getHit()).append("\n");
-			}
+			sb.append("  key: ").append(item.getKey());
+			sb.append(", value: ").append(item.getValue());
+			sb.append(", life: ").append( item.getHitLong() / Math.max(item.getHit(), 1) );
+			sb.append(", hit: ").append(item.getHit()).append("\n");
 		}
 		return sb.append("----------------------------------- END ---------------------------").toString();
 	}

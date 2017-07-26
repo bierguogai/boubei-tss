@@ -13,6 +13,7 @@ import javax.mail.internet.MimeUtility;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
+import com.boubei.tss.EX;
 import com.boubei.tss.dm.DataExport;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.report.ReportService;
@@ -39,6 +40,10 @@ public class ReportJob extends AbstractJob {
 	
 	ReportService reportService = (ReportService) Global.getBean("ReportService");
 	ILoginService loginService  = (ILoginService) Global.getBean("LoginService");
+	
+	protected boolean needSuccessLog() {
+		return true;
+	}
 	
 	/* 
 	 * jobConfig的格式为
@@ -105,7 +110,7 @@ public class ReportJob extends AbstractJob {
 			MimeMessageHelper messageHelper = new MimeMessageHelper(mailMessage, true, "utf-8");
 			messageHelper.setFrom( MailUtil.getEmailFrom(_ms) ); // 发送者
 			messageHelper.setTo(receiver);                       // 接受者
-			messageHelper.setSubject("定时报表：" + title);        // 主题
+			messageHelper.setSubject(EX.TIMER_REPORT + ":" + title);        // 主题
 			
 			// 邮件内容，注意加参数true
 			StringBuffer html = new StringBuffer();
@@ -131,7 +136,7 @@ public class ReportJob extends AbstractJob {
 			sender.send(mailMessage);
 		} 
 		catch (Exception e) {
-			log.error("发送报表邮件时出错了：", e);
+			log.error(" error when send report email ", e);
 		}
 	}
 
@@ -154,10 +159,10 @@ public class ReportJob extends AbstractJob {
 		for(String paramKey : paramsMap.keySet()) {
 			url += "& " + paramKey + "=" + paramsMap.get(paramKey);
 		}
-		html.append("<h4>点击链接可以看到更详细的图表：<a href='" + url + "'>" + url + "<a></h4><br>");
+		html.append("<h4>" +EX.DM_21+ "<a href='" + url + "'>" + url + "<a></h4><br>");
 		
 		if(ex.result.size() > MAX_ROWS) {
-			html.append("<h1>报表【" + title + "】的内容详细请参见附件。</h1>");
+			html.append("<h1>" +EX.parse(EX.DM_22, title)+ "</h1>");
 		} 
 		else {
 			html.append("<h1>" + title + "</h1>");

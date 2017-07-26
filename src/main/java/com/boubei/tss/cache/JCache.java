@@ -99,7 +99,7 @@ public class JCache {
 				pools.put(poolCode, strategy.getPoolInstance());
 			}
 		} catch (Exception e) {
-			log.error("根据缓存策略配置文件初始化缓存池失败: " + e);
+			log.error("initPools by " + cacheConfigFile + " failed: ", e);
 		}
 	}
 
@@ -130,7 +130,7 @@ public class JCache {
 				return pools.get(code); 
 			}
 
-			log.error("找不到相应的缓存池，请确定code值：【" + code + "】是否正确。 " + pools.keySet());
+			log.error("can't find pool[" + code + "], " + pools.keySet());
 		}
 		return pool;
 	}

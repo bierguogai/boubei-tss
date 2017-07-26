@@ -15,6 +15,7 @@ import com.boubei.tss.framework.sso.IOperator;
 import com.boubei.tss.modules.timer.AbstractJob;
 import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.helper.dto.OperatorDTO;
+import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.MailUtil;
 
@@ -28,6 +29,7 @@ public abstract class AbstractETLJob extends AbstractJob {
 	public static int PAGE_SIZE = 10000;
 	
 	protected ICommonService commonService = Global.getCommonService();
+	protected ILoginService loginService  = (ILoginService) Global.getBean("LoginService");
 	protected ReportService reportService = (ReportService) Global.getBean("ReportService");
 	protected RecordService recordService = (RecordService) Global.getBean("RecordService");
 	
@@ -56,11 +58,12 @@ public abstract class AbstractETLJob extends AbstractJob {
 		tLog.setException("yes");
 		tLog.setDetail( ExceptionEncoder.getFirstCause(e).getMessage() );
 		
-		// 邮件提醒此Task的管理员
 		log.error(tLog, e);
+		
+		// 邮件提醒此Task的管理员
 		String receiver = (String) EasyUtils.checkNull(task.getManager(), task.getApplier());
-		MailUtil.send( task.getName() + "ETL异常", tLog.toString(), receiver.split(","), MailUtil.DEFAULT_MS);
-        
+		String[] receivers = loginService.getContactInfos( receiver, false );
+		MailUtil.send( task.getName() + "ETL Error", tLog.toString(), receivers, MailUtil.DEFAULT_MS);
 	}
 	
 	/**

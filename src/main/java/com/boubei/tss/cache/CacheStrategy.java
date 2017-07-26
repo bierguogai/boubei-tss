@@ -290,4 +290,12 @@ public class CacheStrategy {
     public String getParamFile() {
         return paramFile;
     }
+    
+    public long getMaxWait() {
+    	return this.cyclelife > 0 ? this.cyclelife*2 : 60*60*1000;  // 默认1小时 
+    }
+    
+    public float calPoolLoadPercent(int realSize) {
+    	return (float) realSize / (this.poolSize == 0 ? 100 : this.poolSize);
+    }
 }

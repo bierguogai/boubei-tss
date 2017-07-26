@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.boubei.tss.EX;
 import com.boubei.tss.PX;
 import com.boubei.tss.cache.AbstractPool;
 import com.boubei.tss.cache.CacheStrategy;
@@ -37,6 +38,7 @@ import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.modules.param.ParamService;
 import com.boubei.tss.util.BeanUtil;
 import com.boubei.tss.util.DateUtil;
+import com.boubei.tss.util.MathUtil;
 import com.boubei.tss.util.XMLDocUtil;
 
 @Controller
@@ -134,12 +136,10 @@ public class CacheAction extends BaseActionSupport {
             attrs.put("hitrate", Math.round( pool.getHitRate() ) + "%");
             attrs.put("hitLong", Math.round( pool.getHitLong() / Math.max(1, pool.getRequests()) ));
             
-            if(pool instanceof AbstractPool) {
-            	AbstractPool _pool = (AbstractPool)pool;
-            	int busys = _pool.getUsing().size();
-				attrs.put("freeItemNum", _pool.getFree().size());
-				attrs.put("busyItemNum", busys > 0 ? "<b>" + busys + "</b>" : busys);
-            }
+        	AbstractPool _pool = (AbstractPool)pool;
+        	int busys = _pool.getUsing().size();
+			attrs.put("freeItemNum", _pool.getFree().size());
+			attrs.put("busyItemNum", busys > 0 ? "<b>" + busys + "</b>" : busys);
             
             dataList.add(gridNode);
         }
@@ -167,8 +167,7 @@ public class CacheAction extends BaseActionSupport {
         for(Cacheable item : cachedItems) {
             int hit = item.getHit();
             Object thisKey = item.getKey();
-            int hitrate = (requests == 0) ? 0 : Math.round(((float) hit / requests) * 100f);
-            
+            int hitrate = MathUtil.calPercent(hit, requests);
             long birthday = item.getBirthday();
             long now = System.currentTimeMillis();
             
@@ -183,13 +182,11 @@ public class CacheAction extends BaseActionSupport {
 			gridNode.getAttrs().put("hitRate", hitrate + "%");
             gridNode.getAttrs().put("remark", item.getValue());
             
-            if(pool instanceof AbstractPool) {
-            	boolean isFree = ( (AbstractPool)pool ).getFree().keySet().contains(thisKey);
-            	gridNode.getAttrs().put("state", isFree ? "0" : "1");
-            	if( !isFree ) {
-            		gridNode.getAttrs().put("hitLong", (now - item.getAccessed()) / 1000);
-            	}
-            }
+        	boolean isFree = ( (AbstractPool)pool ).getFree().keySet().contains(thisKey);
+        	if( !isFree ) {
+        		gridNode.getAttrs().put("state", "1");
+        		gridNode.getAttrs().put("hitLong", (now - item.getAccessed()) / 1000);
+        	} 
             
             dataList.add(gridNode);
         }
@@ -198,7 +195,7 @@ public class CacheAction extends BaseActionSupport {
         template.append("<grid><declare sequence=\"true\">");
         template.append("<column name=\"id\" mode=\"string\" display=\"none\"/>");
         template.append("<column name=\"code\" mode=\"string\" display=\"none\"/>");
-        template.append("<column name=\"key\" caption=\"键值\" mode=\"string\" width=\"300px\" sortable=\"true\"/>");
+        template.append("<column name=\"key\" caption=\"key\" mode=\"string\" width=\"300px\" sortable=\"true\"/>");
         template.append("<column name=\"birthday\" caption=\"出生时间\" mode=\"string\" width=\"100px\"/>");
         template.append("<column name=\"age\" caption=\"已存活(秒)\" mode=\"string\" width=\"60px\" sortable=\"true\"/>");
         template.append("<column name=\"hitLong\" caption=\"当前占时(秒)\" mode=\"string\" width=\"70px\" sortable=\"true\"/>");
@@ -231,13 +228,14 @@ public class CacheAction extends BaseActionSupport {
                 String valueStr = BeanUtil.toXml(item.getValue());
                 returnStr = XMLDocUtil.dataXml2Doc(valueStr).asXML();
                 log.debug(returnStr);
-            } catch(Exception e) {
-                returnStr = "缓存项(" + item.getValue() + ")内容生成XML不成功，无法查看！\n" + e.getMessage();
+            } 
+            catch(Exception e) {
+                returnStr = "(" + item.getValue() + ") can't be xml, view faild: \n" + e.getMessage();
             }
             print(returnStr);
         }
         else {
-            print("该缓存项已经不存在，已经被清空或是已经被刷新！");
+            print(EX.CACHE_5);
         }
     }
     
@@ -248,7 +246,7 @@ public class CacheAction extends BaseActionSupport {
     	
         Pool pool = cache.getPool(code);
 		boolean rt = pool.destroyByKey(key);
-        printSuccessMessage( !rt ? "成功清除。" : "该缓存项已经不存在，已经被清空或不在Free池中！");
+        printSuccessMessage( !rt ? "destroy succeed。" : EX.CACHE_5);
     }
     
     /**

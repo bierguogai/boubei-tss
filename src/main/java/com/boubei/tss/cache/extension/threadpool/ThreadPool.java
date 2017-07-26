@@ -56,7 +56,7 @@ public class ThreadPool extends ReusablePool implements IThreadPool{
         }
         
         synchronized (workQueue) {
-            log.debug("工作队列新增任务【" + task.getValue() + "】");
+            log.debug(" add task[" + task.getValue() + "] to workQueue ");
             workQueue.add(task);
             workQueue.notifyAll();  // workQueue在ThreadPoolWorker.run方法里wait()
         }
@@ -94,7 +94,7 @@ public class ThreadPool extends ReusablePool implements IThreadPool{
                 try {
                     if (taskWrapper != null) {
                         Task task = (Task) taskWrapper.getValue();
-                        log.debug( this + "开始执行任务: 【" + task + "】");
+                        log.debug( this + "start excute: [" + task + "]");
                         task.excute(); // 执行任务
                         
                         Object key = taskWrapper.getKey();
@@ -113,7 +113,7 @@ public class ThreadPool extends ReusablePool implements IThreadPool{
                         }
                     }
                 } catch (RuntimeException e) {
-                    log.error("ThreadPoolWorker执行任务时候出错", e);
+                    log.error("ThreadPoolWorker excute error", e);
                 } 
             }
         }

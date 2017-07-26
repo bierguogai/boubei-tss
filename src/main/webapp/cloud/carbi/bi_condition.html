@@ -141,8 +141,8 @@ var now = toDate("2017-06-30"),
     cseason = Math.ceil( (now.getMonth()+1)/3 );
 
 
-var roles = parent.parent.parent.roles || [];
-var org = parent.parent.parent.userHas[4];
+var roles = parent.userRoles || [];
+var org   = parent.userHas[4];
 var isCYS = roles.contains(12) && !roles.contains(11); // 是否为承运商/登录，12是承运商角色的ID   
 
 

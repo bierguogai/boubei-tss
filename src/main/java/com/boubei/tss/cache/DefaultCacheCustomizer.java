@@ -45,12 +45,6 @@ public class DefaultCacheCustomizer implements CacheCustomizer {
 	}
 
 	public void destroy(Cacheable o) {
-		if (o != null) {
-			Object value = o.getValue();
-			if (value != null) {
-				value = null;
-			}
-			o = null;
-		}
+		o = null;
 	}
 }

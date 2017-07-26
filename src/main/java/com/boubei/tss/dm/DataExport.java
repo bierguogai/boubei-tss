@@ -194,7 +194,7 @@ public class DataExport {
     public static void downloadFileByHttp(HttpServletResponse response, String sourceFilePath) {
         File sourceFile = new File(sourceFilePath);
         if( !sourceFile.exists() ) {
-        	log.error("下载附件时，发现文件【" + sourceFilePath + "】不存在");
+        	log.error("download file[" + sourceFilePath + "] not found.");
         	return;
         }
         

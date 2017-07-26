@@ -56,11 +56,19 @@ public class ByDayETLJob extends AbstractETLJob {
 		}
 		
 		int repeats = task.getRepeatDays();
-		while ( repeats > 0 ) {
-			currDay = DateUtil.subDays(today, repeats);
-			dateList.add(currDay);
-			repeatList.add(currDay);
-			repeats --;
+		if(repeats > 0) {
+			while ( repeats > 0 ) {
+				currDay = DateUtil.subDays(today, repeats);
+				dateList.add(currDay);
+				repeatList.add(currDay);
+				repeats --;
+			}
+		}
+		else {
+			String preRepeatSQL = task.getPreRepeatSQL();
+			if( !EasyUtils.isNullOrEmpty(preRepeatSQL) ) {
+				SQLExcutor.excute(preRepeatSQL, task.getTargetDS());
+			}
 		}
 				
 		log.info(task.getName() + " is starting! 共【" +dateList.size()+ "】天" );

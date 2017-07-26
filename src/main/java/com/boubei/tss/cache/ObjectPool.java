@@ -12,8 +12,6 @@ package com.boubei.tss.cache;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.boubei.tss.util.BeanUtil;
-
 /**
  * 缓存对象池
  */
@@ -49,27 +47,22 @@ public class ObjectPool extends AbstractPool implements Cleaner {
 		released = false;
 
 		String containerClass = strategy.poolContainerClass;
-		Class<?> collectionType = BeanUtil.createClassByName(containerClass);
-		if ( Container.class.isAssignableFrom(collectionType) ) {
-			ContainerFactory factory = ContainerFactory.getInstance();
-			String freePoolName = strategy.code + "_free";
-			free = free != null ? free : factory.create(containerClass, freePoolName);
-			
-			String usingPoolName = strategy.code + "_using";
-			using = using != null ? using : factory.create(containerClass, usingPoolName);
-			
-			// 为缓存池添加一个监听器
-			listeners.clear();
-			addPoolListener( new PoolListener() ); 
+		
+		ContainerFactory factory = ContainerFactory.getInstance();
+		String freePoolName = strategy.code + "_free";
+		free = free != null ? free : factory.create(containerClass, freePoolName);
+		
+		String usingPoolName = strategy.code + "_using";
+		using = using != null ? using : factory.create(containerClass, usingPoolName);
+		
+		// 为缓存池添加一个监听器
+		listeners.clear();
+		addPoolListener( new PoolListener() ); 
 
-			startInitThread( strategy.initNum );
-			initCleaner();
+		startInitThread( strategy.initNum );
+		initCleaner();
 
-			log.info("缓存池【" + strategy.name + "】初始化成功！");
-		}
-		else {
-			throw new RuntimeException("指定的容器类型非法: " + containerClass + "。 (需实现Container接口)");
-		}
+		log.info("pool[" + strategy.name + "] init succeed.");
 	}
 
 	/**
@@ -78,19 +71,15 @@ public class ObjectPool extends AbstractPool implements Cleaner {
 	 * @param num
 	 */
 	void startInitThread(int num) {
-		if (num == 0)
-			return;
+		if (num <= 0) return;
 		
 		int maxSize = strategy.poolSize;
-		if (num > 0 && (maxSize == 0 || num <= maxSize)) {
-			shutDownIniter();
-			
-			initer = new InitThread(num);
-			initer.start();
-		} 
-		else {
-			throw new IllegalArgumentException("初始化缓冲池的num参数非法");
-		}
+		num = Math.min(num, maxSize);
+		
+		shutDownIniter();
+		
+		initer = new InitThread(num);
+		initer.start();
 	}
 
 	/**
@@ -116,7 +105,7 @@ public class ObjectPool extends AbstractPool implements Cleaner {
 			try {
 				cleaner.join(); // 等待线程死亡
 			} catch (InterruptedException e) {
-				log.error("停止旧的cleaner线程时被中断", e);
+				log.error("shutdown pool cleaner failed", e);
 			}
 			cleaner = null;
 		}
@@ -128,7 +117,7 @@ public class ObjectPool extends AbstractPool implements Cleaner {
 			try {
 				initer.join(); // 等待线程死亡
 			} catch (InterruptedException e) {
-				log.error("停止initer线程时被中断", e);
+				log.error("shutdown pool initer failed", e);
 			}
 			initer = null;
 		}
@@ -155,13 +144,13 @@ public class ObjectPool extends AbstractPool implements Cleaner {
 						rel ++;
 					} catch (Exception e) {
 						failed ++;
-						log.error("无法释放using池中的缓存项目：" + key, e);
+						log.error("release " +this.getName()+ "'using container failed , when destroy item:" + key, e);
 					}
 				}
 				
 			} else {
 				if (using.size() > 0) {
-					log.info("等待【使用中的缓存项】被 check in pool...");
+					log.info(" waiting using item to checkIn back...");
 				}
 				
 				while (using.size() > 0) {
@@ -180,13 +169,13 @@ public class ObjectPool extends AbstractPool implements Cleaner {
 					rel ++;
 				} catch (Exception e) {
 					failed ++;
-					log.error("无法释放free池中的缓存项目：" + key, e);
+					log.error("release " +this.getName()+ "'free container failed , when destroy item:" + key, e);
 				}
 			}
 
-			String s = "成功释放【" + rel + "】个缓存项";
+			String s = "release succeed [" + rel + "] items";
 			if (failed > 0) {
-				s += " ，有【" + failed + "】个缓存项释放失败。";
+				s += " ，release failed [" + failed + "] items.";
 			}
 			log.info(s);
 
@@ -253,7 +242,7 @@ public class ObjectPool extends AbstractPool implements Cleaner {
 						}
 					}
 				} catch (Exception e) {
-					log.error(ObjectPool.this.getName() + " 运行cleaner时出错！sleep(" + interval + ")", e);
+					log.error(ObjectPool.this.getName() + " run cleaner error! sleep(" + interval + ")", e);
 				}
 			}
 		}
@@ -286,7 +275,7 @@ public class ObjectPool extends AbstractPool implements Cleaner {
 				try {
 					Cacheable item = customizer.create();
 					if (item == null) {
-						throw new RuntimeException(ObjectPool.this.getName() + "初始化时无法创建对象");
+						throw new RuntimeException(ObjectPool.this.getName() + " create item failed when initing pool.");
 					} else {
 						putObject(item.getKey(), item.getValue());
 					}
@@ -295,7 +284,7 @@ public class ObjectPool extends AbstractPool implements Cleaner {
 					stopped = true; // 如果本次循环创建对象失败，则将线程标记设置为停用，下次循环判断的时候即可推出循环，以免进入死循环。
 				}
 			}
-			log.debug("【" + ObjectPool.this.getName() + "】中初始化了【" + size() + "】个新的对象");
+			log.debug("[" + ObjectPool.this.getName() + "] inited [" + size() + "] items.");
 		}
 	}
 

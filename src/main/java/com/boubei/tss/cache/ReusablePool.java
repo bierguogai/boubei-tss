@@ -48,13 +48,13 @@ public class ReusablePool extends ObjectPool {
 			} 
 			else {
 				super.destroyObject(item);
+				log.info("destroy invalid item[" + item + "]");
 				item = null;
-				log.info("将验证没通过的缓存项【" + item + "】销毁");
 			}
 		}
 		
 		boolean isHited = (item != null); // 如果对象是从池中取出的，则命中率 hit＋＋
-		logDebug(isHited ? "命中：" + item + "!" : "没有命中!");
+		logDebug(isHited ? "hitted：" + item + "!" : "not hitted!");
 
 		// 如果free池中取不到，如果池中缓存项个数还没达到池的最大值，则新建一个
 		if ( !isHited ) {
@@ -63,9 +63,7 @@ public class ReusablePool extends ObjectPool {
 				item = customizer.create();
 		        	
 				if ( !customizer.isValid(item) ) {
-					String errorMsg = "【" + getName() + "】没能创建一个新的有效的缓存项。";
-					log.debug(errorMsg);
-					throw new RuntimeException(errorMsg);
+					throw new RuntimeException( "[" +getName()+ "] could not create a new valid cache-item." );
 				} 
 				else {
 					synchronized (size) {
@@ -90,8 +88,8 @@ public class ReusablePool extends ObjectPool {
 			firePoolEvent(PoolEvent.CHECKOUT);
 		}
 		
-		logDebug(" check out item : 【" + (item == null ? " 无对象返回" : item.getKey()) 
-		        + "】（" + getName() + ", 命中率 = " + getHitRate() + "%）" /* + this*/);
+		logDebug(" check out item : [" + (item == null ? " failed " : item.getKey()) 
+		        + "] (" + getName() + ", hitrate = " + getHitRate() + "%)" /* + this*/);
 		
 		return item;
 	}

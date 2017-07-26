@@ -99,7 +99,7 @@ public class QueryCacheInterceptor implements MethodInterceptor {
 			}
 			
 			qcItem.update( _visitors + "," + visitor ); // 记录是哪几个人、及第几个到访
-			log.debug( currentThread + " QueryCache【"+qKey+"】= " + qcItem.getHit() );
+			log.debug( currentThread + " QueryCache["+qKey+"]= " + qcItem.getHit() );
 			
 			// 等待执行中的上一次请求先执行完成； 
 			long start = System.currentTimeMillis();
@@ -117,14 +117,14 @@ public class QueryCacheInterceptor implements MethodInterceptor {
 			returnVal = invocation.proceed(); // 此时去执行查询，结果已经在3分钟的cache中
 		} 
 		else {
-			Cacheable item = qCache.putObject(qKey, visitor); // 缓存访问用户作为【执行中标记】
+			Cacheable item = qCache.putObject(qKey, visitor); // 缓存访问用户作为[执行中标记]
 			
 			/* 放到using池中，以免出现以下情形:
 			 * 如果一次报表查询超过了10分钟，其QC_对象已经被清除，但SQL还在继续执行，此时将捕捉不到是哪个Report异常 */
 			qCache.getFree().remove(qKey);
 			qCache.getUsing().put(qKey, item);
 			
-			log.debug(currentThread + " QueryCache【"+qKey+"】first time executing...");
+			log.debug(currentThread + " QueryCache["+qKey+"] first time executing...");
 			
 			/* 执行方法，进入CacheInterceptor，查询成功后结果将被缓存3分钟  */
 			try {

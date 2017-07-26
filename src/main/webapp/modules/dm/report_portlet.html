@@ -234,6 +234,14 @@ while(index--) {
 
 var globalValiable = {}, report_info_url; // 用来存放传递给iframe页面的信息
 
+// 用户&权限信息
+var userHas,
+    userCode, 
+    userName, 
+    userGroups = [], 
+    userRoles = [], 
+    userAssistGroups = [];
+
 // check login
 if(IS_TEST) {
     report_info_url = 'data/report_potlet.json';
@@ -242,9 +250,23 @@ if(IS_TEST) {
 else {
     report_info_url = '/tss/data/' +reportId+ '/define';
     $.getJSON("/tss/si/user", {}, function(data) {
-        if( data[0] && data[0] != 'ANONYMOUS' ) { 
-            init(); 
-        } else {
+        if( data[0] && data[0] != 'ANONYMOUS' ) {  // 检查是否已经登录
+
+            tssJS.getJSON("/tss/auth/user/has", {}, 
+                function(info) {
+                    userHas = info;
+                    userGroups = userHas[0];
+                    userRoles  = userHas[1];
+                    userCode   = userHas[3];
+                    userName   = userHas[4];
+                    userAssistGroups = userHas[5];
+
+                    init(); 
+                }, 
+                "GET"
+            );          
+        } 
+        else {
             location.href = "/tss/login.html";
         }
     }, "GET" );

@@ -26,14 +26,14 @@ public class ThreadPoolCustomizer extends DefaultCacheCustomizer {
   
     public Cacheable create() {
     	String currentThread = Thread.currentThread().getName();
-    	log.debug(":" + currentThread + ": 开始新建一个工作线程。");
+    	log.debug(":" + currentThread + ": creating a new work thread.");
     	
         IThreadPool tpool = JCache.getInstance().getThreadPool();
         Thread thread = tpool.createWorkThread();
         thread.start(); // 启动线程
         
         TimeWrapper newThread = new TimeWrapper(thread.getName(), thread, strategy.cyclelife);
-        log.debug(":" + currentThread + ": (" + newThread + ")创建成功！");
+        log.debug(":" + currentThread + ": (" + newThread + ") was created.");
         
 		return newThread;
     }
@@ -51,7 +51,7 @@ public class ThreadPoolCustomizer extends DefaultCacheCustomizer {
         try {
             poolWorker.join(50); //等待线程死亡
         } catch (InterruptedException e) {
-            log.error("停止initer线程时被中断", e);
+            log.error("stop initer thread failed", e);
         }
         poolWorker = null;
     }

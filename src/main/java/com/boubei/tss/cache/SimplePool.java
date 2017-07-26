@@ -9,7 +9,6 @@
  */
 package com.boubei.tss.cache;
 
-import com.boubei.tss.util.BeanUtil;
 
 /**
  * <pre>
@@ -27,17 +26,12 @@ public class SimplePool extends AbstractPool {
 
 	public final void init() {
 		String poolCollectionClass = strategy.poolContainerClass;
-		Class<?> collectionType = BeanUtil.createClassByName(poolCollectionClass);
-		if (!Container.class.isAssignableFrom(collectionType)) {
-			throw new RuntimeException("指定的池容器类类型非法: "
-					+ collectionType.getName() + " (必须实现Container接口)");
-		}
 
 		ContainerFactory factory = ContainerFactory.getInstance();
 		String containerName = strategy.code;
-		poolContainer = factory.create(collectionType.getName(), containerName);
+		poolContainer = factory.create(poolCollectionClass, containerName);
 
-		log.info("缓存池【" + strategy.name + "】初始化成功！");
+		log.info("pool[" + strategy.name + "] init succeed.");
 	}
 
 	public final void release(final boolean forced) {

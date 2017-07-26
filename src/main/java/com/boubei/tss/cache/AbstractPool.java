@@ -31,7 +31,7 @@ public abstract class AbstractPool implements Pool {
     protected void logError(String msg) {
     	log.error(msg + "，" + Environment.threadID());
     }
-
+    
     // 对象池属性
     
     /** 池中对象个数 */
@@ -73,13 +73,10 @@ public abstract class AbstractPool implements Pool {
 	public abstract Container getUsing();
 	
 	public String toString() {
-		String display = "\n缓存池【" +this.getName()+ "，" +this.getHitRate()+ "】的当前快照：";
-		if( getFree() != null ) {
-            display += getFree();
-        }
-		if( getUsing() != null ) {
-		    display += getUsing();
-		}
+		String display = "\n pool[" +this.getName()+ "，" +this.getHitRate()+ "]'s lastest snapshot: ";
+        display += getFree();
+	    display += getUsing();
+		    
         return display + "\n";
 	}
  
@@ -122,7 +119,7 @@ public abstract class AbstractPool implements Pool {
         	item = getUsing().get(key);
         }
         if (item == null && released) {
-            log.debug("getObjectOnly 获取不到，原因：【" + getName() + "】已被释放，所有缓存项都已被清空!");
+            log.debug("getObjectOnly faild，because [" + getName() + "] has released, all items was gone.");
         }
         
 		return item; 
@@ -167,7 +164,7 @@ public abstract class AbstractPool implements Pool {
     public void flush() {
         release(true);
         resetHitCounter();
-        log.debug("已经清除池中所有的缓存项。");
+        log.debug(this.getName() + " flushed.");
     }
     
     public Cacheable reload(final Cacheable obj) throws RuntimeException {
@@ -189,7 +186,7 @@ public abstract class AbstractPool implements Pool {
     public synchronized void destroyObject(final Cacheable o) {
         if (o != null) {
     		customizer.destroy(o);
-        	logDebug(" 对象" + o + "被成功销毁");
+        	logDebug(" Object[" + o + "] was destroyed.");
         	
         	synchronized(size) { 
         		size --; 
@@ -202,7 +199,7 @@ public abstract class AbstractPool implements Pool {
     	int realSize = getFree().size() + getUsing().size();
     	if( realSize != size ) {
     		log.debug(this);
-    		log.info( "【" +this.getName()+ "】实际缓存项个数 != 记录的个数, realSize = " +realSize+ ", size = " +size());
+    		log.info( "[" +this.getName()+ "] realSize != size(), realSize = " +realSize+ ", size() = " +size());
     		size = realSize; // 以实际个数为准
     	}
     }
@@ -241,7 +238,7 @@ public abstract class AbstractPool implements Pool {
         Cacheable item =  checkOut();
         while (item == null  &&  (System.currentTimeMillis() - time < timeout)) {
             try {
-                log.debug("【" + getName() + "】中没有可用的缓存项......等待 " + timeout + "（毫秒）");
+                log.debug("[" + getName() + "] has no available item......waiting " + timeout + "(ms)");
                 wait(timeout); /* wait需要结合synchronized，线程wait后会先释放对象锁，待wait时间（timeout）到了或其他线程notify后再收回对象锁，继续执行。 */
                 item = checkOut();
             } 
@@ -255,7 +252,7 @@ public abstract class AbstractPool implements Pool {
 			 * 此时池已接近奔溃边缘，尝试清除using里的僵尸对象（最后访问时间距今已超过了其cyclelife的对象） */
         	purge();
         	
-            String errorMsg = "【" + getName() + "】已满，等待超时(" + timeout + ")，请稍后访问！" + getFree().size() + "/"
+            String errorMsg = "[" + getName() + "] is overflow，waiting time " + timeout + ", " + getFree().size() + "/"
             		+ getUsing().size() + "/" +  this.getCacheStrategy().poolSize;
             log.info(errorMsg);
             throw new RuntimeException(errorMsg);
@@ -265,7 +262,7 @@ public abstract class AbstractPool implements Pool {
     
     public synchronized void checkIn(Cacheable item) {
         if (item == null) {
-        	logError("试图返回空的缓存项。");
+        	logError("attempt to checkIn a null item");
             return;
         }
         Object key = item.getKey();
@@ -273,7 +270,7 @@ public abstract class AbstractPool implements Pool {
         // 判断对象是否存在using池中，是的话将对象从using池中移出，否则抛出异常
 		Cacheable temp = getUsing().remove(key);
 		if( !item.equals(temp) ) {
-            logError("试图返回不是using池中的对象到free池中，返回失败！ " + getName() + "【" + item + " --> " + temp + "】");
+            logError("attempt to checkIn a item not from using pool, failed！" + getName() + "[" + item + " --> " + temp + "]");
             return;
         }
 		
@@ -302,12 +299,12 @@ public abstract class AbstractPool implements Pool {
                 //事件监听器将唤醒所有等待中的线程，包括cleaner线程，checkout，remove等操作的等待线程
                 firePoolEvent(PoolEvent.CHECKIN);
                 
-                logDebug(" 缓存项【" + item.getKey() + "】已经被回收（Check in）！");
+                logDebug("cache-item[" + item.getKey() + "] was checkIn）！");
             } 
             catch (Exception e) {        
             	// 如果不能回收则销毁
                 destroyObject(item); 
-                log.error("无法回收缓存项，已销毁！",  e);
+                log.error(" failed checkIn cache-item[" + item.getKey() + "], destroyed.",  e);
             }
         }
     }   
@@ -320,12 +317,12 @@ public abstract class AbstractPool implements Pool {
         long time = System.currentTimeMillis();
         while (item == null  &&  (System.currentTimeMillis() - time < timeout)) {
             try {
-            	logDebug("【" + this.getName() + "】的free容器中没有可用的项......等待【" + timeout + "】ms");
+            	logDebug("[" + this.getName() + "]'s free container has no available item......waiting " + timeout + " ms");
                 wait(timeout);
                 item = getFree().getByAccessMethod(strategy.accessMethod);
             } 
             catch (InterruptedException e) { 
-                log.error("等待移除缓存项时线程被中断，移除失败。", e); 
+                log.error("remove pool item failed", e); 
             }
         }
         
@@ -337,7 +334,7 @@ public abstract class AbstractPool implements Pool {
     }
     
     public boolean purge() {
-        log.debug("开始清除 【" + this.getName() + "】 中过期的缓存项 ....... ");
+        log.debug("starting to clean [" + this.getName() + "] expired item ....... ");
        
         int count = 0;
         for (Cacheable item : getFree().valueSet()) {
@@ -352,8 +349,8 @@ public abstract class AbstractPool implements Pool {
          * 不宜放回checkIn回Free池（比如：using中DBConn可能还卡死在执行某个SQL里，这样的Conn无法再被利用） */
         for (Cacheable item : getUsing().valueSet()) {
             long delta = System.currentTimeMillis() - item.getAccessed();
-            long maxWait = strategy.cyclelife > 0 ? strategy.cyclelife*2 : 60*60*1000;  // 默认1小时 
-            float percent = (float)this.size() / (strategy.poolSize == 0 ? 100 : strategy.poolSize);
+            long maxWait  = strategy.getMaxWait();  // 默认1小时 
+            float percent = strategy.calPoolLoadPercent( this.size() );
 			if ( delta > maxWait && percent > 0.55 ) {
                 removeObject(item.getKey());
                 destroyObject(item);
@@ -362,9 +359,9 @@ public abstract class AbstractPool implements Pool {
         }
         
         if(count > 0) {
-        	log.debug("共清除了【" + this.getName() + "】 中【" + count + "】个缓存对象。");
+        	log.debug("total clean[" + this.getName() + "] [" + count + "] items。");
         }
-        log.debug("清除结束");
+        log.debug("purge end.");
         
         return (getFree().size() == 0  && count == 0);
     }
