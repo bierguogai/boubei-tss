@@ -243,7 +243,7 @@ public abstract class AbstractPool implements Pool {
                 item = checkOut();
             } 
             catch (InterruptedException e) { 
-                log.error("checkOut时等待被中断", e); 
+                log.error("checkOut was interrupted", e); 
             }
         }
         

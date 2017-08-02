@@ -10,7 +10,7 @@
         http://www.springframework.org/schema/mvc
         http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd">
 	  
-	<mvc:annotation-driven>  
+	<mvc:annotation-driven conversion-service="conversionService">  
         <mvc:message-converters>  
             <bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter">  
                 <property name="objectMapper" ref="TSSObjectMapper"></property>  
@@ -19,6 +19,14 @@
     </mvc:annotation-driven>  
     
     <bean id="TSSObjectMapper" class="com.boubei.tss.framework.web.json.TSSObjectMapper"></bean> 
+    
+    <bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">    
+        <property name="converters">    
+            <list>    
+                <bean class="com.boubei.tss.framework.web.json.DateConvert" />    
+            </list>    
+        </property>    
+    </bean>
 
 	<!-- 在springMVC配置文件中将Service注解给去掉，以免注入的service没有事务功能.注：过滤包目录需要spring-framework.xml里一致 -->
 	<context:component-scan base-package="com.boubei"> 

@@ -93,12 +93,15 @@ public class _Recorder extends BaseActionSupport {
         	};
     }
 	
+	/**
+	 * 当recordId < 0 时，通常是为定制的表（比如万马的员工表）虚拟一张录入表，用以保存附件
+	 */
 	public Map<String, String> prepareParams(HttpServletRequest request, Long recordId) {
 		Map<String, String> requestMap = DMUtil.getRequestMap(request, false);
 		
 		/* 其它系统调用接口时，传入其在TSS注册的用户ID; 检查令牌，令牌有效则自动完成登陆 */
     	String uName  = requestMap.get("uName"), uToken = requestMap.get("uToken");
-    	if( !EasyUtils.isNullOrEmpty(uToken) && !EasyUtils.isNullOrEmpty(uName) ) {
+    	if( !EasyUtils.isNullOrEmpty(uToken) && !EasyUtils.isNullOrEmpty(uName) && recordId > 0 ) {
     		Record record = recordService.getRecord(recordId);
         	if( !DMUtil.checkAPIToken(record, uName, uToken) ) {
     			throw new BusinessException(EX.DM_11);
@@ -476,10 +479,10 @@ public class _Recorder extends BaseActionSupport {
 		HitRateManager.getInstanse("dm_record_attach").output(id);
 	}
 	
-	/************************************* check permissions：安全级别 > 5 才启用 **************************************/
+	/************************************* check permissions：安全级别 >= 6 才启用 **************************************/
 	
 	private boolean checkPermission(Long recordId, String permitOption) {
-		if( !SecurityUtil.isHardMode() ) return true;
+		if( !SecurityUtil.isHardMode() || recordId < 0 ) return true;
 		
 		PermissionHelper helper = PermissionHelper.getInstance();
 		String permissionTable = RecordPermission.class.getName();
@@ -492,7 +495,7 @@ public class _Recorder extends BaseActionSupport {
 	 * @param itemId
 	 */
 	private void checkRowEditable(Long recordId, Long itemId) {
-		if( !SecurityUtil.isHardMode() ) return;
+		if( !SecurityUtil.isHardMode() || recordId < 0 ) return;
 		
 		boolean flag = false;
 		if( checkPermission(recordId, Record.OPERATION_EDATA) ) {
@@ -511,7 +514,7 @@ public class _Recorder extends BaseActionSupport {
 	 * 因db.select方法里对数据进行了权限过滤，所以能按ID查询出来的都是有权限查看的
 	 */
 	private boolean checkRowVisible(Long recordId, Long itemId) {
-		if( !SecurityUtil.isHardMode() ) return true;
+		if( !SecurityUtil.isHardMode() || recordId < 0 ) return true;
 		
 		Map<String, String> requestMap = new HashMap<String, String>();
 		requestMap.put("id", EasyUtils.obj2String(itemId));

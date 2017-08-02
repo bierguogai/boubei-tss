@@ -468,7 +468,7 @@ function removeBatch() {
 
 function showEditLog() {
     var selectedLineId = $.G("grid").getColumnValue("id"); 
-    var operateTable = "record-update",
+    var operateTable = "record-",
         operationCode = recordName + ", " + selectedLineId;
 
     $.openIframePanel("logPanel", "数据修改日志", 960, 500, "../_log/log.htm?operateTable="+operateTable+"&operationCode=" + encodeURI(operationCode) );

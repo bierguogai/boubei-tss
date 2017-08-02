@@ -269,7 +269,7 @@ public class ObjectPool extends AbstractPool implements Cleaner {
 		public void run() {
 			while (size() < num) {
 				if (stopped) {
-					log.debug("初始化线程已经停止！");
+					log.debug("InitThread " + this.getName() + " has stopped!");
 					return;
 				}
 				try {
@@ -280,7 +280,7 @@ public class ObjectPool extends AbstractPool implements Cleaner {
 						putObject(item.getKey(), item.getValue());
 					}
 				} catch (Exception e) {
-					log.error("无法在池中初始化对象", e);
+					log.error(" create item failed ", e);
 					stopped = true; // 如果本次循环创建对象失败，则将线程标记设置为停用，下次循环判断的时候即可推出循环，以免进入死循环。
 				}
 			}

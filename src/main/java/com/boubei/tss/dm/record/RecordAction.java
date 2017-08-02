@@ -42,9 +42,9 @@ public class RecordAction extends BaseActionSupport {
         List<Record> list1 = recordService.getRecordables(); 
         List<Record> list2 = recordService.getVisiables(); // include record groups
         
-        // 过来权限，有录入
+        // 过滤权限，有录入权限且状态为启用 或 有浏览权限
         for(Record record : all) {
-        	if( list1.contains(record) || list2.contains(record) ){
+        	if( (list1.contains(record) && record.isActive()) || list2.contains(record) ){
         		result.add(record);
         	}
         }

@@ -174,7 +174,7 @@ public class Report extends OperateInfo implements IXForm, IDecodable, IResource
     }
 
     public TreeAttributesMap getAttributes() {
-        TreeAttributesMap map = new TreeAttributesMap(id, name);;
+        TreeAttributesMap map = new TreeAttributesMap(id, name);
        
         String icon_path;
         if ( isGroup() ) {
@@ -183,6 +183,11 @@ public class Report extends OperateInfo implements IXForm, IDecodable, IResource
         else {
             icon_path = "images/report_" + disabled + ".gif";
         } 
+        
+        if( (displayUri+"").indexOf("recorder.html?id=") > 0) {
+        	icon_path = "images/record_" + disabled + ".png";
+        }
+        
         map.put("icon", icon_path);
         map.put("parentId", parentId);
         map.put("disabled", disabled);

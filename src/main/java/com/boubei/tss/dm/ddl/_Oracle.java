@@ -87,6 +87,7 @@ public class _Oracle extends _Database {
 		Map<Integer, Object> paramsMap = super.buildInsertParams(valuesMap);
 		SQLExcutor.excute(insertSQL, paramsMap, this.datasource);
 		
+		logCUD(newID, "create", " add a new row: " + valuesMap);
 		return newID;
 	}
 	

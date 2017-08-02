@@ -331,7 +331,7 @@ public abstract class _Database {
         logCUD(id, "delete", Environment.getUserCode() + " deleted one row：" + old);
 	}
 	
-	private void logCUD(Object id, String opeartion, String logMsg) {
+	public void logCUD(Object id, String opeartion, String logMsg) {
 		if( !this.needLog ) return;
 		
 		Log excuteLog = new Log(recordName + ", " + id, logMsg);

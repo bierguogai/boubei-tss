@@ -16,6 +16,8 @@ public final class DMConstants {
 	// 常用宏
 	public final static String FILTER_BY_DOMAIN = "filterByDomain";
 	
+	public static String RECORD_PORTLET_HTML = "/tss/modules/dm/recorder.html?id=";
+	
 	// XForm 模板
 	public static final String XFORM_GROUP  = "template/dm/group_xform.xml";
 	public static final String XFORM_REPORT = "template/dm/report_xform.xml";

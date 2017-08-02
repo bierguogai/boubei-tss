@@ -11,7 +11,9 @@ URL_MOVE_SOURCE    = AUTH_PATH + "rp/move/";
 URL_GET_OPERATION  = AUTH_PATH + "rp/operations/";  // {id}
 URL_REPORT_JOB     = AUTH_PATH + "rp/schedule";
 URL_SUBSCRIBE_SOURCE  = AUTH_PATH + "rp/mailable/";
-URL_EXPORT_REPORT  = AUTH_PATH + "export/report/"
+URL_EXPORT_REPORT  = AUTH_PATH + "export/report/";
+URL_RECORD_TREE    = AUTH_PATH + "rc/all";
+URL_IMPORT_RECORD  = AUTH_PATH + "export/record2report";
 
 if(IS_TEST) {
 	URL_SOURCE_TREE    = "data/report_tree.xml?";
@@ -27,6 +29,8 @@ if(IS_TEST) {
 	URL_REPORT_JOB     = "data/report_schedule.json";
 	URL_SUBSCRIBE_SOURCE = "data/_success.xml?";
 	URL_EXPORT_REPORT  = "data/_success.xml?";
+	URL_RECORD_TREE    = "data/record_tree.xml?";
+	URL_IMPORT_RECORD  = "data/_success.json?";
 }
 
 /* 页面初始化 */
@@ -79,6 +83,12 @@ function initMenus() {
 			openReportDefine(true, false, "1");
 		},
 		icon: ICON + "report_0.gif",
+		visible:function() {return (isReportGroup() || isTreeRoot()) && getOperation("2");}
+	}
+	var item32 = {
+		label:"新增录入表链接",
+		callback: recordAsReport,
+		icon: ICON + "record_0.png",
 		visible:function() {return (isReportGroup() || isTreeRoot()) && getOperation("2");}
 	}
 	var item4 = {
@@ -159,6 +169,7 @@ function initMenus() {
 	menu.addItem(item10);
 	menu.addItem(item2);
 	menu.addItem(item3);
+	menu.addItem(item32);
 	menu.addItem(item4);
 	menu.addSeparator();
 	menu.addItem(item6);
@@ -355,6 +366,20 @@ function moveReport() {
         moveTreeNode(tree, id, targetId, URL_MOVE_SOURCE);
     });
 }		
+
+function recordAsReport() {
+	var tree = $.T("tree");
+	var treeNode = tree.getActiveTreeNode();
+	var id  = treeNode.id, name = treeNode.name;
+
+    var params = {"_title": "链接录入表到【" + name + "】", 'treeType':'multi'};
+    popupTree(URL_RECORD_TREE, "SourceTree", params, function(target) {
+    	$.post(URL_IMPORT_RECORD, {"reportGroup": id, "recordIds": target.join(",")}, function(msg) {
+    		loadInitData();
+    		$.alert("成功链接录入表");
+    	});
+    });
+}
  
 function testRestfulReportService() {
 	var treeNode = getActiveTreeNode();
