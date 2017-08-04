@@ -309,7 +309,7 @@
 				<db.username>tssbiu1</db.username>
 				<db.password>www.boubei.com</db.password>
 				<db.url>boubei.com:3306/ebi</db.url>
-				<tomcat.url>127.0.0.1:9091</tomcat.url>
+				<tomcat.url>127.0.0.1:9090</tomcat.url>
 			</properties>
 		</profile>
 		
