@@ -36,7 +36,7 @@
         request.onresult = arg.onresult || request.onresult;
         request.onsuccess = arg.onsuccess || request.onsuccess;
         request.onexception = arg.onexception || function(errorMsg) {
-            console.log(errorMsg.description); // 遇到异常却看不到任何信息，可尝试放开这里的注释
+            errorMsg.description && console.log(errorMsg.description); // 遇到异常却看不到任何信息，可尝试放开这里的注释
         };
 
         request.send();

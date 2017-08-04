@@ -11,6 +11,6 @@ zip -r tss.zip tomcat-ebi
 cp tss.zip /Users/jinpujun/GitHub/boubei.com/source/
 
 # 顺带导出初始化库
-mysqldump -uroot -p800best@com tss > tss_ebi.sql
-zip  /Users/jinpujun/GitHub/boubei.com/source/tss_ebi.sql.zip  tss_ebi.sql
-rm -f tss_ebi.sql
+#mysqldump -uroot -p800best@com tss > tss_ebi.sql
+#zip  /Users/jinpujun/GitHub/boubei.com/source/tss_ebi.sql.zip  tss_ebi.sql
+#rm -f tss_ebi.sql

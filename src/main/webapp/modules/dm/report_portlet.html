@@ -115,7 +115,7 @@ body { width:100%; overflow: hidden; }
       <a href="#" onmouseover="$('#tip1').show(true)" onmouseout="$('#tip1').hide()"> 
         <div class="icon icon-graph"></div>
         <div class="tip" id="tip1">
-          <iframe src="../../more/bi_condition.html" frameborder="no" scrolling="no"></iframe>
+          <iframe frameborder="no" scrolling="no"></iframe>
           <div>◆</div>
         </div> 
       </a> 
@@ -276,6 +276,8 @@ else {
 
 function init() {
     $("body").css("width", (document.body.offsetWidth - 28) + "px" );
+    $("#tip1>iframe").attr("src", "../../more/bi_condition.html");
+
     getZanNum(2);
     getZanNum(3);
     

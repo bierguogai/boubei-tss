@@ -3,7 +3,6 @@ package com.boubei.tss.dm;
 import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -28,6 +27,7 @@ import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.web.display.xform.XFormEncoder;
 import com.boubei.tss.modules.param.Param;
 import com.boubei.tss.modules.param.ParamManager;
+import com.boubei.tss.um.UMConstants;
 import com.boubei.tss.um.permission.IResource;
 import com.boubei.tss.um.service.ILoginService;
 import com.boubei.tss.util.DateUtil;
@@ -46,23 +46,10 @@ public class DMUtil {
         	List<Param> dsItems = ParamManager.getComboParam(PX.DATASOURCE_LIST);
         	List<Param> _dsItems = new ArrayList<Param>();
         	for(Param ds : dsItems) {
-        		boolean flag = false;
-        		String permissions = ds.getDescription();
-				if( !EasyUtils.isNullOrEmpty(permissions) ) {
-					List<Long> ownRoles = Environment.getOwnRoles();
-					List<String> permitedRoles = Arrays.asList( permissions.split(",") );
-					for(Long ownRole: ownRoles) {
-						if( permitedRoles.contains(ownRole.toString()) ) {
-							flag = true;
-						}
-					}
-        		} else {
-        			flag = true;
-        		}
-				
-				if(flag) {
+        		Long creatorId = ds.getCreatorId();
+				if( creatorId.equals(Environment.getUserId()) || creatorId.equals(UMConstants.ADMIN_USER_ID) ) {
 					_dsItems.add(ds);
-				}
+        		} 
         	}
         	
             xformEncoder.fixCombo("datasource", _dsItems);	
