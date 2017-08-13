@@ -7,6 +7,7 @@ import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
@@ -24,6 +25,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.util.EasyUtils;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 
 /**
  * 生成图形验证码、条形码、二维码等图形
@@ -118,7 +122,6 @@ public class ImageCodeAPI {
         }
     }  
 
-/* 需要JDK1.7才支持
 	@RequestMapping(value = "/qrbar/{code}", method = RequestMethod.GET)  
 	public void createQrBarCodeImg(@PathVariable("code") String code,
 			HttpServletRequest request, HttpServletResponse response) {
@@ -164,5 +167,4 @@ public class ImageCodeAPI {
 			throw new IOException("Could not write an image of format " + format);
 		}
 	}
-*/
 }

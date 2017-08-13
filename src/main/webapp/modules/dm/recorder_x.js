@@ -135,13 +135,15 @@ function disableForm() {
  * @param string field  逗号分隔的一至多个字段ID
  * @example hideFiled("f1,f2")
  */
-function hideFiled(field) {
+function hideField(field) {
     var fields = (field || '').split(",");
     fields.each(function(i, fID) {
         $("*", $1(fID).parentNode).hide();
         $("#label_" + fID).hide();
     });
 }
+
+var hideFiled = hideField; /* 曾用拼写错误名，需保留 */
 
 /** 
  * 将指定字段（隐藏状态）从录入表单里重新显示出来

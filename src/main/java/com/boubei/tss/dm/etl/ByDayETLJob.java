@@ -64,16 +64,11 @@ public class ByDayETLJob extends AbstractETLJob {
 				repeats --;
 			}
 		}
-		else {
-			String preRepeatSQL = task.getPreRepeatSQL();
-			if( !EasyUtils.isNullOrEmpty(preRepeatSQL) ) {
-				SQLExcutor.excute(preRepeatSQL, task.getTargetDS());
-			}
-		}
 				
-		log.info(task.getName() + " is starting! 共【" +dateList.size()+ "】天" );
+		log.info(task.getName() + " is starting! total days = " +dateList.size()+ "" );
 		
 		long start = System.currentTimeMillis();
+		int index = 0;
 		for (final Date day : dateList) {
 			TaskLog tLog = new TaskLog(task);
 			tLog.setDataDay( DateUtil.format(day) ); //记录执行日期
@@ -81,7 +76,7 @@ public class ByDayETLJob extends AbstractETLJob {
 			try {
 				long startTime = System.currentTimeMillis();
 				
-				String result = etlByDay(task, day, repeatList.contains(day));
+				String result = etlByDay(task, day, repeatList, index == 0);
 				
 				tLog.setException("no");
 				tLog.setDetail(result);
@@ -94,20 +89,26 @@ public class ByDayETLJob extends AbstractETLJob {
 			finally {
 				 // 记录任务日志，不管是否成功
 		        commonService.create(tLog);
+		        index++;
 			}
 		}
 
-		log.info("Done! 共计用时: " + (System.currentTimeMillis() - start));
+		log.info("Done! Cost time: " + (System.currentTimeMillis() - start));
 	}
 	
 	/* 按天ETL */
-	protected String etlByDay(Task task, Date day, boolean repeat) {
+	protected String etlByDay(Task task, Date day, List<Date> repeatList, boolean isFirstDay) {
 		// 判断是否重新抽取以更新当前日期的数据，是的话先清除已存在的改天数据
 		String preRepeatSQL = task.getPreRepeatSQL();
-		if(repeat && !EasyUtils.isNullOrEmpty(preRepeatSQL) ) {
-			Map<Integer, Object> params = new HashMap<Integer, Object>();
-			params.put(1, new Timestamp(day.getTime()));
-			SQLExcutor.excute(preRepeatSQL, params, task.getTargetDS());
+		if( !EasyUtils.isNullOrEmpty(preRepeatSQL) ) {
+			if(repeatList.contains(day)) {
+				Map<Integer, Object> params = new HashMap<Integer, Object>();
+				params.put(1, new Timestamp(day.getTime()));
+				SQLExcutor.excute(preRepeatSQL, params, task.getTargetDS());
+			}
+			else if( repeatList.isEmpty() && isFirstDay) { // eg: truncate table
+				SQLExcutor.excute(preRepeatSQL, task.getTargetDS());
+			}
 		}
 		
 		Report report;
@@ -120,7 +121,7 @@ public class ByDayETLJob extends AbstractETLJob {
     		report.setName(task.getName());
     		report.setDatasource(task.getSourceDS());
     		report.setScript(task.getSourceScript());
-    		report.setParam("[{'label':'从日期', 'type':'date'}, {'label':'到日期', 'type':'date'}]");
+    		report.setParam("[{'label':'fromDay', 'type':'date'}, {'label':'toDay', 'type':'date'}]");
     	}
 		
 		Map<String, String> paramsMap = new HashMap<String, String>();

@@ -277,15 +277,17 @@ public abstract class _Database {
 		int index = 0;
 		String tags = "";
 		for(String field : this.fieldCodes) {
+			if( !valuesMap.containsKey(field) ) continue;
+			
 			Object value = valuesMap.get(field);
 			value = DMUtil.preTreatValue((String)value, fieldTypes.get(index));
 			
-			paramsMap.put(++index, value);
+			paramsMap.put(paramsMap.size(), value);
 			tags += field + "=?, ";
 		}
-		paramsMap.put(++index, new Timestamp(new Date().getTime()));
-		paramsMap.put(++index, Environment.getUserCode());
-		paramsMap.put(++index, id);
+		paramsMap.put(paramsMap.size(), new Timestamp(new Date().getTime()));
+		paramsMap.put(paramsMap.size(), Environment.getUserCode());
+		paramsMap.put(paramsMap.size(), id);
 		
 		String updateSQL = "update " + this.table + " set " + tags + "updatetime=?, updator=?, version=version+1 where id=?";
 		SQLExcutor.excute(updateSQL, paramsMap, this.datasource);
@@ -357,6 +359,10 @@ public abstract class _Database {
 			params = new HashMap<String, String>();
 		}
 		
+		String fields = params.remove("fields");
+		fields = (String) EasyUtils.checkNull(fields, 
+				EasyUtils.list2Str(this.fieldCodes) + ",createtime,creator,updatetime,updator,version,id");
+		
 		// 增加权限控制，针对有編輯权限的允許查看他人录入数据, '000' <> ? <==> 忽略创建人这个查询条件
 		boolean visible = Environment.isAdmin();
 		try {
@@ -382,7 +388,7 @@ public abstract class _Database {
 			// 对paramValue进行检测，防止SQL注入
 			valueStr = DMUtil.checkSQLInject(valueStr);
 			
-			if( "creator".equals(key) ) {
+			if( "creator".equals(key) && visible) {
 				paramsMap.put(1, valueStr);  // 替换登录账号，允许查询其它人创建的数据; 
 				continue;
 			}
@@ -417,7 +423,7 @@ public abstract class _Database {
 					}
 					paramsMap.put(paramsMap.size() + 1, val);
 				}
-				else {
+				else if(vals.length == 2) {
 					condition += " and " + key + " >= ?  and " + key + " <= ? ";
 					paramsMap.put(paramsMap.size() + 1, DMUtil.preTreatValue(vals[0], paramType));
 					paramsMap.put(paramsMap.size() + 1, DMUtil.preTreatValue(vals[1], paramType));
@@ -455,8 +461,8 @@ public abstract class _Database {
 		}
 		orderby += " id desc "; // 始终加上ID排序，保证查询结果排序方式唯一
 		
-		String selectSQL = "select " + EasyUtils.list2Str(this.fieldCodes) + 
-					",createtime,creator,updatetime,updator,version,id from " + this.table + 
+		String selectSQL = "select " + fields + 
+					" from  " + this.table + 
 					" where " + condition + orderby;
 		
 		SQLExcutor ex = new SQLExcutor();

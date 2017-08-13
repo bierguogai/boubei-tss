@@ -69,7 +69,7 @@ public class ByIDETLJob extends AbstractETLJob {
 	        commonService.createWithoutLog(tLog);
 		}
 
-		log.info("Done! 共计用时: " + (System.currentTimeMillis() - start));
+		log.info("Done! Cost time: " + (System.currentTimeMillis() - start));
 	}
 	
 	protected Long[] etlByID(Task task, Long startID) {

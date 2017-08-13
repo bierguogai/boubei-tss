@@ -46,8 +46,14 @@ public class DMUtil {
         	List<Param> dsItems = ParamManager.getComboParam(PX.DATASOURCE_LIST);
         	List<Param> _dsItems = new ArrayList<Param>();
         	for(Param ds : dsItems) {
-        		Long creatorId = ds.getCreatorId();
-				if( creatorId.equals(Environment.getUserId()) || creatorId.equals(UMConstants.ADMIN_USER_ID) ) {
+        		Long creatorId = (Long) EasyUtils.checkNull(ds.getCreatorId(), UMConstants.ADMIN_USER_ID );
+        		
+        		List<Long> permiters = new ArrayList<Long>();
+        		permiters.add( UMConstants.ADMIN_USER_ID ); 
+				permiters.add( Environment.getUserId() );
+        		
+        		// 管理员创建的数据源都可见，其它的只有创建人（通常为开发者）自己可见
+				if( permiters.contains( creatorId ) || Environment.isAdmin() ) {
 					_dsItems.add(ds);
         		} 
         	}
@@ -113,15 +119,20 @@ public class DMUtil {
 		return exportPath;
 	}
 	
-	// 判断是否为区间查询（从 。。。 到 。。。）
+	// 判断是否为区间查询（从 。。。 到 。。。），value格式：[2017-06-22,2027-08-01]
 	public static String[] preTreatScopeValue(String value) {
 		if(value == null) return new String[] { };
 		
   		value = value.trim();
   		if(value.startsWith("[") && value.endsWith("]") && value.indexOf(",") > 0) {
   			String[] vals = value.substring(1, value.length() - 1).split(",");
-  			return new String[] { vals[0], vals[1] };
-
+  			if(vals.length == 1) {
+  				return new String[] { vals[0] };
+  			} else if(vals.length >= 2) {
+  				return new String[] { (String) EasyUtils.checkNull(vals[0], vals[1]), vals[1] };  // [,2027-08-01]
+  			} else {
+  				return new String[] { };
+  			}
   		}
   		return new String[] { value };
 	}

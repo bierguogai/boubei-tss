@@ -36,6 +36,7 @@ import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.exception.ExceptionEncoder;
 import com.boubei.tss.framework.persistence.pagequery.PageInfo;
 import com.boubei.tss.framework.sso.Environment;
+import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.web.display.grid.DefaultGridNode;
 import com.boubei.tss.framework.web.display.grid.GridDataEncoder;
 import com.boubei.tss.framework.web.display.grid.IGridNode;
@@ -217,6 +218,23 @@ public class _Recorder extends BaseActionSupport {
 
         AccessLogRecorder.outputAccessLog("record-" + recordId, _db.recordName, "exportAsCSV", requestMap, start);
     }
+    
+    @RequestMapping(value = "/{recordId}/{id}", method = RequestMethod.GET)
+    @ResponseBody
+    public Map<String, Object> get(HttpServletRequest request, 
+    		@PathVariable("recordId") Long recordId, @PathVariable("id") Long id) {
+    	
+    	prepareParams(request, recordId);
+    	_Database _db = getDB(recordId, Record.OPERATION_CDATA, Record.OPERATION_VDATA, Record.OPERATION_EDATA);
+
+        Map<String, Object> result = _db.get(id);
+        if(result == null) {
+        	throw new BusinessException( EX.parse(EX.DM_13_2, id) );
+        }
+        
+        result.put("id", id);
+		return result;
+    }
 	
     @RequestMapping(value = "/{recordId}", method = RequestMethod.POST)
     public void create(HttpServletRequest request, HttpServletResponse response, 
@@ -230,7 +248,7 @@ public class _Recorder extends BaseActionSupport {
     		printSuccessMessage( String.valueOf(newID) );
     	}
     	catch(Exception e) {
-    		throwEx(e, _db + "表里新增");
+    		throwEx(e, _db + " create ");
     	}
     }
     
@@ -247,14 +265,14 @@ public class _Recorder extends BaseActionSupport {
     		newID = _db.insertRID( requestMap );
     	}
     	catch(Exception e) {
-    		throwEx(e, _db + "表里新增");
+    		throwEx(e, _db + " create ");
     	}
     	return newID;
     }
     
     private void throwEx(Exception e, String op) {
     	Throwable firstCause = ExceptionEncoder.getFirstCause(e);
-		String errorMsg = "在" + op + "数据时出错了：" + firstCause;
+		String errorMsg = op + " error: " + firstCause;
 		log.debug(errorMsg);
 		throw new BusinessException(errorMsg);
     }
@@ -272,10 +290,15 @@ public class _Recorder extends BaseActionSupport {
     	_Database _db = getDB(recordId);
     	try {
 			_db.update(id, requestMap );
-    		printSuccessMessage();
+			
+			if( Context.getRequestContext().isXmlhttpRequest() ) { // tssJS.ajax
+				printSuccessMessage();
+			} else {
+				getWriter().append("{\"result\": \"Success\"}"); // not tssJS
+			}
     	}
     	catch(Exception e) {
-    		throwEx(e, _db + "表里修改");
+    		throwEx(e, _db + " update ");
     	}
     }
     
@@ -402,7 +425,7 @@ public class _Recorder extends BaseActionSupport {
     public void getImportTL(HttpServletResponse response, @PathVariable("recordId") Long recordId) {
     	 _Database _db = getDB(recordId, Record.OPERATION_CDATA, Record.OPERATION_EDATA, Record.OPERATION_VDATA);
 		
-		String fileName = _db.recordName + "-导入模板.csv";
+		String fileName = _db.recordName + "-tl.csv";
         String exportPath = DataExport.getExportPath() + "/" + fileName;
  
         DataExport.exportCSV(exportPath, EasyUtils.list2Str(_db.fieldNames));

@@ -240,7 +240,7 @@ var Field = function(info) {
 
 	$.vt = function(item) {
 		var result = {};
-		result.value = item.id   || item.pk   || item.value || item[0] || '';
+		result.value = item.id   || item.pk   || item.value || item[0] || item.name || '';
 		result.text  = item.name || item.text || item.value || item[2] || item[1] || item[0] || '';
 		return result;
 	};

@@ -513,18 +513,24 @@ function editFieldConfig() {
 				activeNode.li.a.title = newValue;
 				$(activeNode.li.a).html(newValue);
     		}
-    		if(field === 'options' && newValue) {
-    			newValue = newValue.replace(/，/ig, ',') // 替换中文逗号
-    			if(newValue.indexOf('|') < 0 && newValue.indexOf(',') < 0) {
-    				delete valuesMap['options'];
-    				valuesMap['jsonUrl'] = newValue;
-    			}
-    			else {
-	    			delete valuesMap['jsonUrl'];
-					var tmpArray = newValue.split(",");
-					var names = (tmpArray.length > 1 ? tmpArray[1] : tmpArray[0]);
-	    			valuesMap['options'] = {"codes": tmpArray[0], "names": names};
-	    		}
+
+    		if(field === 'options') {
+    			if( newValue ) {
+	    			newValue = newValue.replace(/，/ig, ',') // 替换中文逗号
+	    			if(newValue.indexOf('|') < 0 && newValue.indexOf(',') < 0) {
+	    				delete valuesMap['options'];
+	    				valuesMap['jsonUrl'] = newValue;
+	    			}
+	    			else {
+		    			delete valuesMap['jsonUrl'];
+						var tmpArray = newValue.split(",");
+						var names = (tmpArray.length > 1 ? tmpArray[1] : tmpArray[0]);
+		    			valuesMap['options'] = {"codes": tmpArray[0], "names": names};
+		    		}
+		    	} else {
+		    		delete valuesMap['options'];
+		    		delete valuesMap['jsonUrl'];
+		    	}
     		} 
 
     		if(field === 'type') {

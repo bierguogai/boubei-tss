@@ -18,4 +18,3 @@ build
 src/test/resources/passwd
 temp
 upload
-*.jar

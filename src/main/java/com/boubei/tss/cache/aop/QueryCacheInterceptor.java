@@ -75,7 +75,8 @@ public class QueryCacheInterceptor implements MethodInterceptor {
 		}
 		
 		/* 检查当前查询服务（报表服务等）在等待队列中是否超过了阈值（X）25%，超过则不再接受新的查询请求，
-		 * 以防止单个服务耗尽队列 
+		 * 以防止单个服务耗尽队列。
+		 * TODO 如果数据源出现异常，请求长时间处于等待获取连接的状态，还是会出现耗尽线程的轻型，此时需做的是：关闭该异常数据源。
 		 */
 		if( limit >= 0) {
 			Object limitArg = (args.length > limit ? args[limit] : "" );

@@ -12,6 +12,7 @@
 <script src="../../tools/tssJS/tssJS.all.js"></script>
 <script src="../../tools/tssJS/tssJS.json2Form.js"></script>
 <script src="../../tools/tssUtils.js"></script>
+<script src="../../tools/util_date.js"></script>
 <script src="../../tools/common/md5.js"></script>
 
 <script src="recorder_x.js"></script>
@@ -201,7 +202,7 @@ function initMenus() {
     if( !_operation.contains("1") || !batchImp ) {
         $("#btn_imp").hide();
     }
-    if( !_operation.contains("2") && !_operation.contains("4") && !_operation.contains("5") ) {
+    if( !_operation.contains("1") && !_operation.contains("4") && !_operation.contains("5")) {
         $("#btn_search").hide();
     }
     if( !_operation.contains("5") ) { // 只有维护数据权限的角色才能使用批量删除

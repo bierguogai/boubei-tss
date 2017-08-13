@@ -14,7 +14,7 @@ import com.boubei.tss.util.MailUtil;
  * 生成异常信息放到系统异常日志里，再通过定时任务发送出去。
  * 每30分钟，轮询最近30分钟 Monitor-Err 日志， 有的话发邮件出来。
  * 
- * com.boubei.tss.MonitorJob | 0 0/30 * * * ? | X
+ * com.boubei.tssbi.MonitorJob | 0 0/30 * * * ? | X
  * 
  */
 public class MonitorJob extends AbstractJob {
@@ -49,7 +49,7 @@ public class MonitorJob extends AbstractJob {
 		String sql = "select operationCode 类型, content 内容, operateTime 监测时间 " +
 				" from component_log t   " +
 				" where t.operateTable = '" +errName+ "' " + fitler +
-				"  and t.operateTime > DATE_SUB(NOW(), INTERVAL " +interval+ " MINUTE)";
+				"  and t.operateTime > DATE_SUB(NOW(), INTERVAL " +(interval+3)+ " MINUTE)";
 		List<Map<String, Object>> errList = SQLExcutor.query(ds, sql);
 		if(errList.isEmpty()) return;
 		
