@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>库存盘点</title>
+
+<link rel="stylesheet" href="../../tools/tssJS/css/boubei.css">
+<link rel="stylesheet" href="../../css/easyui.css">
+
+<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+
+<script src="../../tools/easyui/jquery.min.js"></script>
+<script src="../../tools/easyui/jquery.easyui.min.js"></script>
+<script src="../../tools/easyui/datagrid-cellediting.js"></script>
+<script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+
+<script src="../../tools/easyui.js"></script>
+
+<script type="text/javascript">
+
+var invTable = 33, skuTable = 32;
+
+SKU = record_urls(skuTable);
+INV = record_urls(invTable);
+
+var FIELDS = [
+    {field: "sku", title: "货品", width: "180px"},
+    {field: "skucode", title: "货品编码"},
+    {field: "brand", title: "品牌"},
+    {field: "loc", title: "库位", editor: "text"},    
+    {field: "qty", title: "库存数量"},
+    {field: "qty2", title: "实际数量", editor: "numberbox"},
+    {field: "guige", title: "规格", editor: "text"},
+    {field: "uom", title: "单位", editor: "text"},
+    {field: "createdate", title: "生产日期", editor: "datebox"},
+    {field: "expiredate", title: "过期日期", editor: "datebox"},
+    {field: "owner", title: "货主", hidden: true},
+    {field: "options", title: "操作", width: "80px"}
+];
+$.each(FIELDS, function(i, field) {
+    field.align = field.align || "center";
+    field.width = field.width || "8.5%";
+});
+
+var FIELDS_3 = [
+    {field: 'ck', checkbox: true},
+    {field: "code", title: "货品编码"},
+    {field: "name", title: "货品名称", width: "25%"},
+    {field: "guige", title: "规格"},
+    {field: "uom", title: "包装"},
+    {field: "price", title: "单价"},
+    {field: "brand", title: "品牌"}
+];
+$.each(FIELDS_3, function(i, field) {
+    field.align = field.align||"center";
+    field.width = field.width||"14%";
+});
+
+var dg, dg3;
+ 
+$(function(){
+
+     dg = $('#t1').datagrid({
+        fit: true,
+        fitColumns: true,
+        rownumbers: true,
+        singleSelect: true,
+        checkOnSelect: true,
+        selectOnCheck: true,
+        toolbar: [ 
+            '-', { text: '打印盘点单', iconCls: 'icon-print', handler: _print}, 
+            '-', { text: '添加库存', iconCls: 'icon-add', handler: addItems },
+            '-', { text: '保存盘点结果', iconCls: 'icon-save', handler: saveData}
+        ] ,
+        onClickCell: function(index, field, value) {
+            if(field == 'options' && value) {
+                dg.datagrid('deleteRow', index);
+            }           
+        },
+        columns: [FIELDS],
+        data: []
+    });
+
+    dg.datagrid('enableCellEditing');
+
+    query();
+    querySKUs();
+});
+
+function query() {
+    var params = {};
+    params.skucode = $("#param1").val();
+    params.sku = $("#param2").val();
+    params.brand = $("#param5").val();
+
+    var param3 = $('#param3').datebox("getValue");
+    var param4 = $('#param4').datebox("getValue");
+
+    if(param3 || param4) {
+        params.expiredate = "[" +param3 + "," + param4+ "]";
+    }
+
+    tssJS.getJSON( INV.QUERY, params, show);
+}
+
+function show(data) {
+    dg.datagrid("loadData", data);
+
+    dg.datagrid('gotoCell', {
+        index: 0,
+        field: 'qty2'
+    });
+}
+
+function querySKUs( isQuery ) {
+    var params = {};
+    if(isQuery) {
+        params.code = $('#_param1').textbox("getValue");
+        params.name = $('#_param2').textbox("getValue");
+        params.brand = $('#_param3').textbox("getValue");
+    }
+
+    dg3 = $('#t3').datagrid({
+        url: SKU.QUERY,      // 数据地址
+        queryParams: params || {}, // 参数
+        fit: true,
+        pagination: true,
+        pageSize : 50,
+        checkOnSelect: true,
+        selectOnCheck: true,
+        columns: [FIELDS_3]
+    });
+}
+
+function addItems() {
+    $('#dlg2').dialog( {"modal": true} ).dialog('open');
+}
+
+function selectSKUs() {
+    var skus = dg3.datagrid("getSelections");
+    $.each( skus, function(i, sku) {
+        var item = {};
+        item.sku = sku.name;
+        item.skucode = sku.code;
+        item.brand = sku.brand;
+        item.guige = sku.guige;
+        item.price = sku.price;
+        item.qty = 0;
+        item.uom = sku.uom;
+        item.options = '<a href="javascript:void(0)" style="text-decoration: underline;">删除</a>';
+
+        dg.datagrid("appendRow", item);
+    } );
+
+    dg3.datagrid("unselectAll");
+    $('#dlg2').dialog('close');
+}
+
+function saveData() {    
+    for(var i=0; i < 1000; i++) {
+        $('#t1').datagrid("endEdit", i);
+    }
+
+    var result = [];
+    result.push("id,sku,skucode,brand,guige,uom,loc,createdate,expiredate,qty,owner");
+
+    var rows = $('#t1').datagrid('getChanges');
+    $.each(rows, function(i, row) {
+        var qty2 = row.qty2;
+        if( !qty2 && qty2 != 0 ) {
+            qty2 = row.qty;
+        }
+
+        var obj = [row.id, row.sku, row.skucode, row.brand, row.guige, row.uom, row.loc, 
+                   row.createdate, row.expiredate, qty2, userName];
+        result.push( obj.join(",") );
+    });
+
+    if(result.length == 1) return;
+
+    $.post( INV.CUD, {"csv": result.join("\n")}, function(data) {
+        if(data.errorMsg) {
+            $.messager.show({ title: '提示', msg: data.errorMsg});
+        }
+        if(data.created || data.updated) {
+            $.messager.show({ title: '提示', msg: '保存成功！'});
+
+            query();
+        }
+    });   
+}
+
+var globalV = {};
+function _print() {
+    globalV.data = dg.datagrid("getRows");
+    tssJS.openIframePanel("panel-1", " - 库存盘点单打印", 800, 480, "inv_print.html");
+}
+
+</script>
+
+</head>
+<body>
+
+ <div id="main" class="easyui-layout" fit="true">
+    <div id="queryContainer" data-options="region:'north'" border="false">
+        <label>编码:</label><input id="param1" class="easyui-textbox"/>       
+        <label>商品名称:</label><input id="param2" class="easyui-textbox"></input>
+        <label>过期日期:</label><input id="param3" class="easyui-datebox"/> - <input id="param4" class="easyui-datebox"/>
+        <label>品牌:</label><input id="param5" class="easyui-textbox"></input> 
+        <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-search'" onclick='query()'>查询</a>
+    </div>
+    
+    <div id="dataContainer" data-options="region:'center'" border="false" title="库存列表">
+        <table id="t1" border="false"></table>
+    </div>
+</div>
+
+<div id="dlg2" class="easyui-dialog" title="选择货品" style="width:900px;height:400px;padding: 0" closed="true" buttons="#dlg2-buttons">
+    <div id="main" class="easyui-layout" fit="true">
+        <div id="queryContainer" data-options="region:'north'" border="false" style="display:none">
+            <label>编码:</label><input id="_param1" class="easyui-textbox"/>
+            <label>名称:</label><input id="_param2" class="easyui-textbox"/>
+            <label>品牌:</label><input id="_param3" class="easyui-textbox"/>
+
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-search'" onclick="querySKUs(true)">查 询</a>
+        </div>
+        <div id="dataContainer" data-options="region:'center'" border="false" title="货品列表">
+            <table id="t3" border="false"></table>
+        </div>
+    </div>
+</div>
+<div id="dlg2-buttons">
+    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" onclick="selectSKUs()">添加到库存</a>
+</div>
+
+</body>
+</html>

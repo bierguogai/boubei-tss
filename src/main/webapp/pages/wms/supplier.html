@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>供应商管理</title>
+
+<link rel="stylesheet" href="../../tools/tssJS/css/boubei.css">
+<link rel="stylesheet" href="../../css/easyui.css">
+
+<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+
+<script src="../../tools/easyui/jquery.min.js"></script>
+<script src="../../tools/easyui/jquery.easyui.min.js"></script>
+<script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+
+<script src="../../tools/easyui.js"></script>
+
+<script type="text/javascript">
+
+var tableId = 30;
+URL = record_urls(tableId);
+
+CREATE_URL = URL.CREATE;
+UPDATE_URL = URL.UPDATE;  //{id}
+DELETE_URL = URL.DELETE;  //{id}
+GET_URL    = URL.GET;  //{id}
+QUERY_URL  = URL.QUERY;
+ATTACH_URL = URL.ATTACH;
+
+$(document).ready(function () {
+    query();
+
+    $('#state').combobox( {
+        panelHeight: '60px',
+        width: '150px',
+        editable: false,
+        valueField: 'name',
+        textField: 'name',
+        data: [ 
+            {"name": "启用"}, 
+            {"name": "停用"}
+        ]
+    });
+});
+
+function create() {
+    openDialog('新增供应商', true);
+
+    $('#state').combobox('setValue', '启用');
+    $('#code').textbox('readonly', false);
+    $('#lockVersion').val('0'); // 給版本号设置默认值.
+}
+
+function update() {
+    var row = getSelectedRow();
+    if (row) {
+        openDialog('修改供应商');
+
+        $.getJSON(GET_URL + row.id, {}, function (data) {
+            
+            $('#fm').form('load', data);
+            $('#code').textbox('readonly', true);
+        }, "GET");
+    }
+}
+
+var FIELDS = [
+    {field: 'ck', checkbox: true},
+    {field: "name", width: "19%", title: "名称"},
+    {field: "code", width: "19%", title: "编码"},
+    {field: "zizhi", width: "19%", title: "资质"},    
+    {field: "state", width: "19%", title: "状态"},
+    {field: "updateTime", width: "19%", title: "修订日期"}
+];
+$.each(FIELDS, function(i, field) {
+    field.align = "center";
+});
+
+
+var dg;
+function query(params) {
+    params = params || {};
+
+    dg = $('#t1').datagrid({
+        url: QUERY_URL,      // 数据地址
+        queryParams: params, // 参数
+        fit: true,
+        fitColumns: true,
+        pagination: true,
+        rownumbers: true,
+        pageSize : 30,
+        singleSelect: true,
+        checkOnSelect: true,
+        selectOnCheck: true,
+        toolbar: [ 
+            { text: '新增', iconCls: 'icon-add', handler: create }, 
+            '-', { text: '修改', iconCls: 'icon-edit', handler: update }, 
+            '-', { text: '删除', iconCls : 'icon-remove', handler : _remove }, 
+            '-', { text: '管理资质文件', iconCls : 'icon-add', handler : uploadX, id: "btn3" }
+        ] ,
+        columns: [FIELDS],
+        /* 返回的结果再处理 */
+        loadFilter: function (data) {
+            $.each(data, function (i, item) {                 
+                item.updateTime = (item.updateTime || "").split(" ")[0];
+            });
+
+            setTimeout(getAttachs, 2000);
+            return data;
+        },
+        onSelect: function(index, row) {
+            $('#btn3').linkbutton("enable");
+        }
+    });
+}
+
+function _remove(){
+    doRemove("t1", tableId);
+}
+
+function beginQuery() {
+    var params = {};
+    params.name = $('#param1').val();
+
+    query(params);
+}
+
+
+function getAttachs() {
+    dg && $.each(dg.datagrid("getRows"), function(index, row) {   
+        tssJS.ajax({ 
+            url: ATTACH_URL + row.id, 
+            method: "GET", 
+            ondata: function(){
+                var data  = this.getResponseJSON();
+                if(data && data.length) {
+                    var item = data[0];
+                    row.zizhi = "<a href='" + item.downloadUrl + "' target='_blank' style='color:red'>点击查看</a>";
+                    dg.datagrid("refreshRow", index);
+                }
+            } 
+        });
+    });
+}
+
+var globalValiable = {"tableId": tableId}
+function uploadX() {
+    var row = getSelectedRow();
+    if (row) {
+        globalValiable.itemId = row.id;
+        var title = "管理【" + row.name + "】的资质文件";
+        tssJS.openIframePanel("if1", title, 710, 255, "../../modules/dm/recorder_upload.html", true);
+    }
+}
+
+</script>
+
+</head>
+<body>
+
+<div id="main" class="easyui-layout" fit="true">
+    <div id="queryContainer" data-options="region:'north'" border="false" style="display:none">
+        <label>名称:</label><input id="param1" class="easyui-textbox"/>
+
+        <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'" onclick="beginQuery()">查 询</a>
+    </div>
+    <div id="dataContainer" data-options="region:'center'" border="false" title="供应商列表">
+        <table id="t1" border="false"></table>
+    </div>
+</div>
+
+<div id="dlg" class="easyui-dialog" style="width:545px;height: 330px;" closed="true" buttons="#dlg-buttons">
+    <form id="fm" method="post" novalidate>
+        <input name="id" type="hidden"/>
+        <input id="lockVersion" name="lockVersion" type="hidden"/>
+        <input id="seqNo" name="seqNo" type="hidden" />
+        <table class="l">
+            <tr>
+                <td class="label">名称:</td>
+                <td>
+                    <input name="name" id="name" class="easyui-textbox" required/>
+                </td>   
+                <td class="label">编码:</td>
+                <td>
+                    <input name="code" id="code" class="easyui-textbox" required/>
+                </td>            
+            </tr>
+            <tr>  
+                <td class="label">状态:</td>
+                <td>
+                    <input name="state" id="state" class="easyui-textbox" required/>
+                </td>  
+                <td class="label"></td>
+                <td></td>           
+            </tr>
+
+        </table>
+    </form>
+</div>
+<div id="dlg-buttons">
+    <a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="save(12)">保 存</a>
+    <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="closeDialog()">取 消</a>
+</div>
+
+</body>
+</html>

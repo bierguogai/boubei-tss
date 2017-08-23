@@ -78,8 +78,9 @@ public class ImportRecord implements AfterUpload {
             
             Integer status = record.getDisabled();
             recordService.createRecord(record);
+            
             record.setDisabled(status);
-            recordService.createRecord(record);
+            recordService.updateRecord(record);
             
             idMapping.put(oldId, record.getId());
         }
