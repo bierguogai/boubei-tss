@@ -274,9 +274,9 @@ public abstract class _Database {
 		}
 		
 		Map<Integer, Object> paramsMap = new HashMap<Integer, Object>();
-		int index = 0;
 		String tags = "";
-		for(String field : this.fieldCodes) {
+		for(int index = 0; index < this.fieldCodes.size(); index++) {
+			String field = this.fieldCodes.get(index);
 			if( !valuesMap.containsKey(field) ) continue;
 			
 			Object value = valuesMap.get(field);

@@ -45,15 +45,13 @@ public class ThreadPoolCustomizer extends DefaultCacheCustomizer {
     }
 
     public void destroy(Cacheable o) {
-    	if(o == null) return;
-    	
-        Thread poolWorker = (Thread) o.getValue();
         try {
-            poolWorker.join(50); //等待线程死亡
-        } catch (InterruptedException e) {
-            log.error("stop initer thread failed", e);
+        	Thread poolWorker = (Thread) o.getValue();
+            poolWorker.join(50); // 等待线程死亡
+        } 
+        catch (Exception e) {
+            log.error("destroy thread failed" + e.getMessage());
         }
-        poolWorker = null;
     }
 
 	public Cacheable reloadCacheObject(Cacheable item) {

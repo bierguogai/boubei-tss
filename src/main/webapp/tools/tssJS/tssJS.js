@@ -864,6 +864,8 @@
         waitingLayerZIndex: 998,
 
         showWaitingLayer: function () {
+            if (!document.body) return;
+            
             var waitingObj = $("#_waiting");
             if(waitingObj.length == 0) {
                 var waitingDiv = document.createElement("div");    

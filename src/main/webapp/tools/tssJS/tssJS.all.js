@@ -864,6 +864,8 @@
         waitingLayerZIndex: 998,
 
         showWaitingLayer: function () {
+            if (!document.body) return;
+            
             var waitingObj = $("#_waiting");
             if(waitingObj.length == 0) {
                 var waitingDiv = document.createElement("div");    
@@ -1229,7 +1231,7 @@
         }
     });
 
-})(tssJS);
+})(tssJS);CONTEXTPATH = "tss";
 
 /*  AJAX相关封装
     $.ajax({
@@ -1268,6 +1270,7 @@
         request.onsuccess = arg.onsuccess || request.onsuccess;
         request.onexception = arg.onexception || function(errorMsg) {
             errorMsg.description && console.log(errorMsg.description); // 遇到异常却看不到任何信息，可尝试放开这里的注释
+            errorMsg.msg && console.log(errorMsg.msg);
         };
 
         request.send();

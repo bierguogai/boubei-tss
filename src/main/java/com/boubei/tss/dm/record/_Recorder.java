@@ -36,7 +36,6 @@ import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.exception.ExceptionEncoder;
 import com.boubei.tss.framework.persistence.pagequery.PageInfo;
 import com.boubei.tss.framework.sso.Environment;
-import com.boubei.tss.framework.sso.context.Context;
 import com.boubei.tss.framework.web.display.grid.DefaultGridNode;
 import com.boubei.tss.framework.web.display.grid.GridDataEncoder;
 import com.boubei.tss.framework.web.display.grid.IGridNode;
@@ -291,11 +290,7 @@ public class _Recorder extends BaseActionSupport {
     	try {
 			_db.update(id, requestMap );
 			
-			if( Context.getRequestContext().isXmlhttpRequest() ) { // tssJS.ajax
-				printSuccessMessage();
-			} else {
-				getWriter().append("{\"result\": \"Success\"}"); // not tssJS
-			}
+			printSuccessMessage();
     	}
     	catch(Exception e) {
     		throwEx(e, _db + " update ");
