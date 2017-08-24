@@ -7,6 +7,7 @@ CONTEXTPATH = "tss";
         headers : {},
         params  : {}, 
         formNode : formNode,
+        exEmpty: true,
         ondata : function() { },
         onresult : function() { },
         onexception : function() { },
@@ -27,6 +28,7 @@ CONTEXTPATH = "tss";
 
         request.params  = arg.params  || {};
         request.headers = arg.headers || {};
+        request.exEmpty = arg.exEmpty || true;
 
         if(arg.formNode) {
             request.setFormContent(arg.formNode);
@@ -137,6 +139,7 @@ CONTEXTPATH = "tss";
         this.params = {};
         this.headers = {};
         this.waiting = false;
+        this.exEmpty = true;
 
         this.responseText;
         this.responseXML;
@@ -308,7 +311,7 @@ CONTEXTPATH = "tss";
          
             for(var name in this.params) {
                 var value = this.params[name];
-                if( !$.isNullOrEmpty(value) ) {
+                if( !$.isNullOrEmpty(value) || !this.exEmpty ) {
                     var paramNode = $.XML.createNode(_XML_NODE_REQUEST_PARAM);
                     paramNode.appendChild($.XML.appendCDATA(_XML_NODE_REQUEST_NAME, name));
                     paramNode.appendChild($.XML.appendCDATA(_XML_NODE_REQUEST_VALUE, value));

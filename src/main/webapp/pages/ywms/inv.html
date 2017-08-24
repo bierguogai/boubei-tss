@@ -34,6 +34,7 @@
 
 TOMCAT_URL = "";
 
+// TODO 此处没用上报表自定义的条件，自定义条件只在《报表维护》资源树上打开时起作用
 function getParams() {
     var params = {};
     if(parent.globalValiable) {
@@ -120,7 +121,7 @@ var FIELDS_1 = [
 var dg1;
 function query(params) {
 
-    tssJS.getJSON(json_url(721), params, function(data){
+    tssJS.getJSON(json_url(71), params, function(data){
 
         showGrid(data);
         showChart(data);

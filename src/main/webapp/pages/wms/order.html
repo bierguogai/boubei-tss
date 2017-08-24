@@ -22,6 +22,7 @@
 
 <script type="text/javascript">
 
+var role_owner = 18, role_customer = 19;
 var orderTable = 36, orderItemTable = 37, skuTable = 32, invTable = 33;
 var globalV = {}, 
     dg1, dg2, dg3,
@@ -162,7 +163,7 @@ function queryOrder( params ) {
             // TODO 切换前判断前一个订单明细是否有修改，有的话提示是否先保存修改
 
             // 只有创建人本人 和 供销社人员 能编辑
-            var opable = ( row.creator == userCode || userRoles.contains(3) );
+            var opable = ( row.creator == userCode || userRoles.contains( role_owner ) );
 
             // 已审核/已发货/关闭的订单无法再修改
             opable = opable && !row.checker && row.status != '取消';
@@ -188,7 +189,7 @@ function queryOrder( params ) {
                 $('#btn2').linkbutton("disable");
             }
 
-            if( userRoles.contains(3) ) { // 供销社人员
+            if( userRoles.contains( role_owner ) ) { // 供销社人员
                 $('#btn5').linkbutton("enable");
                 $('#btn7').linkbutton("disable");
 
@@ -211,7 +212,7 @@ function queryOrder( params ) {
                 }
             } 
 
-            if( userRoles.contains(4) && row.status == '已发货') { // 超市人员
+            if( userRoles.contains( role_customer ) && row.status == '已发货') { // 超市人员
                 $('#btn7').linkbutton("enable");
             }
 
@@ -402,7 +403,7 @@ function showItems(data, opable) {
         dg2.datagrid("showColumn", "options");
     }
 
-    if( userRoles.contains(4) ) { // 超市人员，不能操作批次信息
+    if( userRoles.contains(role_customer) ) { // 超市人员，不能操作批次信息
        dg2.datagrid("hideColumn", "createdate");
        dg2.datagrid("hideColumn", "expiredate");
     }
@@ -549,7 +550,7 @@ function saveItems() {
     </form>
 </div>
 <div id="dlg-buttons">
-    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" onclick="save(15)">保 存</a>
+    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" onclick="save(orderTable)">保 存</a>
     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="closeDialog()">取 消</a>
 </div>
 

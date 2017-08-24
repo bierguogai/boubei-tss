@@ -398,6 +398,7 @@ function saveSource(rowID, version) {
     var request = new $.HttpRequest();
     request.url = URL_SAVE_SOURCE + recordId;
     request.headers.noAlert = true;
+    request.exEmpty = false; // 字段清空了也要传回后台，不然就无法清空字段了
 
     var dataNode = $.cache.XmlDatas[rowID];
     request.setFormContent(dataNode);
