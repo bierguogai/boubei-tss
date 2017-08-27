@@ -474,10 +474,10 @@
 				<security.level>6</security.level>
 				<job.enable>true</job.enable>
 				<log.level>info</log.level>
-				<db.username>tssbiu1</db.username>
-				<db.password>www.boubei.com</db.password>
-				<db.url>boubei.com:3306/xbi</db.url>
-				<tomcat.url>www.boubei.com:9090</tomcat.url>
+				<db.username>prod</db.username>
+				<db.password>bp1164b10yj3i0pfh@prod</db.password>
+				<db.url>rm-bp1164b10yj3i0pfh.mysql.rds.aliyuncs.com:3306/xbi</db.url>
+				<tomcat.url>demo.boubei.com</tomcat.url>
 			</properties>
 		</profile>
 		
@@ -494,7 +494,7 @@
 				<db.username>tssbiu1</db.username>
 				<db.password>www.boubei.com</db.password>
 				<db.url>boubei.com:3306/ebi</db.url>
-				<tomcat.url>tssbi.boubei.com</tomcat.url>
+				<tomcat.url>demo.boubei.com</tomcat.url>
 			</properties>
 		</profile>
 		

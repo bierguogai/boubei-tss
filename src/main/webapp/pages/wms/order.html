@@ -22,11 +22,13 @@
 
 <script type="text/javascript">
 
-var role_owner = 18, role_customer = 19;
+var role_owner = 18, role_customer = 19, group_customer = 7;
 var orderTable = 36, orderItemTable = 37, skuTable = 32, invTable = 33;
+
 var globalV = {}, 
     dg1, dg2, dg3,
-    dg2_data, dg1_selected;
+    dg2_data, dg1_selected,
+    receivers = {};
 
 ORDER = record_urls(orderTable);
 ITEMS = record_urls(orderItemTable);
@@ -51,13 +53,16 @@ var FIELDS_2 = [
     {field: "sku", title: "货品", width: "180px", sortable: true},
     {field: "skucode", title: "货品编码"},
     {field: "guige", title: "规格"},
-    {field: "uom", title: "单位", editor: "text"},
-    {field: "createdate", title: "生产日期", editor: "datebox"},
-    {field: "expiredate", title: "过期日期", editor: "datebox"},
+    {field: "uom", title: "单位"},
+    {field: "createdate", title: "生产日期", editor: "datebox", hidden: true},
+    {field: "expiredate", title: "过期日期", editor: "datebox", hidden: true},
+    {field: "shelflife", title: "有效期", width: "60px"},
     {field: "qty", title: "数量", editor: "numberbox"},
-    {field: "price", title: "单价", editor: {type:'numberbox',options:{precision:2}}},
+    {field: "price", title: "单价"},
     {field: "money", title: "金额", editor: {type:'numberbox',options:{precision:2}}},
-    {field: "options", title: "操作", width: "80px"}
+    {field: "opts", title: "操作", width: "60px", styler: 
+        function(value,row,index){ return 'background-color: rgb(254, 247, 169)'; }
+    }
 ];
 var FIELDS_3 = [
     {field: 'ck', checkbox: true},
@@ -66,6 +71,7 @@ var FIELDS_3 = [
     {field: "guige", title: "规格"},
     {field: "uom", title: "单位"},
     {field: "price", title: "单价"},
+    {field: "shelflife", title: "有效期", width: "60px"},
     {field: "brand", title: "品牌"}
 ];
 $.each(FIELDS_1, function(i, field) {
@@ -78,7 +84,7 @@ $.each(FIELDS_2, function(i, field) {
 });
 $.each(FIELDS_3, function(i, field) {
     field.align = field.align||"center";
-    field.width = field.width||"14%";
+    field.width = field.width||"13%";
 });
 
 $(function(){
@@ -97,7 +103,7 @@ $(function(){
             '-', { text: '保存货品清单', iconCls: 'icon-save', handler: saveItems, disabled: true, id: "btn22"}
         ],
         onClickCell: function(index, field, value) {
-            if(field == 'options') {
+            if(field == 'opts') {
                 removeItem(index);
             }           
         },
@@ -123,6 +129,35 @@ $(function(){
     dg2.datagrid('enableCellEditing');
 
     querySKUs();
+
+    $.getJSON("/tss/auth/service/gusers/" + group_customer, {}, function(data) {
+        data.each(function(i, item) {
+            receivers[item.userName] = item;
+        });
+
+        $("#receiver").combobox( {
+            panelHeight: '150px',
+            editable: true,
+            data: data,
+            textField: "userName",
+            valueField: "userName",
+            onChange: function( newOrg, oldOrg ) {
+                var u = receivers[newOrg];
+                if(u) {
+                    $('#mobile1').textbox('setValue', u.telephone);
+                    $('#receiveaddr').textbox('setValue', u.address);
+                }
+            }
+        });
+    });
+
+    // 支持模糊查询
+    $('#receiver').combobox({
+        filter: function(q, row){
+            var options = $(this).combobox('options');
+            return row[options.textField].indexOf(q) >= 0;
+        }
+    });
 });
 
 function queryOrder( params ) {
@@ -163,7 +198,7 @@ function queryOrder( params ) {
             // TODO 切换前判断前一个订单明细是否有修改，有的话提示是否先保存修改
 
             // 只有创建人本人 和 供销社人员 能编辑
-            var opable = ( row.creator == userCode || userRoles.contains( role_owner ) );
+            var opable = ( row.creator == userCode || userRoles.contains(role_owner) );
 
             // 已审核/已发货/关闭的订单无法再修改
             opable = opable && !row.checker && row.status != '取消';
@@ -189,7 +224,7 @@ function queryOrder( params ) {
                 $('#btn2').linkbutton("disable");
             }
 
-            if( userRoles.contains( role_owner ) ) { // 供销社人员
+            if( userRoles.contains(role_owner) ) { // 供销社人员
                 $('#btn5').linkbutton("enable");
                 $('#btn7').linkbutton("disable");
 
@@ -212,7 +247,10 @@ function queryOrder( params ) {
                 }
             } 
 
-            if( userRoles.contains( role_customer ) && row.status == '已发货') { // 超市人员
+            if( userRoles.contains(role_customer) 
+                    && !userRoles.contains(role_owner) 
+                    && row.status == '已发货') { // 下单客户
+
                 $('#btn7').linkbutton("enable");
             }
 
@@ -251,7 +289,7 @@ function fixOrderMoney() {
     });
 
     var row = dg1.datagrid('getSelected');
-    row.money = money;
+    row.money = money.toFixed(2);
     dg1.datagrid('refreshRow', dg1_selected);
 }
 
@@ -283,30 +321,50 @@ function add() {
     $('#lockVersion').val('0'); // 給版本号设置默认值.
 
     tssJS.getJSON( ORDER.QUERY, {"day": cday, "fields":"id"}, function(data){
-        var newno = userName + "_" + new Date().format("yyMMdd") + "_" + (data.length+1);
+        var newno = "LH" + userHas[2] + "_" + new Date().format("yyyyMMdd") + "_" + (data.length+1);
         $('#orderno').textbox('setValue', newno);
     });
 
-    $('#receiver').textbox('setValue', userName);
-    $('#mobile1').textbox('setValue', userHas[7]);
-    $('#receiveaddr').textbox('setValue', userHas[8]);
+    if(receivers[userName]) { // 客户自行下单
+        $('#receiver').combobox('setValue', userName);
+        $('#mobile1').textbox('setValue', userHas[7]);
+        $('#receiveaddr').textbox('setValue', userHas[8]);
+    }
+
     $('#day').datebox('setValue', cday);
     $('#status').val('新建');
 
     $('#btn21').linkbutton("disable");
     $('#btn22').linkbutton("disable");
+
+    filterForm();
+}
+
+function filterForm() {
+    $('#orderno').textbox("readonly");
+    $('#day').textbox("readonly");
+
+    if( !userRoles.contains(role_owner) ) {
+        $('#receiver').combobox("readonly");
+        $('#sender').textbox("readonly");
+        $('#sendorg').textbox("readonly");
+        $('#mobile2').textbox("readonly");
+        $('#money').textbox("readonly");
+    }
 }
 
 function edit() {
     var row = dg1.datagrid("getRows")[dg1_selected] || getSelectedRow("t1");
     if (row) {
-        openDialog('修改门店');
+        openDialog('修改订单');
         $('#fm').form('load', row);
+
+        filterForm();
     } 
     else {
         $.messager.alert({
             title: '提示',
-            msg: '请先点击要选择的【订单号】。'
+            msg: '请先点击要选择的【订单行】。'
         });
     }
 }
@@ -316,7 +374,12 @@ function _remove(){
 }
 
 function cancel() {
-    changeStatus('取消');
+    tssJS.prompt("请输入取消的原因", "取消订单原因", function(resean) {
+        if(!resean) {
+            return tssJS.alert("取消失败，请填写取消订单的原因");
+        }
+        changeStatus('取消', {"remark": resean});
+    }, "");
 }
 
 function changeStatus( status, params ) {
@@ -331,26 +394,41 @@ function changeStatus( status, params ) {
             });
 
             dg1.datagrid("refreshRow", dg1_selected);
-
-            // 模拟 onSelect，触发onSelect事件以更新按钮状态
-            dg1.datagrid("selectRow", dg1_selected);
+            dg1.datagrid("selectRow", dg1_selected); // 模拟 onSelect，触发onSelect事件以更新按钮状态
         });
     } 
 }
 function check()   { 
-    changeStatus('已审核', {"checker": userName}); 
+    tssJS.confirm("您确定要对此订单进行审核确认吗", "确认审核", 
+        function() {
+            changeStatus('已审核', {"checker": userName}); 
+        },
+        function() { /* 取消 */ }
+    );
 }
 function uncheck() { 
     changeStatus('新建', {"checker": ""}); 
 }
 
 function send() { 
-    changeStatus('已发货'); 
+    tssJS.confirm("您确定要对此订单进行发货吗", "确认发货", 
+        function() {
+            changeStatus('已发货'); 
+        },
+        function() { /* 取消 */ }
+    );
+
     // TODO 自动把订单的货物从供销社库存里扣除
 }
 function receive() {
-    changeStatus('确认收货');
-    // TODO 自动把订单的货物加到超市的库存
+    tssJS.confirm("您确定要对此订单进行收货确认吗", "确认收货", 
+        function() {
+            changeStatus('确认收货'); 
+        },
+        function() { /* 取消 */ }
+    );
+
+    // TODO 自动把订单的货物加到客户的库存
 }
 
 function addItems() {
@@ -359,14 +437,19 @@ function addItems() {
 function removeItem(index) {
     var row = dg2.datagrid('getRows')[index];
     if( row.id ) {
-        $.ajax({
-            url: ITEMS.DELETE + row.id,
-            type: 'DELETE',
-            success: function(result) {
-                dg2.datagrid('deleteRow', index);
-                fixOrderMoney();
-            }
-        });
+        tssJS.confirm("您确定要删除这条货品明细吗", "确定删除", 
+            function() {
+                $.ajax({
+                    url: ITEMS.DELETE + row.id,
+                    type: 'DELETE',
+                    success: function(result) {
+                        dg2.datagrid('deleteRow', index);
+                        fixOrderMoney();
+                    }
+                });
+            },
+            function() { /* 取消 */ }
+        );
     } 
     else {
         dg2.datagrid('deleteRow', index);
@@ -387,7 +470,7 @@ function queryItems(orderno, opable) {
 
 function showItems(data, opable) {
     data.each(function(i, row) {
-        row.options = '<a href="javascript:void(0)" style="text-decoration: underline;">删除</a>';
+        row.opts = '<a href="javascript:void(0)" style="text-decoration: underline;">删 除</a>';
     });
     dg2.datagrid("loadData", data);
     dg2.datagrid('gotoCell', {
@@ -397,13 +480,13 @@ function showItems(data, opable) {
 
     if( !opable ) {
         // dg2.datagrid('disableCellEditing');
-        dg2.datagrid("hideColumn", "options");
+        dg2.datagrid("hideColumn", "opts");
     } else {
         // dg2.datagrid('enableCellEditing');
-        dg2.datagrid("showColumn", "options");
+        dg2.datagrid("showColumn", "opts");
     }
 
-    if( userRoles.contains(role_customer) ) { // 超市人员，不能操作批次信息
+    if( userRoles.contains(role_customer) && !userRoles.contains(role_owner) ) { // 下单客户，不能操作批次信息
        dg2.datagrid("hideColumn", "createdate");
        dg2.datagrid("hideColumn", "expiredate");
     }
@@ -428,7 +511,8 @@ function selectSKUs() {
         item.price = sku.price;
         item.qty = 0;
         item.uom = sku.uom;
-        item.options = '<a href="javascript:void(0)" style="text-decoration: underline;">删除</a>';
+        item.shelflife = sku.shelflife;
+        item.opts = '<a href="javascript:void(0)" style="text-decoration: underline;">删 除</a>';
 
         dg2.datagrid("appendRow", item);
     } );
@@ -445,12 +529,13 @@ function saveItems() {
     }
 
     var result = [], order = dg1.datagrid("getRows")[dg1_selected], money = 0;
-    result.push("id,orderno,sku,skucode,guige,uom,createdate,expiredate,price,qty,money");
+    result.push("id,orderno,sku,skucode,guige,uom,createdate,expiredate,shelflife,price,qty,money");
 
     var rows = $('#t2').datagrid('getRows').reverse();
     $.each(rows, function(i, row) {
         // 检查必要字段是否都已填写
-        var obj = [row.id, order.orderno, row.sku, row.skucode, row.guige, row.uom, row.createdate, row.expiredate, row.price, row.qty, row.money];
+        var obj = [row.id, order.orderno, row.sku, row.skucode, row.guige, row.uom, 
+            row.createdate, row.expiredate, row.shelflife, row.price, row.qty, row.money];
         result.push( obj.join(",") );
 
         money += parseFloat(row.money||0);
@@ -467,9 +552,11 @@ function saveItems() {
 
             queryItems(order.orderno);
 
-            order.money = money;
+            order.money = money.toFixed(2);
             dg1.datagrid('refreshRow', dg1_selected);
-            $.post(ORDER.UPDATE + order.id, {"money": money});
+            dg1.datagrid("selectRow", dg1_selected); // 模拟 onSelect，触发onSelect事件以更新按钮状态
+            
+            $.post(ORDER.UPDATE + order.id, {"money": order.money});
         }
     });   
 }

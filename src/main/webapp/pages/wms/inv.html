@@ -18,6 +18,7 @@
 <script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
 
 <script src="../../tools/easyui.js"></script>
+<script src="../../tools/util_date.js"></script>
 
 <script type="text/javascript">
 
@@ -37,12 +38,15 @@ var FIELDS = [
     {field: "uom", title: "单位", editor: "text"},
     {field: "createdate", title: "生产日期", editor: "datebox"},
     {field: "expiredate", title: "过期日期", editor: "datebox"},
+    {field: "shelflife", title: "有效期", width: "60px"},
     {field: "owner", title: "货主", hidden: true},
-    {field: "options", title: "操作", width: "80px"}
+    {field: "opts", title: "操作", width: "60px", styler: 
+        function(value,row,index){ return 'background-color: rgb(254, 247, 169)'; }
+    }
 ];
 $.each(FIELDS, function(i, field) {
     field.align = field.align || "center";
-    field.width = field.width || "8.5%";
+    field.width = field.width || "8%";
 });
 
 var FIELDS_3 = [
@@ -52,11 +56,12 @@ var FIELDS_3 = [
     {field: "guige", title: "规格"},
     {field: "uom", title: "包装"},
     {field: "price", title: "单价"},
+    {field: "shelflife", title: "有效期", width: "60px"},
     {field: "brand", title: "品牌"}
 ];
 $.each(FIELDS_3, function(i, field) {
     field.align = field.align||"center";
-    field.width = field.width||"14%";
+    field.width = field.width||"13%";
 });
 
 var dg, dg3;
@@ -76,9 +81,21 @@ $(function(){
             '-', { text: '保存盘点结果', iconCls: 'icon-save', handler: saveData}
         ] ,
         onClickCell: function(index, field, value) {
-            if(field == 'options' && value) {
-                dg.datagrid('deleteRow', index);
+            if(field == 'opts' && value) {
+                removeItem(index);
             }           
+        },
+        onAfterEdit: function(index,field, changes) {
+            var row = dg.datagrid('getRows')[index];
+            var createdate = row.createdate, expiredate = row.expiredate,  shelflife = row.shelflife;
+            if( createdate && shelflife ) {
+                createdate = toDate(createdate);
+                shelflife = parseFloat(shelflife);
+                expiredate = subDateS( createdate, shelflife*-1 );
+
+                row.expiredate = expiredate;
+                dg.datagrid('refreshRow', index);
+            }
         },
         columns: [FIELDS],
         data: []
@@ -107,6 +124,9 @@ function query() {
 }
 
 function show(data) {
+    data.each(function(i, row) {
+        row.opts = '<a href="javascript:void(0)" style="text-decoration: underline;">删 除</a>';
+    });
     dg.datagrid("loadData", data);
 
     dg.datagrid('gotoCell', {
@@ -139,6 +159,29 @@ function addItems() {
     $('#dlg2').dialog( {"modal": true} ).dialog('open');
 }
 
+var deletedIDs = [];
+function removeItem(index) {
+    var row = dg.datagrid('getRows')[index];
+    if( row.id ) {
+        tssJS.confirm("您确定要删除这条库存记录吗", "确定删除", 
+            function() {
+                $.ajax({
+                    url: INV.DELETE + row.id,
+                    type: 'DELETE',
+                    success: function(result) {
+                        dg.datagrid('deleteRow', index);
+                        deletedIDs.push(row.id);
+                    }
+                });
+            },
+            function() { /* 取消 */ }
+        );
+    } 
+    else {
+        dg.datagrid('deleteRow', index);
+    }    
+}
+
 function selectSKUs() {
     var skus = dg3.datagrid("getSelections");
     $.each( skus, function(i, sku) {
@@ -150,7 +193,8 @@ function selectSKUs() {
         item.price = sku.price;
         item.qty = 0;
         item.uom = sku.uom;
-        item.options = '<a href="javascript:void(0)" style="text-decoration: underline;">删除</a>';
+        item.shelflife = sku.shelflife;
+        item.opts = '<a href="javascript:void(0)" style="text-decoration: underline;">删 除</a>';
 
         dg.datagrid("appendRow", item);
     } );
@@ -165,17 +209,19 @@ function saveData() {
     }
 
     var result = [];
-    result.push("id,sku,skucode,brand,guige,uom,loc,createdate,expiredate,qty,owner");
+    result.push("id,sku,skucode,brand,guige,uom,loc,createdate,expiredate,shelflife,qty,owner");
 
     var rows = $('#t1').datagrid('getChanges');
     $.each(rows, function(i, row) {
-        var qty2 = row.qty2;
-        if( !qty2 && qty2 != 0 ) {
-            qty2 = row.qty;
+        if( deletedIDs.contains(row.id) ) { // 已删除的记录
+            return true;
         }
 
+        var qty2 = row.qty2;
+        if( !qty2 && qty2 != 0 )  qty2 = row.qty;
+
         var obj = [row.id, row.sku, row.skucode, row.brand, row.guige, row.uom, row.loc, 
-                   row.createdate, row.expiredate, qty2, userName];
+                   row.createdate, row.expiredate, row.shelflife, qty2||row.qty, userName];
         result.push( obj.join(",") );
     });
 

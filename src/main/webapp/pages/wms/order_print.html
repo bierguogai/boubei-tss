@@ -28,8 +28,10 @@ img { margin-top: 2px; }
 }
 
 #t1 thead tr:nth-child(1) { height: 1px; }
-#t1 thead tr th:nth-child(odd)  { width: 120px; }
-#t1 thead tr th:nth-child(even) {  }
+#t1 thead tr th:nth-child(odd)  { width: 70px; }
+#t1 thead tr th:nth-child(2) { width: 250px; }
+#t1 tbody tr td:nth-child(odd)  { text-align: right; }
+
 
 #t1 h2 { height: 50pt; padding-top: 5pt; display: inline-block; }
 #t1 h2 span { font-size: 12pt; letter-spacing: 3px; }
@@ -89,6 +91,8 @@ function show(data) {
 	$("#t1 tbody tr:nth-child(4) td:nth-child(4)").text( order.checker||"" );
 	$("#t1 tbody tr:nth-child(4) td:nth-child(6)").text( "￥" + order.money );
 
+	$("#remark").text( order.remark ).css("text-align", "left").css("padding-left", "20px");
+
 	var tos = [];
 	var table;
 	data.each(function(i, item) {
@@ -107,7 +111,7 @@ function show(data) {
 		tssJS("td:nth-child(3)", row).html( item["sku"] );
 		tssJS("td:nth-child(4)", row).html( item["guige"]);
 		tssJS("td:nth-child(5)", row).html( item["uom"] || "" );
-		tssJS("td:nth-child(6)", row).html( item["expiredate"] );
+		tssJS("td:nth-child(6)", row).html( item["shelflife"] );
 		tssJS("td:nth-child(7)", row).html( item["qty"] );
 		tssJS("td:nth-child(8)", row).html( item["price"] );
 		tssJS("td:nth-child(9)", row).html( item["money"]);
@@ -139,12 +143,12 @@ function preview() {
    <table id="t1" class="bitable">
    		<thead>
    			<tr>
-   				<th/><th/><th/><th/>
+   				<th/><th/><th/><th/><th/><th/>
    			</tr>
    		</thead>
    		<tbody>
 	   		<tr>
-	   			<td colspan="6">
+	   			<td colspan="6" style="text-align: center;">
 	   				<img src="../../images/co-op.png" style="height: 48px;">
 	   				<h2>
 	   					<span></span>&nbsp;&nbsp;
@@ -154,10 +158,10 @@ function preview() {
 	   		</tr>
 	   		<tr>
 	   			<td>收货地址：</td>
-	   			<td></td>
+	   			<td style="width：40%;"></td>
 	   			<td>收货人：</td>
 	   			<td></td>
-	   			<td>电话：</td>
+	   			<td>收货电话：</td>
 	   			<td></td>
 	   		</tr>
 	   		<tr>
@@ -171,14 +175,14 @@ function preview() {
 	   		<tr>
 	   			<td>订单号：</td>
 	   			<td></td>
-	   			<td>审核：</td>
+	   			<td>审核人：</td>
 	   			<td></td>
 	   			<td>合计金额：</td>
 	   			<td></td>
 	   		</tr>
 	   		<tr>
-	   			<td>备注：</td>
-	   			<td colspan="5"></td>
+	   			<td>订单备注：</td>
+	   			<td colspan="5" id="remark"></td>
 	   		</tr>
    		</tbody>
    </table>

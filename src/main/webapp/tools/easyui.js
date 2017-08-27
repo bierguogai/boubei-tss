@@ -14,13 +14,13 @@ function jsonp_url(id, appCode) { return BASE_JSONP_URL + id + (appCode ? "?appC
 BASE_RECORD_URL= TOMCAT_URL + '/auth/xdata/';
 function record_urls(recordTableId) {   // 一个录入表所拥有的增、删、改、查等接口
     var result = {};
-    result.CREATE = BASE_RECORD_URL + '/' + recordTableId;
-    result.UPDATE = BASE_RECORD_URL + '/' +recordTableId+ '/';  //{id}
-    result.DELETE = BASE_RECORD_URL + '/' +recordTableId+ '/';  //{id}
-    result.GET    = BASE_RECORD_URL + '/' +recordTableId+ '/';  //{id}
-    result.QUERY  = BASE_RECORD_URL + '/json/' +recordTableId;
-    result.CUD    = BASE_RECORD_URL + '/cud/'  +recordTableId;
-    result.ATTACH = BASE_RECORD_URL + '/attach/json/' +recordTableId+ '/';
+    result.CREATE = BASE_RECORD_URL + recordTableId;
+    result.UPDATE = BASE_RECORD_URL + recordTableId+ '/';  //{id}
+    result.DELETE = BASE_RECORD_URL + recordTableId+ '/';  //{id}
+    result.GET    = BASE_RECORD_URL + recordTableId+ '/';  //{id}
+    result.QUERY  = BASE_RECORD_URL + 'json/' +recordTableId;
+    result.CUD    = BASE_RECORD_URL + 'cud/'  +recordTableId;
+    result.ATTACH = BASE_RECORD_URL + 'attach/json/' +recordTableId+ '/';
 
     return result; 
 }
@@ -72,7 +72,11 @@ function save(recordId) {
     $('#fm').form('submit',{
         url: BASE_RECORD_URL + recordId + (!isCreate ? "/"+id : ''),
         onSubmit: function(){
-            return $(this).form('validate');
+            var flag = $(this).form('validate');
+            if( !flag ) {
+                $saveBtn.linkbutton("enable");
+            }
+            return flag;
         },
         success: function(result){
             $saveBtn.linkbutton("enable");

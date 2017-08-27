@@ -8,9 +8,9 @@ rm -r src/main/java/com/boubei/tss/util
 rm -r src/main/java/com/boubei/tss/cache
 rm -r src/main/java/com/boubei/tss/framework
 
-cp -r ../boubei-tss/src/main/java/com/boubei/tss/dm  src/main/java/com/boubei/tss/
+# cp -r ../boubei-tss/src/main/java/com/boubei/tss/dm  src/main/java/com/boubei/tss/
 # cp -r ../boubei-tss/src/main/java/com/boubei/tss/util  src/main/java/com/boubei/tss/
-cp -r ../boubei-tss/src/main/java/com/boubei/tss/cache  src/main/java/com/boubei/tss/
+# cp -r ../boubei-tss/src/main/java/com/boubei/tss/cache  src/main/java/com/boubei/tss/
 # cp -r ../boubei-tss/src/main/java/com/boubei/tss/framework  src/main/java/com/boubei/tss/
 # rm -r src/main/java/com/boubei/tss/framework/sso
 
