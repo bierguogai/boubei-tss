@@ -35,8 +35,8 @@ ul>li div.module {
 ul>li div.module>h2 { padding: 6px; font-size: 120%; }
 ul>li div.module>p { margin-bottom: 3px; line-height: 18px; text-indent: 2em; }
 
-ul>li div.module>.price { position: absolute; bottom: 45px; left: 0; width: 100%; }
-ul>li div.module>.price>b { color: #797BED; font-size: 110%; }
+ul>li div.module>.issue { position: absolute; bottom: 45px; left: 0; width: 100%; }
+ul>li div.module>.issue>b { color: #797BED; font-size: 110%; }
 ul>li div.module>.bts { position: absolute; bottom: 12px; left: 0; width: 100%; }
 ul>li div.module>.bts>button { visibility: hidden; }
 
@@ -49,6 +49,8 @@ body>.module { display: none; }
 </style>
 
 <script type="text/javascript">
+
+/* Module 机制完善：试用账号 + 密码 + 使用手册（Word或网页） */
 
 $(function(){
 
@@ -68,10 +70,20 @@ function initList() {
   $.getJSON("/tss/auth/module", {}, function(data) {
 
     data.each(function(i, item) {
+      var description = item.description||"暂无说明";
       var $li = $("ul>li:nth-child(" +(i+1)+ ")");
-      $li.find("div.module>h2").text(item.module);
-      $li.find("div.module>p>span").text( (item.description||"").substring(0, 32) + "...");
       $li.attr("id", "li" + item.id);
+      $li.find("div.module>h2").text(item.module);
+
+      if(description.length > 50) {
+        description = description.substring(0, 50) + "...";
+        $li.find("div.module>p").hover( function() {  
+          $(this).notice(item.description);
+        } );
+      }
+      $li.find("div.module>p>span").text( description);
+
+      $li.find("div.issue").text(item.creator + " 发布于 " + (item.updateTime||item.createTime).split(" ")[0]);
 
       $li.find("div.module>.bts>button").css("visibility", "visible")
           .click( function() {
@@ -128,14 +140,13 @@ function refresh() {
 <div class="module">
   <h2>开发中...</h2>
   <p>
-    <span><i style="color:#ccc">它山石BI，有效管理您的数据，让数据价值彰显。</i></span><br>点击<a>了解更多</a>
+    <span><i style="color:#ccc">它山石BI，有效管理您的数据，让数据价值彰显。</i></span>
   </p>
-  <div class="price"><i>售价：</i><b>免费</b></div>
+  <div class="issue"></div> 
   <div class="bts">
-    <button class="tssbutton blue medium">我要试用</button> 
+    <button class="tssbutton blue medium"><span class="price"><!-- （<b>免费</b>） --></span>我要试用</button> 
   </div>
 </div>
-<!--  作者、上线日期等 -->
 
 </body>
 </html>
