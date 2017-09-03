@@ -21,14 +21,16 @@
 <script type="text/javascript">
 
 var tableId = 30;
-URL = record_urls(tableId);
 
-CREATE_URL = URL.CREATE;
-UPDATE_URL = URL.UPDATE;  //{id}
-DELETE_URL = URL.DELETE;  //{id}
-GET_URL    = URL.GET;  //{id}
-QUERY_URL  = URL.QUERY;
-ATTACH_URL = URL.ATTACH;
+URL = record_urls(tableId);
+/*
+URL.CREATE;
+URL.UPDATE;  //{id}
+URL.DELETE;  //{id}
+URL.GET;     //{id}
+URL.QUERY;
+URL.ATTACH;
+*/
 
 $(document).ready(function () {
     query();
@@ -59,7 +61,7 @@ function update() {
     if (row) {
         openDialog('修改供应商');
 
-        $.getJSON(GET_URL + row.id, {}, function (data) {
+        $.getJSON(URL.GET + row.id, {}, function (data) {
             
             $('#fm').form('load', data);
             $('#code').textbox('readonly', true);
@@ -85,7 +87,7 @@ function query(params) {
     params = params || {};
 
     dg = $('#t1').datagrid({
-        url: QUERY_URL,      // 数据地址
+        url: URL.QUERY,      // 数据地址
         queryParams: params, // 参数
         fit: true,
         fitColumns: true,
@@ -132,7 +134,7 @@ function beginQuery() {
 function getAttachs() {
     dg && $.each(dg.datagrid("getRows"), function(index, row) {   
         tssJS.ajax({ 
-            url: ATTACH_URL + row.id, 
+            url: URL.ATTACH + row.id, 
             method: "GET", 
             ondata: function(){
                 var data  = this.getResponseJSON();

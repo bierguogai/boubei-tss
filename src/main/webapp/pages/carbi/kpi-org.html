@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html> 
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>KPI-承运商</title>
+
+<link rel="stylesheet" href="../../tools/tssJS/css/boubei.css">
+<link rel="stylesheet" href="src/bi.css">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssJS/tssJS.jsonp.js"></script>
+<script src="../../tools/tssJS/tssJS.data.js"></script>
+
+<script src="src/common.js"></script>
+<script src="../../tools/util_date.js"></script>
+
+<STYLE type="text/css">
+
+#t1 {
+  width: 100%;
+  height: auto;
+  table-layout: fixed;
+  margin-bottom: 10px;
+}
+#t1 tr {
+  height: 25px;
+}
+#t1 td {
+  text-align: center;
+  border: 1px solid #ccc;
+  border-width: 0 1px 1px 0;
+  padding: 0 2px;
+}
+#t1 thead {
+  background: linear-gradient(#f9f9f9 0px, #efefef 100%) repeat-x;
+}
+#t1 thead td {
+  width: 50px;
+}
+#t1 tbody {
+  background-color: #fff;
+}
+#t1 tbody td {
+  overflow: hidden;
+}
+.highlight {
+  background-color: #FEF7A9;
+}
+.left {
+    text-align: right;
+}
+.hidden {
+    display: none;
+}
+.header>td {
+    background-color: #eee;
+}
+
+		 
+</STYLE>
+
+<script type="text/javascript">
+
+$(function(){
+
+    var _params;
+    var globalValiable = window.parent.globalValiable;
+    if(globalValiable && globalValiable.queryParams) {
+        _params = globalValiable.queryParams;
+    } else {
+        // _params = getParams();
+        _params = {};
+        // _params.param3 = tssJS.Cookie.getValue("_g4");
+        // _params.param4 = tssJS.Cookie.getValue("_g6");
+    }
+
+    var params = {"param1": _params.param1 || _params._month2 || cmonth};
+    params.param2 = "国产";
+    params.param3 = _params.param3;
+    params.param4 = _params.param4;
+
+    var url = json_url(48);
+
+    $.getJSON(url, params, function(data) {
+        show(data, params.param2);
+        
+        var row = tssJS.createElement("tr");
+        tssJS(row).html("<td colspan='25'>【" + params.param1 + "】承运商KPI，以上为国产，以下为进口</td>");
+        tssJS("#t1>tbody").appendChild(row);
+
+        params.param2 = "进口"; 
+        $.getJSON(url, params, function(data) { 
+            show(data, params.param2);
+        });
+    });
+
+});
+
+function show(data, type) {
+    data.each(function(i, item) {
+        var v = calGrade(item, type);
+        item.v = v;
+        item.totalV = v[4] + v[8] + v[9];
+        item.totalV2 = item.totalV * -1; 
+    });
+    sort(data, 'totalV2', '总排名');
+
+    data.each(function(i, item) {
+        var v = item.v;
+
+        var row = tssJS.createElement("tr");
+        tssJS(row).html("<td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/>");
+        tssJS("td:nth-child(1)", row).html( item["org"] );
+        tssJS("td:nth-child(2)", row).html( item["oil"] );
+        tssJS("td:nth-child(3)", row).html( v[0] );
+        tssJS("td:nth-child(4)", row).html( item["sg"] );
+        tssJS("td:nth-child(5)", row).html( (item["lc"]/1000).toFixed(1) ).addClass("left");
+        tssJS("td:nth-child(6)", row).html( (item["sg"]/(item["lc"]||1)*1000).toFixed(2) );
+        tssJS("td:nth-child(7)", row).html( v[1] );
+        tssJS("td:nth-child(8)", row).html( item["idle_per"]+"%" );
+        tssJS("td:nth-child(9)", row).html( v[2] );
+        tssJS("td:nth-child(10)", row).html( '不适用' );  // item["kthx"]
+        tssJS("td:nth-child(11)", row).html( '/' ); 
+        tssJS("td:nth-child(12)", row).html( item["事故"]||0 );
+        tssJS("td:nth-child(13)", row).html( v[3] );
+        tssJS("td:nth-child(14)", row).html( v[4] );
+
+        tssJS("td:nth-child(15)", row).html( item.ex1||0 );
+        tssJS("td:nth-child(16)", row).html( v[5] );
+        tssJS("td:nth-child(17)", row).html( item.ex2||0 );
+        tssJS("td:nth-child(18)", row).html( v[6] );
+        tssJS("td:nth-child(19)", row).html( item.ex3||0 );
+        tssJS("td:nth-child(20)", row).html( v[7] );
+        tssJS("td:nth-child(21)", row).html( v[8] );
+
+        tssJS("td:nth-child(22)", row).html( '不适用' ).addClass("hidden");
+        tssJS("td:nth-child(23)", row).html( '/' ).addClass("hidden"); 
+
+        tssJS("td:nth-child(24)", row).html( item.exbig||0 );
+        tssJS("td:nth-child(25)", row).html( v[9] );
+
+        tssJS("td:nth-child(26)", row).html( item.totalV );
+        tssJS("td:nth-child(27)", row).html( item['总排名'] );
+
+        tssJS("#t1>tbody").appendChild(row);
+    });
+}
+
+function calGrade(item, type) {
+    var grade = 10;
+    if(item.oil > 0) {
+        grade +=  (type == '国产' ? 35 : 32) - (item.oil||0);
+    }
+    var v1 = Math.max(0, Math.round(grade) );
+ 
+    grade = 5;
+    if(item["lc"] > 0) {
+        grade += (1 - (item["sg"]/item["lc"]*1000))/0.1;
+    }     
+    var v2 = Math.max(0, Math.round(grade) );
+
+    grade = 5;
+    grade -= item["idle_per"] - 8;
+    var v3 = Math.max(0, Math.round(grade) );
+
+    var v4 = 20 - (item["事故"]||0);
+    var v5 = item.ex1 ? 0 : 15;
+    var v6 = item.ex2 ? 0 : 15;
+    var v7 = item.ex3 ? 0 : 10;
+    var v8 = item.exbig ? -10 : 0;
+
+    return [v1, v2, v3, v4, v1+v2+v3+v4, v5, v6, v7, v5+v6+v7, v8];
+}
+
+</script>
+
+
+</head>
+
+<body>
+   
+<table id="t1">
+    <tbody>
+        <tr class="header">
+            <td rowspan="2" width="70">考核项</td>
+            <td colspan="13">运营指标</td>
+            <td colspan="7">服务指标</td>
+            <td colspan="2" rowspan="2" title="业务部门承运商KPI得分*15%；按照实际得分即可">综合管理</td>
+            <td colspan="2" rowspan="2" title="标准：无异常，得分0分；运营过程中出现扣货、安排承运商线路不愿承接或者承接之后未上线等，扣10分" class="hidden">重大异常</td>
+            <td colspan="2" rowspan="2" colspan="2" width="90">汇总</td>
+        </tr>
+        <tr class="header">
+            <td colspan="2" title="标准32L/100km，得分10分；每降低1L/100km，得分加1分，每增1L/100km，得分扣1分，扣完为止">百公里油耗</td>
+            <td colspan="4" title="标准：1/1000km，得分5分；每降低0.1/1000km，得分加1分，每增加0.1/1000km，得分扣1分，扣完为止。（行为次数比=月发生次数/运行公里数*1000）">急刹车超转速</td>
+            <td colspan="2" title="标准：8％，得分5分；每降低1个百分点，得分加1分，每增加1个百分点，得分扣1分，扣完为止">怠速占比</td>
+            <td colspan="2" title="标准：45/1000km，得分5分；每降低1/1000km，得分加1，每增加1/1000km，得分扣1分，扣完为止">空挡滑行</td>
+            <td colspan="2" title="标准：无事故，得分20分；出现一次事故则扣完">事故</td>
+            <td rowspan="2">总分</td>
+            <td colspan="2" title="标准：得分15分；出现一次信息反馈不及时或反馈虚假信息次数，则扣完">信息反馈</td>
+            <td colspan="2" title="标准：100％，得分15分；上线率=已安排上线条数/总线路条数*100%">车辆上线及时率</td>
+            <td colspan="2" title="标准：100％，得分10分；正班车上线率=已安排正班车数/总正班车需求数*100%">正班车上线率</td>
+            <td rowspan="2" width="50">总分</td>
+        </tr>
+        <tr class="header">
+            <td width="70">承运商</td>
+            <td>油耗</td>
+            <td>得分</td>
+            <td>次数</td>
+            <td>总里程千公里</td>
+            <td>行为次数比</td>
+            <td>得分</td>
+            <td>怠速占比</td>
+            <td>得分</td>
+            <td>行为次数</td>
+            <td>得分</td>
+            <td>事故记录</td>
+            <td>得分</td>
+            <td>异常记录</td>
+            <td>得分</td>
+            <td>异常记录</td>
+            <td>得分</td>
+            <td>异常记录</td>
+            <td>得分</td>
+            <td class="hidden">汽运部考核结果</td>
+            <td class="hidden">得分</td>
+            <td>异常记录</td>
+            <td>得分</td>
+            <td>总得分</td>
+            <td>总排名</td>
+        </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

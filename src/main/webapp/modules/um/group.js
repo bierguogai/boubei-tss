@@ -282,6 +282,7 @@
                 $.ajax({
                     url : URL_DEL_USER + groupId + "/" + userID,
                     method : "DELETE",
+                    waiting: true, 
                     onsuccess : function() { 
                         grid.deleteSelectedRow();
                     }
@@ -317,7 +318,7 @@
             tree.onTreeNodeRightClick = function(ev){ onTreeNodeRightClick(ev, true); }
         }
         
-        $.ajax({url : URL_INIT, method : "GET", onresult : onresult});
+        $.ajax({url : URL_INIT, method : "GET", onresult : onresult, waiting: true});
     }
  
     function sort(ev) {
@@ -755,6 +756,7 @@
 
         $.ajax({
             url : URL_STOP_USER + groupId + "/" + userID + "/" + state,
+            waiting: true,
             onsuccess : function() {  // 移动树节点                  
                 // 成功后设置状态
                 $.G("grid").modifySelectedRow("disabled", state);

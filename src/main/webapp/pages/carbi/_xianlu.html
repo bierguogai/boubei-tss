@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html> 
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>按线路分析里程油耗</title>
+
+<link rel="stylesheet" href="../../tools/tssJS/css/boubei.css">
+<link rel="stylesheet" href="src/bi.css">
+
+<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssJS/tssJS.jsonp.js"></script>
+<script src="../../tools/tssJS/tssJS.data.js"></script>
+
+<script src="../../tools/easyui/jquery.min.js"></script>
+<script src="../../tools/easyui/jquery.easyui.min.js"></script>
+<script src="../../tools/easyui/datagrid-filter.js"></script>
+<script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+
+<script src="../../tools/echarts/echarts-all-2.1.10.js"></script>
+
+<script src="src/common.js"></script>
+<script src="../../tools/util_date.js"></script>
+
+<STYLE type="text/css">
+
+
+         
+</STYLE>
+
+<script type="text/javascript">
+
+var _data, params;
+
+$(function(){
+    params = getParams();
+    delete params.param8; // 只用日期，不用月份
+    delete params.param9; 
+
+    params.param6 = params.param6 || '2017-04-01';
+
+    var xianlu = tssJS.Query.get("xianlu"); 
+    params.param2 = decodeURIComponent( xianlu || params.param2|| '杭州-虎门' );
+
+    query(params);
+});
+
+function query(params) {
+    params = params || {};
+
+    tssJS.getJSON( json_url('car_daily'), params, function(data) {
+        if(data.length == 0) {
+            return $.messager.show({ title: '提示', msg: '没有查到任何数据，请调整查询条件后再查询。'});
+        }
+        
+        appendCarInfo(data, function(){
+            _data = filterByPermission(data);
+            show();
+        });
+    }, "POST", true);
+}
+
+function show() {
+    var data = tssJS.Data.groupby(_data, "_day", "yb_km,oil_l,worktime,runtime,sc_c,jsc_c,czs_c,cs_c,kthx_c");
+    data.each(function(i, row) {
+        row.oil_p = (row.oil_l*100 / row.yb_km).toFixed(2);
+        row.idle_per = (100 - row.runtime*100 / row.worktime).toFixed(2);
+        row.idle_p = row.idle_per + "%";
+    });
+    showChart(data);
+
+    var tRow = tssJS.Data.groupby(_data, "xianlu", "yb_km,oil_l,worktime,runtime,sc_c,jsc_c,czs_c,cs_c,kthx_c")[0];
+    tRow.oil_p = (tRow.oil_l*100 / tRow.yb_km).toFixed(2);
+    tRow.idle_per = (100 - tRow.runtime*100 / tRow.worktime).toFixed(2);
+    tRow.idle_p = tRow.idle_per + "%";
+    tRow._day = "合计";
+
+    dg1.datagrid("loadData", data);
+    dg1.datagrid('reloadFooter', [tRow]);
+
+    if(params.param5) {
+        dg1.datagrid("hideColumn", "carnum");
+    }
+
+    showDetail();
+}
+
+function showDetail(_day) {
+    var temp = [];
+    _data.each(function(i, item) {
+        if(!_day || item._day == _day) {
+            temp.push(item)
+        }
+    });
+
+    var data = tssJS.Data.groupby(temp, "org,carnum", "yb_km,oil_l,worktime,runtime");
+    var account = [];
+    data.each(function(i, item) {
+        item.oil_p = (item.oil_l*100 / item.yb_km).toFixed(2);
+        item.idle_per = (100 - item.runtime*100 / item.worktime).toFixed(2);
+        item.idle_p = item.idle_per + "%";
+
+        var carnum = item.carnum + (_day ? "【" +_day+ "】" : "");
+        carnum = "<a href='#' onclick='showCar(\"" +item.carnum+ "\")'>" + carnum + "</a>";
+        account.push({"group": carnum, "name": "承运商", "value": item.org});  
+        account.push({"group": carnum, "name": "里程", "value": item.yb_km});  
+        account.push({"group": carnum, "name": "油耗", "value": item.oil_p}); 
+        account.push({"group": carnum, "name": "怠速占比", "value": item.idle_p}); 
+    });
+
+    $('#t2').propertygrid({
+        width: "95%",
+        height: 'auto',
+        showGroup: true,
+        // scrollbarSize: 0,
+        showHeader:true,
+        columns: [[
+                { field: 'name',  width: "45%", resizable: true },
+                { field: 'value', width: "50%", resizable: false }
+        ]]
+    });
+    $('#t2').propertygrid('loadData', account);
+}
+
+var FIELDS_1 = [        
+        { field: '_day', title: '日期', width : 60},
+        { field: 'yb_km', title: '里程（KM）', width : 70},    
+        { field: 'oil_p', title: '百公里油耗（L）', width : 90},
+        { field: 'idle_p', title: '怠速占比', width : 70},
+        { field: 'sc_c', title: '刹车次数', width : 70},    
+        { field: 'jsc_c', title: '急刹车次数', width : 70},    
+        { field: 'czs_c', title: '超转速次数', width : 70},    
+        { field: 'cs_c', title: '超速次数', width : 70},    
+        { field: 'kthx_c', title: '空挡滑行', width : 70}
+    ];   
+
+$.each(FIELDS_1, function(i, field){
+    field.align = field.align || "center";
+});
+
+$(function(){
+
+    dg1 = $('#t1').datagrid({
+        fit : true,
+        fitColumns : true,
+        nowrap: true,
+        singleSelect : true,
+        remoteSort : false,
+        multiSort: true,
+        sortName : "_day",
+        sortOrder : "asc",
+        columns : [FIELDS_1],
+        data: [],
+        showFooter: true,
+        title: "【" + params.param2 + "】每日运行统计",
+        onClickRow: function(index, row) {
+            var _day = row["_day"];
+            showDetail(_day);
+        }
+    });
+});
+ 
+
+function showChart(data) {
+    var result1 = [], result2 = [], labels = [];
+    data.each(function(i, item){
+        labels.push(item._day);
+        result1.push( {"name": item._day, "value": item.oil_p} );
+        result2.push( {"name": item._day, "value": item.idle_per} );
+    });
+
+    var chartObj = echarts.init($1("canvas1"));
+    var option = {
+        tooltip : {
+            trigger: 'axis'
+        },
+        calculable : false,
+        legend: {
+            data:['百公里平均油耗', '每日怠速占比']
+        },
+        xAxis : [
+            {
+                type : 'category',
+                data : labels
+            }
+        ],
+        yAxis : [
+            { type : 'value', name : '油耗（L）' },
+            { type : 'value', name : '怠速占比（%）' }
+        ],
+        series : [
+            { name:'百公里平均油耗', type:'line', data: result1, yAxisIndex: 0 },
+            { name:'每日怠速占比', type:'line', data: result2, yAxisIndex: 1}
+        ]
+    };
+
+    chartObj.setOption(option);                
+}
+    
+</script>
+
+
+</head>
+
+<body>
+    <div id="main" class="easyui-layout" fit="true" >
+        <div id="d1" data-options="region:'center'" border="false">
+            <table id="t1" border="false" title=""></table>
+        </div>
+        <div data-options="region:'south'" border="false" >
+            <div id='canvas1' style="height: 275px; "></div>
+        </div>
+        <div data-options="region:'east',split:true" border="false" style="width: 240px;">
+            <table id="t2" border="false"></table>
+        </div>
+    </div>
+
+</body>
+</html>

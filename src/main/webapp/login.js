@@ -11,8 +11,18 @@ $(function() {
      init();
 });
 
+var timer, regable = true;
 function init() {
-    setSysTitle(); 
+    getParam("sysTitle", function(result) {
+        result && $(".sysTitle").html(result);
+    });
+    getParam("regable", function(result) {
+        regable = result == "false";
+        if(!regable) {
+            $("#b2_reg, #b3_reg").hide();
+            $("#b1_reg").width("352px");
+        }
+    });
 
     var accountEl = $1("loginName"), passwdEl  = $1("password");
     accountEl.onfocus = function() {  passwdEl.disabled = true; }
@@ -35,24 +45,27 @@ function init() {
     });
 
     accountEl.onblur = function() { 
-        var value = this.value;
-        if( !value )  return $(accountEl).focus();
-        
-        $.ajax({
-            url: URL_CHECK_USER,
-            params: {"loginName": value},
-            waiting: true,
-            onexcption: function() {
-                accountEl.focus();
-            },
-            onresult: function(){
-                accountEl.identifier = this.getNodeValue("identifier");
-                accountEl.randomKey  = this.getNodeValue("randomKey");
-                
-                passwdEl.disabled = false;
-                passwdEl.focus();
-            }
-        });
+        timer = setTimeout(function(){
+            var value = $(accountEl).value();
+            if( !value )  return $(accountEl).focus();
+            
+            $.ajax({
+                url: URL_CHECK_USER,
+                params: {"loginName": value},
+                waiting: true,
+                onexcption: function() {
+                    accountEl.focus();
+                },
+                onresult: function(){
+                    accountEl.identifier = this.getNodeValue("identifier");
+                    accountEl.randomKey  = this.getNodeValue("randomKey");
+                    
+                    passwdEl.disabled = false;
+                    passwdEl.focus();
+                }
+            });
+
+        }, 200);
     }
 }
 
@@ -84,7 +97,11 @@ var doLogin = function(accountEl, passwdEl) {
         	"_password": hex_md5(password)
         },
         onexception: function(errorMsg) {
-            passwdEl.focus();
+            if( (errorMsg.msg||"").indexOf("账号或密码错误") >= 0 && (errorMsg.msg||"").indexOf(loginName) < 0 ) {
+                location.href = 'login.html'; // 登录页面长期未刷新，验证随机数失效
+            } else {
+                passwdEl.focus();
+            }
         },
         onsuccess: function() {
             $.Cookie.setValue("iUser", loginName);
@@ -101,4 +118,16 @@ function gotoIndex(loginName) {
     } else {
         window.location.href = indexPage;
     }
+}
+
+// 获取系统参数模块的配置信息
+function getParam(key, callback) {
+    $.getJSON("/tss/param/json/simple/" + key, {}, 
+        function(result) {
+            var val;
+            if( result && result.length  && result[0] ) {
+                val = result[0];
+            }
+            callback && callback(val);
+        }, "GET", false);
 }

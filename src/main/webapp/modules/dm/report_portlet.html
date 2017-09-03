@@ -276,7 +276,8 @@ else {
 
 function init() {
     $("body").css("width", (document.body.offsetWidth - 28) + "px" );
-    $("#tip1>iframe").attr("src", "../../more/bi_condition.html");
+    // 需要等空间展开后再加载查询页，不然IE、FF等浏览器里会显示异常
+    $("#tip1>iframe").attr("src", "../../more/bi_condition.html"); 
 
     getZanNum(2);
     getZanNum(3);

@@ -48,6 +48,7 @@ $(function(){
             attachments.each(function(i, attach){
                 var name = $("name", attach).text();
                 var url = $("url", attach).text();
+                url = url.substring(url.indexOf('/tss')); // http://localhost:9000/tss/download?id=1 --> 相对地址
                 str[str.length] = "<a href='" + url + "'>" + name + "</a>";
             });
             extendStr += "<div class='attach'>相关附件或图片: " + str.join(" | ") + "</div>";

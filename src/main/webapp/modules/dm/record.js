@@ -505,6 +505,9 @@ function editFieldConfig() {
 				delete valuesMap[field];
 			}
 			else {
+				if(field === 'code') {
+					newValue = newValue.trim(); // code 不能有空格
+				}
 				valuesMap[field] = newValue;
 			}			
 

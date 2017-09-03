@@ -1,0 +1,8 @@
+update tss1.t_car_daily_view t 
+set t.creator = (select c.creator from tss1.t_car c where c.carnum = t.carnum)
+where id > 0
+
+导出一份纯承运商的数据：车辆列表用Admin账号进去录入表里导，车辆运行数据建一个报表来导出
+SELECT t.*  FROM tss1.t_car_daily_view t, tss1.t_car c
+where yb_km > 10 and t.carnum = c.carnum and c.org = '天津狮桥'
+limit 0, 100000;

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html> 
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>司机管理</title>
+
+<link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link rel="stylesheet" href="src/bi.css">
+
+<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssJS/tssJS.jsonp.js"></script>
+<script src="../../more/bi_template/tssJS.chart.js"></script>
+
+<script src="../../tools/easyui/jquery.min.js"></script>
+<script src="../../tools/easyui/jquery.easyui.min.js"></script>
+<script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+
+<script src="../../tools/echarts/echarts-all-2.1.10.js"></script>
+
+<script src="src/common.js"></script>
+<script src="../../tools/util_date.js"></script>
+
+<STYLE type="text/css">
+
+#canvas1 {
+    display: inline-block;
+    width: 74%;
+}
+#tgDiv {
+    display: inline-block;
+    width: 25%;
+    vertical-align: top;
+    height: 95%;
+}
+#tg1 {
+    width:100%; 
+}
+
+</STYLE>
+
+<script type="text/javascript">
+
+$(function(){
+    // 使得 easyui-tabs 高度自适应
+　　$("#tabs").tabs({ 
+　　　　width:  $("#tabs").parent().width(), 
+　　　　height: $("#tabs").parent().height() 
+　　}); 
+    $("#tabs").tabs("select", 1);
+    $("#tabs").tabs("select", 0); 
+
+    var params = getParams();
+    if(params.param8) delete params.param6; // 优先用月份
+    if(params.param9) delete params.param7; 
+
+    query(params);
+});
+
+function query(params) {
+	tssJS.getJSON( json_url(33), params, function(data) {
+        if(data.length == 0) {
+            return $.messager.show({ title: '提示', msg: '没有查到任何数据，请调整查询条件后再查询。'});
+        }
+        showChart(data);
+	}, "POST", true);
+
+    tssJS.getJSON( json_url(34), params, function(data) {
+        if(data.length > 0) {
+            showGrid(data);
+        }
+    }, "POST", true);
+}
+
+function showGrid(data) {
+    $('#tg1').datagrid({
+        fit : true,
+        fitColumns : true,
+        rownumbers : true,
+        remoteSort : false,
+        sortName : "司机登签",
+        sortOrder : "desc",
+        data: data,
+        columns:[[
+            {title:'司机', field:'drivername', width: '27%', align:'center'},
+            {title:'打卡次数', field:'司机登签', width: '27%', align:'right', sortable: true},
+            {title:'机构', field:'org', width: '40%',  align:'center', sortable: true}
+        ]]
+    });
+}
+
+function showChart(data) { // TODO 剔除重复的考勤
+    var result1 = [], result2 = [], labels = [];
+    data.each(function(i, item){
+        var day = item["日期"].substring(5, 10);
+        result1.push( {"name": day, "value": item["司机登签"] } ); // + item["司机退签"]
+
+        !labels.contains(day) && labels.push(day);
+
+        if(i == 0) {
+            result2[i] = item["司机登签"]; 
+        } else {
+            result2[i] = result2[i-1] + item["司机登签"]; 
+        }
+    });
+
+    var chartObj = echarts.init($1("canvas1"));
+    var option = {
+        tooltip : {
+            trigger: 'axis'
+        },
+        toolbox: {
+            show : true,
+            feature : {
+                saveAsImage : {show: true}
+            }
+        },
+        calculable : true,
+        legend: {
+            data:['司机每日打卡', '司机打卡累积']
+        },
+        xAxis : [
+            {
+                type : 'category',
+                data : labels
+            }
+        ],
+        yAxis : [
+            {
+                type : 'value',
+                name : '司机每日打卡'
+            },
+            {
+                type : 'value',
+                name : '司机打卡累积'
+            }
+        ],
+        series : [
+            {
+                name:'司机每日打卡',
+                yAxisIndex: 0,
+                type:'line',
+                data: result1
+            },
+            {
+                name:'司机打卡累积',
+                yAxisIndex: 1,
+                type:'bar',
+                barWidth: 10, 
+                data: result2
+            }
+        ]
+    };
+
+    chartObj.setOption(option);            
+}
+	
+</script>
+
+
+</head>
+
+<body>
+    <div id="main" class="easyui-layout" fit="true" >
+        <div id="dataContainer" data-options="region:'center'" border="false">
+        	<div id='canvas1' style="height: 95%;"></div>
+            <div id="tgDiv">
+                <div id="tabs" class="easyui-tabs" border="true" >
+                    <div title="打卡排名" border="false" >
+                        <table id="tg1" border="false"></table>
+                    </div>
+                    <div title="" border="false" >
+                        <table id="tg2" border="false"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html> 
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>百公里油耗(按月)</title>
+
+<link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
+<link rel="stylesheet" href="src/bi.css">
+
+<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssJS/tssJS.jsonp.js"></script>
+<script src="../../tools/tssJS/tssJS.data.js"></script>
+<script src="../../more/bi_template/tssJS.chart.js"></script>
+
+<script src="../../tools/easyui/jquery.min.js"></script>
+<script src="../../tools/easyui/jquery.easyui.min.js"></script>
+<script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+
+<script src="../../tools/echarts/echarts-all-2.1.10.js"></script>
+
+<script src="src/common.js"></script>
+<script src="../../tools/util_date.js"></script>
+
+<STYLE type="text/css">
+
+#canvas1 {
+    display: inline-block;
+    width: 60%;
+}
+#tgDiv {
+    display: inline-block;
+    width: 39%;
+    vertical-align: top;
+    height: 95%;
+}
+
+#tg1, #tg2 {
+    width:100%;
+}
+
+</STYLE>
+
+<script type="text/javascript">
+
+
+$(function(){
+    // 使得 easyui-tabs 高度自适应
+　　$("#tabs").tabs({ 
+　　　　width:  $("#tabs").parent().width(), 
+　　　　height: $("#tabs").parent().height() 
+　　}); 
+    
+    $("#tabs").tabs("select", 1); 
+    $("#tabs").tabs("select", 0); 
+    $("#tabs").tabs("select", 1); 
+
+    var params = getParams();
+    if(params.param8) delete params.param6; // 优先用月份
+    if(params.param9) delete params.param7; 
+
+    params.param8 = '2017-01';
+
+    query(params);
+}); 
+
+var data;
+function query(params) {
+	params = params || {};
+
+	tssJS.getJSON( json_url(31), params, function(result) {
+        if(result.length == 0) {
+            return $.messager.show({ title: '提示', msg: '没有查到任何数据，请调整查询条件后再查询。'});
+        }
+        appendCarInfo(result, function() {
+            data = filterByPermission(result);
+
+            tssJS.showWaitingLayer();
+            showChart();
+            tssJS.hideWaitingLayer();
+        });
+	}, "POST", true);
+}
+
+function showChart(_data, prefix) {
+    _data = _data || data;
+    _data.each(function(i, item) {
+        item["月份"] = toDate(item["日期"]).format("yyyy-MM");
+    });
+    var data1 = tssJS.Data.groupby(_data, "月份", "v1,v2");
+
+    var result1 = [];
+    data1.each(function(i, item){
+        result1.push( {"name": item["月份"], "value": Math.round( item.v1 * 1000 / item.v2 ) / 10 } );
+    });
+
+    var config = {"barWidth": 40};
+    prefix = prefix ? "【" +prefix+ "】" : "";
+    tssJS.Echart.column2D("canvas1", prefix + "百公里油耗——按月统计", result1, showTG, config);
+
+    !prefix && showTG();
+}
+
+function showTG(month) {
+    var _data = [];
+    if(month) {
+        data.each(function(i, item) {
+            if(item["月份"] == month) {
+                _data.push(item);
+            }
+        });
+        $("#tabs b").text(month);
+    } else {
+        _data = data;
+    }
+
+    var treeData = [];
+        data1 = tssJS.Data.groupby(_data, "org", "v1,v2", 0),
+        data2 = tssJS.Data.groupby(_data, "org,xianlu", "v1,v2", 0),
+        data3 = tssJS.Data.groupby(_data, "org,carnum,brand,xianlu,carlen", "v1,v2,runtime,worktime", 0);
+
+    var footerItem = {"name": "平均", "v1": 0, "v2": 0};
+    data1.each(function(i, item1) {
+        item1.name = item1["org"];
+        item1.state = data1.length == 1 ? "open" : "closed";
+        item1.children = [];
+
+        data2.each(function(j, item2) {           
+            if(item2.org == item1.name) {
+                item2.name = "<a href='#' onclick=showXianlu('"+item2["xianlu"]+"')>" + item2["xianlu"] + "</a>";
+
+                item2["总油耗"] = Math.round( item2.v1 * 1000 / (item2.v2||1) ) / 10;
+                item1.children.push(item2);
+            }
+        });
+        sortArray(item1.children, '总油耗');
+
+        item1["总油耗"] = Math.round( item1.v1 * 1000 / (item1.v2||1) ) / 10;
+        treeData.push(item1);
+
+        footerItem["v1"] += item1["v1"];
+        footerItem["v2"] += item1["v2"];
+    });
+
+    sortArray(treeData, '总油耗');
+
+    footerItem["总油耗"] = Math.round( footerItem.v1 * 1000 / footerItem.v2 ) / 10;
+
+    sortArray(data1, '总油耗');
+    $('#tg1').treegrid({
+        data: {"rows": treeData, "footer": [footerItem]},
+        idField:'name',
+        treeField:'name',
+        fit : true,
+        animate: true,
+        singleSelect: true,
+        showFooter:true,
+        columns:[[
+            {title:'机构-线路', field:'name', width: '65%', align:'left'},
+            {title:'百公里油耗', field:'总油耗', width: '30%', align:'right'}
+        ]],
+        onClickRow: function(row) {
+            var name = row["name"], name = row["name"], dataX = [];
+            data.each(function(i, item) {
+                if(item["org"] == name || item["xianlu"] == name) {
+                    dataX.push(item);
+                }
+            });
+            showChart(dataX, name);
+        }
+    });
+
+    data3.each(function(j, item3) {           
+        item3["百公里油耗"] = Math.round( item3.v1 * 1000 / (item3.v2||1) ) / 10;
+        item3["怠速占比"] = (100*(1-item3.runtime/item3.worktime)).toFixed(2) + "%";
+    });
+    sortArray(data3, '百公里油耗');
+    var dg2 = $('#tg2').datagrid({
+        fit : true,
+        fitColumns : true,
+        rownumbers : true,
+        remoteSort : false,
+        multiSort : true,
+        showFooter: true,
+        singleSelect : true,
+        sortName : "百公里油耗",
+        sortOrder : "asc",
+        data: data3,
+        columns:[[
+            {title:'车辆', field:'carnum', width: '70px', align:'center', sortable: true, styler: stylerCursor},
+            {title:'百公里油耗', field:'百公里油耗', width: '55px', align:'right', sortable: true},
+            {title:'总里程', field:'v2', width: '55px', align:'right', sortable: true},
+            {title:'怠速占比', field:'怠速占比', width: '55px', align:'right', sortable: true},
+            {title:'路线', field:'xianlu', width: '90px', align:'center', sortable: true, styler: stylerCursor},
+            {title:'品牌', field:'brand', width: '60px', align:'center', sortable: true},
+            {title:'厢型', field:'carlen', width: '55px', align:'center', sortable: true},
+            {title:'机构', field:'org', width: '80px',  align:'center', sortable: true}
+        ]],
+        onClickRow: function(index, row) {
+            var carnum = row["carnum"], dataX = [];
+            data.each(function(i, item) {
+                if(item["carnum"] == carnum) {
+                    dataX.push(item);
+                }
+            });
+            showChart(dataX, carnum);
+        },
+        onClickCell: function(index, field, value) {
+            if(field == 'carnum') {
+                showCar(value);
+            }  
+            if(field == 'xianlu') {
+                showXianlu(value);
+            }           
+        }
+    });
+
+    footerItem["carnum"] = "合计";
+    dg2.datagrid('reloadFooter',[
+        footerItem
+    ]);
+}
+	
+</script>
+
+
+</head>
+
+<body>
+    <div id="main" class="easyui-layout" fit="true" >
+        <div data-options="region:'center'" border="false">
+        	<div id='canvas1' style="height:95%;"></div>
+            <div id="tgDiv">
+                <div id="tabs" class="easyui-tabs" border="true" >
+                    <div title="<b></b> 机构-线路油耗排名" border="false" >
+                        <table id="tg1" border="false"></table>
+                    </div>
+                    <div title="<b></b> 车辆油耗明细" border="false" >
+                        <table id="tg2" border="false"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

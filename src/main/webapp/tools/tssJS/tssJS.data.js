@@ -236,6 +236,25 @@
                     }
                 }
             );
+        },
+
+        // 导出报表
+        export: function(reportId, queryParams) {
+            var frameId = "exportFrame";
+            if( $(frameId).length == 0 ) {
+                var exportEl = tssJS.createElement("div"); 
+                exportEl.innerHTML = "<div><iframe id='" + frameId + "' src='about:blank' style='display:none'></iframe></div>";
+                document.body.appendChild(exportEl);
+            }
+
+            var queryString = "?";
+            $.each(params, function(key, value) {
+                if( queryString.length > 1 ) {
+                    queryString += "&";
+                }
+                queryString += (key + "=" + value);
+            });
+            $("#exportFrame").attr( "src", encodeURI("/tss/data/export/" + reportId + "/1/100000" + queryString) );
         }
         /* ---------------------------------- 数据导出 END ----------------------------------------------- */
     }

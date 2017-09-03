@@ -4,21 +4,21 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
 <meta charset="UTF-8">
 <title>bi通用条件</title>
-<link rel="shortcut icon" href="../images/tss.ico">
-<link rel="Bookmark" href="../images/tss.ico">
+<link rel="shortcut icon" href="../../images/tss.ico">
+<link rel="Bookmark" href="../../images/tss.ico">
 
-<link rel="stylesheet" href="../tools/tssJS/fonts/icons.css">
+<link rel="stylesheet" href="../../tools/tssJS/fonts/icons.css">
 
-<link rel="stylesheet" href="../tools/easyui/themes/default/easyui.css">
-<link rel="stylesheet" href="../tools/easyui/themes/icon.css">
+<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
 
-<script src="../tools/tssJS/tssJS.all.js"></script>
-<script src="../tools/tssJS/tssJS.jsonp.js"></script>
-<script src="../tools/util_date.js"></script>
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+<script src="../../tools/tssJS/tssJS.jsonp.js"></script>
+<script src="../../tools/util_date.js"></script>
 
-<script src="../tools/easyui/jquery.min.js"></script>
-<script src="../tools/easyui/jquery.easyui.min.js"></script>
-<script src="../tools/easyui/easyui-lang-zh_CN.js"></script>
+<script src="../../tools/easyui/jquery.min.js"></script>
+<script src="../../tools/easyui/jquery.easyui.min.js"></script>
+<script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
 
 
 <STYLE type="text/css">
@@ -33,11 +33,8 @@
 .queryContainer table input.easyui-combobox    { width: 150px; }
 .queryContainer table input.easyui-datebox     { width: 100px; }
 
-.queryContainer table tr td:nth-child(1) ,
-.queryContainer table tr td:nth-child(2) { visibility: hidden; }
-
 input[name='timeTag'] { margin-left: 5px; }
-input[name='_wd'] { margin-left: 8px; }
+input[name='_g6'] { margin-left: 8px; }
 		 
 </STYLE>
 
@@ -47,7 +44,7 @@ input[name='_wd'] { margin-left: 8px; }
     <div class="queryContainer" data-options="region:'center'" border="false" title="通用查询条件">
     	<table>     
             <tr>
-                <td class="label">部 门:</td>
+                <td class="label">承运商:</td>
                 <td>
                     <input id="_g1" class="easyui-combobox">
                 </td>
@@ -55,11 +52,11 @@ input[name='_wd'] { margin-left: 8px; }
                 <td>
                     <input id="_day1" class="easyui-datebox" style="width: 100px">  -- 
                     <input id="_day2" class="easyui-datebox" style="width: 100px">
-                    <INPUT name="timeTag" type="radio" value="1"> <label class="rd">今日</label> 
+                    <INPUT name="timeTag" type="radio" value="1"> <label>今日</label> 
                 </td>
             </tr>
             <tr>
-                <td class="label">人 员:</td>
+                <td class="label">路 线:</td>
                 <td>
                     <input id="_g2" class="easyui-combobox">
                 </td>
@@ -67,11 +64,11 @@ input[name='_wd'] { margin-left: 8px; }
                 <td>
                     <input id="_week1" class="easyui-combobox" style="width: 100px">  -- 
                     <input id="_week2" class="easyui-combobox" style="width: 100px">
-                    <INPUT name="timeTag" type="radio" value="2"> <label class="rd">本周</label> 
+                    <INPUT name="timeTag" type="radio" value="2"> <label>本周</label> 
                 </td>
             </tr>
             <tr>
-                <td class="label">客 户:</td>
+                <td class="label">品 牌:</td>
                 <td>
                     <input id="_g3" class="easyui-combobox">
                 </td>
@@ -79,23 +76,23 @@ input[name='_wd'] { margin-left: 8px; }
                 <td>
                     <input id="_month1" class="easyui-combobox" style="width: 100px">  -- 
                     <input id="_month2" class="easyui-combobox" style="width: 100px">
-                    <INPUT name="timeTag" type="radio" value="3" checked> <label class="rd">本月</label> 
+                    <INPUT name="timeTag" type="radio" value="3" checked> <label>本月</label> 
                 </td>
             </tr>
             <tr>
-                <td class="label">项 目:</td>
+                <td class="label">车 型:</td>
                 <td>
-                    <input id="_g4" class="easyui-combobox">
+                    <input id="_g4" class="easyui-combobox" required="true">
                 </td>
                 <td class="label">季 度:</td>
                 <td>
                     <input id="_season1" class="easyui-combobox" style="width: 100px">  -- 
                     <input id="_season2" class="easyui-combobox" style="width: 100px">
-                    <INPUT name="timeTag" type="radio" value="4"> <label class="rd">本季</label> 
+                    <INPUT name="timeTag" type="radio" value="4"> <label>本季</label> 
                 </td>
             </tr>
             <tr>
-                <td class="label">里程碑:</td>
+                <td class="label">车 牌:</td>
                 <td>
                     <input id="_g5" class="easyui-combobox">
                 </td>
@@ -103,26 +100,24 @@ input[name='_wd'] { margin-left: 8px; }
                 <td>
                 	<input id="_year1" class="easyui-combobox" style="width: 100px">  -- 
                     <input id="_year2" class="easyui-combobox" style="width: 100px">
-                    <INPUT name="timeTag" type="radio" value="5"> <label class="rd">本年</label> 
+                    <INPUT name="timeTag" type="radio" value="5"> <label>本年</label> 
                 </td>
             </tr>
-            <tr>
-                <td class="label">其 它:</td>
+            <tr>               
+                <td class="label">驱动类型:</td>
                 <td>
-                    <input id="_other1" class="easyui-textbox">
+                	<input id="_g8" class="easyui-combobox" style="width: 80px;">
                 </td>
-                <td class="label">展示方式:</td>
+                <td class="label">进口国产:</td>
                 <td>
-                    <INPUT name="_wd" type="radio" value="d" checked><label>按天</label> 
-                    <INPUT name="_wd" type="radio" value="w"><label>按周</label> 
-                    <INPUT name="_wd" type="radio" value="m"><label>按月</label> 
-                    <INPUT name="_wd" type="radio" value="s"><label>按季</label> 
-                    <INPUT name="_wd" type="radio" value="y"><label>按年</label> 
+                    <input id="_g7" class="easyui-combobox" style="width: 70px; ">
                 </td>
             </tr>
         </table>
         <div style="text-align:center; padding-top: 10px;">        	
-            <a href="#" class="easyui-linkbutton" iconCls="icon-search" onclick="beginQuery();">开始查询</a>
+            <a href="#" class="easyui-linkbutton" iconCls="icon-search" onclick="beginQuery();">
+                <span id="qbt">开始查询</span>
+            </a>
             <a href="#" class="easyui-linkbutton" onclick="initParams(false);">重置条件</a>
             <a href="#" class="easyui-linkbutton" onclick="hideQueryForm();">隐藏</a>
         </div>
@@ -131,8 +126,6 @@ input[name='_wd'] { margin-left: 8px; }
 
 <script type="text/javascript">
 
-// 根据report.param里的配置的参数信息，对通用查询条件进行过滤（没有的禁用输入） ?
-
 TOMCAT_URL = "";
 BASE_JSON_URL  = TOMCAT_URL + '/tss/data/json/';
 BASE_JSONP_URL = TOMCAT_URL + '/tss/data/jsonp/';
@@ -140,8 +133,25 @@ BASE_JSONP_URL = TOMCAT_URL + '/tss/data/jsonp/';
 function json_url(id) { return BASE_JSON_URL + id; }
 function jsonp_url(id) { return BASE_JSONP_URL + id; }
 
+var now = toDate("2017-06-30"),
+    cday = now.format("yyyy-MM-dd"), 
+    cyear = now.getFullYear(), 
+    cmonth = now.format("yyyy-MM"),
+    cweek = getWeekNumber(now),
+    cseason = Math.ceil( (now.getMonth()+1)/3 );
+
+
+var roles = parent.userRoles || [];
+var org   = parent.userHas[4];
+var isCYS = roles.contains(12) && !roles.contains(11); // 是否为承运商/登录，12是承运商角色的ID   
+
+
 $(document).ready(function(){
     initParams(true);
+
+    if(tssJS.Query.get("tag") == "1") {
+        $("#qbt").text("保存条件");
+    }
 
     $('input:radio[name="timeTag"]').change( function() {
         clearTimeCondition();
@@ -215,6 +225,10 @@ function clearTimeCondition(keys) {
 }
 
 function initParams(getCookie) {
+
+    $('#_day1').datebox('setValue', getFirstDayOfMonth( subDate(now, 1) ) );
+    $('#_day2').datebox('setValue', cday);
+
     var weeks = [], months = [], seasons = [], years = [];
     for(var i = 1; i <= 53; i++) {
         weeks.push({"value": i, "text": "第"+i+"周" });
@@ -245,14 +259,13 @@ function initParams(getCookie) {
     $('#_year1').combobox( { panelHeight: '100px', data: years, onSelect: changeTime  });
     $('#_year2').combobox( { panelHeight: '100px', data: years, onSelect: changeTime  });
 
-    $('#_day1').datebox('setValue', getFirstDayOfMonth( subDate(now, 1) ) );
-    $('#_day2').datebox('setValue', subDateS(now, 0) );
-
     // 空间组织条件
-    initGroupParams( function() {
-        /* 从Cookie获取历史查询条件*/ 
-        getCookie && updateParams(false);
-    } );
+    initGroupParams();
+
+    /* 从Cookie获取历史查询条件*/ 
+    getCookie && setTimeout(function() {
+        updateParams(false); // 待group数据异步取到加载完成后
+    }, 2*1000);
 }
 
 function changeTime (item) {
@@ -305,34 +318,51 @@ function changeTime (item) {
     }
 }
 
-function initGroupParams(callback) {
-	$('#_g1').combobox( {
-        panelHeight: '100px',
-        editable: false,
-        multiple: true,
-        data: [ {"value": 1, "text": "开发部"}, 
-        		{"value": 2, "text": "市场部"}, 
-        		{"value": 3, "text": "人事部"}, 
-        		{"value": 4, "text": "行政部"}
-        	],
-        onChange: function( newOrg, oldOrg ) {
-            $('#_g2').combobox( {
-	            panelHeight: '150px',
-                editable: false,
-                multiple: true,
-	            data: [ {"value": 1, "text": "张三"}, 
-		        		{"value": 2, "text": "李四"}, 
-		        		{"value": 3, "text": "王五"}, 
-		        	],
-	            queryParams: {"param1": newOrg}
-	        });
+function initGroupParams() {
+    function initByOrg(org) {
+        var params = {};
+        if(org) params.param1 = org;
+        
+        params.param2 = "xianlu";
+        $('#_g2').combobox( {panelHeight: '120px', url: json_url(26), queryParams: params, multiple:true} );
+        params.param2 = "brand";
+        $('#_g3').combobox( {panelHeight: '100px', url: json_url(26), queryParams: params, editable: true} );
+        params.param2 = "carlen";
+        $('#_g4').combobox( {panelHeight: '80px', url: json_url(26), queryParams: params, editable: true } );  
+        params.param2 = "carnum";   
+        $('#_g5').combobox( {panelHeight: '88px', url: json_url(26), queryParams: params, valueField: "name"} ); 
+    }
+
+    $('#_g7').combobox( {panelHeight: '60px', url: json_url(26), queryParams: {"param2": "jkgc"} } ); 
+    $('#_g8').combobox( {panelHeight: '60px', url: json_url(26), queryParams: {"param2": "qdlx"} } ); 
+
+    // 车线模糊过滤
+    $('#_g2').combobox({
+        filter: function(q, row){
+            var opts = $(this).combobox('options');
+            return row[opts.textField].indexOf(q) >= 0;
         }
     });
-    // $("#_g1").combobox("setValue", "1");
 
-    /* 待Groups加载完成后，再 updateParams by cookie
-       TODO 如果组织是通过Ajax异步获取回来的，则updateParams(false)需要在组织下拉项加载完成后再执行一次 */
-    callback();
+    // 机构切换后，需对车辆等进行重新过滤
+    tssJS.getJSON(json_url(26), {"param2": "org"}, function(data) {
+        $('#_g1').combobox( {
+            panelHeight: '160px', 
+            editable: true,
+            data: data,
+            onChange: function( newOrg, oldOrg ) {
+                initByOrg(newOrg);
+            },
+            value: isCYS ? org : null
+        });
+
+        var defaultSelected;
+        if( isCYS ) {              
+            $('#_g1').combobox("readonly", true);
+            defaultSelected = org;
+        } 
+        initByOrg(defaultSelected);
+    });     
 }
 
 function hideQueryForm() {
@@ -352,39 +382,49 @@ function beginQuery() {
         tssJS.Cookie.setValue(key, $("#"+key).textbox("getValue"), expires);
     }
 
-	tssJS.Cookie.setValue("_time_", tssJS.now(), expires);
-	setToCookie("_day1");
-	setToCookie("_day2");
-	setToCookie("_week1");
-	setToCookie("_week2");
-	setToCookie("_month1");
-	setToCookie("_month2");
-	setToCookie("_season1");
-	setToCookie("_season2");
-	setToCookie("_year1");
-	setToCookie("_year2");
-    tssJS.Cookie.setValue("_wd", tssJS.radioValue("_wd"), expires);
-	setToCookie("_g1");
-	setToCookie("_g2");
-	setToCookie("_g3");
-	setToCookie("_g4");
-	setToCookie("_g5");
+    tssJS.Cookie.setValue("_time_", tssJS.now(), expires);
+    setToCookie("_day1");
+    setToCookie("_day2");
+    setToCookie("_week1");
+    setToCookie("_week2");
+    setToCookie("_month1");
+    setToCookie("_month2");
+    setToCookie("_season1");
+    setToCookie("_season2");
+    setToCookie("_year1");
+    setToCookie("_year2");
 
+	tssJS.Cookie.setValue("_g1", $("#_g1").textbox("getValue"), expires);
+	tssJS.Cookie.setValue("_g2", $("#_g2").combobox("getValues").join(","), expires);
+	tssJS.Cookie.setValue("_g3", $("#_g3").textbox("getValue"), expires);
+	tssJS.Cookie.setValue("_g4", $("#_g4").textbox("getValue"), expires);
+	tssJS.Cookie.setValue("_g5", $("#_g5").textbox("getValue"), expires);
+    tssJS.Cookie.setValue("_g7", $("#_g7").textbox("getValue"), expires);
+    tssJS.Cookie.setValue("_g8", $("#_g8").textbox("getValue"), expires);
+
+    var _g6Val = $("input[name='_g6']:checked").map(function () {
+       return $(this).val();
+    }).get() || [];
+    tssJS.Cookie.setValue("_g6", _g6Val.join(","), expires);
+    
 	parent.tssJS("#searchFormDiv").hide();
 	parent.initPortlet(); // 打开报表
 
-	parent.parent.conditionReady = true;
+    parent.parent.conditionReady = true;
 }
-
 
 function updateParams(sync) {
     // 如果cookie里没有设置过，或多个窗口相互同步时超过一分钟的，则不做更新
     var lastTime = tssJS.Cookie.getValue("_time_");
     if( !lastTime || (sync && tssJS.now() - lastTime > 60*1000) ) return;
 
-    var keys = ["_g1", "_g2", "_g3", "_g4", "_g5", "_day1", "_day2", "_week1", "_week2", "_season1", "_season2", "_month1", "_month2", "_year1", "_year2"];
+    var keys = ["_g1", "_g2", "_g3", "_g4", "_g5", "_g7", "_g8", "_day1", "_day2", "_week1", "_week2", "_season1", "_season2", "_month1", "_month2", "_year1", "_year2"];
     var values = {};
     keys.each(function(i, key) {
+        if( isCYS && key == '_g1') {
+            return true;
+        }
+
         values[key] = tssJS.Cookie.getValue(key)||"";
         if(key == '_day1' || key == '_day2') {
             $("#" + key).textbox("setValue", values[key]);
