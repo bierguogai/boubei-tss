@@ -245,7 +245,8 @@ function initParams(getCookie) {
     $('#_year1').combobox( { panelHeight: '100px', data: years, onSelect: changeTime  });
     $('#_year2').combobox( { panelHeight: '100px', data: years, onSelect: changeTime  });
 
-    $('#_day1').datebox('setValue', getFirstDayOfMonth( subDate(now, 1) ) );
+    // $('#_day1').datebox('setValue', getFirstDayOfMonth( subDate(now, 1) ) );
+    $('#_day1').datebox('setValue', subDateS(now, 365) );
     $('#_day2').datebox('setValue', subDateS(now, 0) );
 
     // 空间组织条件

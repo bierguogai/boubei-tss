@@ -14,35 +14,35 @@ html { height: 100%; }
 body { background: url(images/login_bg.jpg) no-repeat center;  }
  
 .modal-wrapper {
-    box-sizing: border-box;
-    position: fixed;
-    top: 0; right: 0; bottom: 0; left: 0;
-    z-index: 203;
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-direction: normal;
-    -ms-flex-direction: column;
-    flex-direction: column;
-    -webkit-box-pack: center;
-    -ms-flex-pack: center;
-    justify-content: center;
-    overflow-x: hidden;
-    overflow-y: auto;
-    background-color: rgba(0,0,0,.65);
+  box-sizing: border-box;
+  position: fixed;
+  top: 0; right: 0; bottom: 0; left: 0;
+  z-index: 203;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: rgba(0,0,0,.65);
 }
 
 .modal {
-    position: relative;
-    z-index: 1;
-    width: 400px; height: 0px;
-    margin-right: auto;
-    margin-left: auto;
-    outline: 0;
-    border-radius: 2px;
-    box-shadow: 0 5px 20px 0 rgba(0,34,77,.5);   
-    background: #fff;
-    transition: height .8s ease;  
+  position: relative;
+  z-index: 1;
+  width: 400px; height: 0px;
+  margin-right: auto;
+  margin-left: auto;
+  outline: 0;
+  border-radius: 2px;
+  box-shadow: 0 5px 20px 0 rgba(0,34,77,.5);   
+  background: #fff;
+  transition: height .8s ease;  
 }
 
 #login_box, #reg_box {
@@ -73,7 +73,7 @@ div.bottonBox>button {
 
 a:visited { color: #ccc; text-decoration: none; }
 a:hover { color: #999; text-decoration: underline;}
-a { font-size: 13px; color: #ccc; position: absolute; padding-top: 5px; }
+a[id] { font-size: 13px; color: #ccc; position: absolute; padding-top: 5px; }
 #a1, #a3 { left: 24px; }
 #a2, #a4 { right: 24px; }
 .bz { margin-top: 12px; color: #ccc; }
@@ -120,7 +120,7 @@ h2.tip { padding: 10px 10px 0 10px; color: red; font-size: 13px; }
           <input type="text" id="rloginName" placeholder="请输入手机号或邮箱"> 
         </div>
         <div class="input-wrapper">
-          <input type="text" id="ruserName" placeholder="请输入姓名或组织名称"> 
+          <input type="text" id="ruserName" placeholder="请输入姓名或组织(企业)名称"> 
         </div>
         <div class="input-wrapper">
           <img id="rswitch" onclick="hidePasswd('rswitch', 'rpassword')" src="images/visible_y.png" title="显示密码">  
@@ -152,7 +152,8 @@ h2.tip { padding: 10px 10px 0 10px; color: red; font-size: 13px; }
     location.href = "mobile/login.html";
   }
 
-  setTimeout(goLogin, 300);
+  var reg = $.Query.get("reg"), _user = $.Query.get("user");
+  setTimeout(reg ? preRegister : goLogin, 300);
 
   function goLogin() {
     $(".modal").height(400);
@@ -161,11 +162,12 @@ h2.tip { padding: 10px 10px 0 10px; color: red; font-size: 13px; }
     $(".tip").text("");
     
     var $el = $("#loginName");
-    $( $el.focus() );
     if( $el.value() ) {
-        $1("loginName").onblur();
-        $("#password").focus();
-    } 
+      $1("loginName").onblur();
+      $("#password").focus();
+    } else {
+      $el.focus()
+    }
   }
 
   function preRegister() {
@@ -182,17 +184,17 @@ h2.tip { padding: 10px 10px 0 10px; color: red; font-size: 13px; }
   }
 
   function hidePasswd(switchEL, pwdEL) {  
-      var switchImg = $1(switchEL);  
-      var passwdEL = $1(pwdEL);  
-      if (passwdEL.type == "password") {  
-          passwdEL.type = "text";  
-          switchImg.src = "images/visible_n.png";  
-          switchImg.title = "隐藏密码";
-      } else {  
-          passwdEL.type = "password";  
-          switchImg.src = "images/visible_y.png";  
-          switchImg.title = "显示密码";
-      }  
+    var switchImg = $1(switchEL);  
+    var passwdEL = $1(pwdEL);  
+    if (passwdEL.type == "password") {  
+      passwdEL.type = "text";  
+      switchImg.src = "images/visible_n.png";  
+      switchImg.title = "隐藏密码";
+    } else {  
+      passwdEL.type = "password";  
+      switchImg.src = "images/visible_y.png";  
+      switchImg.title = "显示密码";
+    }  
   }  
 
   function register(role) {
@@ -210,16 +212,16 @@ h2.tip { padding: 10px 10px 0 10px; color: red; font-size: 13px; }
     }
     
     if( !params.loginName ) {
-        $.alert("账号不能为空");
-        return $("#rloginName").focus();
+      $.alert("账号不能为空");
+      return $("#rloginName").focus();
     } 
     else if( !params.userName ) {
-        $.alert("名称不能为空");
-        return $("#ruserName").focus();
+      $.alert("名称不能为空");
+      return $("#ruserName").focus();
     }
     else if( !params.password || params.password.length < 8 ) {
-        $.alert("请输入不少于8个字符的密码");
-        return $("#rpassword").focus();
+      $.alert("请输入不少于8个字符的密码");
+      return $("#rpassword").focus();
     }
 
     // 获取一个随机数作为验证码

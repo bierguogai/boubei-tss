@@ -16,8 +16,11 @@ function init() {
     getParam("sysTitle", function(result) {
         result && $(".sysTitle").html(result);
     });
+    getParam("subTitle", function(result) {
+        result && $(".subTitle").html(result);
+    });
     getParam("regable", function(result) {
-        regable = result == "false";
+        regable = result != "false";
         if(!regable) {
             $("#b2_reg, #b3_reg").hide();
             $("#b1_reg").width("352px");
@@ -27,6 +30,10 @@ function init() {
     var accountEl = $1("loginName"), passwdEl  = $1("password");
     accountEl.onfocus = function() {  passwdEl.disabled = true; }
     accountEl.value = $.Cookie.getValue("iUser") || "";
+    if(_user) {
+        accountEl.value = _user.split("@")[0];
+        passwdEl.value = _user.split("@")[1]||"";
+    }
     accountEl.focus();
 
     $("#bt_login").click ( function() {

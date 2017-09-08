@@ -211,7 +211,8 @@ function clearTimeCondition(keys) {
 
 function initParams(getCookie) {
 
-    $('#_day1').datebox('setValue', getFirstDayOfMonth( now ) );
+    // $('#_day1').datebox('setValue', getFirstDayOfMonth( subDate(now, 1) ) );
+    $('#_day1').datebox('setValue', subDateS(now, 365) );
     $('#_day2').datebox('setValue', cday);
 
     var weeks = [], months = [], seasons = [], years = [];

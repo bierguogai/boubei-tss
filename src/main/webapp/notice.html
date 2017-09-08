@@ -19,7 +19,10 @@ html, body { height: 100%; }
 .portlet { padding:10px; font-size:14px; line-height:143%;}
 .portlet .title{ font-size: 12px; text-align:left; }
 .portlet .label{ padding-left:3px; font-size:14px; font-weight:bold;}
-.portlet .attach{ padding-left:3px; width:100%; height:25px; background-color:#FED501; border-top:1px solid #566DB1; border-bottom:1px solid #566DB1; }
+.portlet .attach{ padding-left:3px; width:100%; background-color:#eee;
+    border-top:1px solid #566DB1; border-bottom:1px solid #566DB1; }
+
+.portlet .attach a { padding: 0 12px;  }
 .portlet .content { width:97%; padding-left:10px; padding-right:10px; }
 
 </style>
@@ -48,27 +51,24 @@ $(function(){
             attachments.each(function(i, attach){
                 var name = $("name", attach).text();
                 var url = $("url", attach).text();
-                url = url.substring(url.indexOf('/tss')); // http://localhost:9000/tss/download?id=1 --> 相对地址
-                str[str.length] = "<a href='" + url + "'>" + name + "</a>";
+                str[str.length] = "<a href='" + url + "'>" + (i+1) + ". " + name + "</a> ";
             });
-            extendStr += "<div class='attach'>相关附件或图片: " + str.join(" | ") + "</div>";
+            extendStr += "<div class='attach'>相关附件: " + str.join(" | ") + "</div>";
         }
 
         // 文章内容
-        if( content ) {
-            var html = [];
-            html[html.length] = "<div>";
-            html[html.length] = "<div>";
-            html[html.length] = "   <h6> 发布时间：" + issueDate + "， 出处："+ author + "</h6><hr><br>";
-            html[html.length] = "   <div class='content'>" + content + "</div><br>";
-            html[html.length] = "</div>";
-            html[html.length] = extendStr;
-            html[html.length] = "</div>";
+        var html = [];
+        html[html.length] = "<div>";
+        html[html.length] = "<div>";
+        html[html.length] = "   <h6> 发布时间：" + issueDate + "， 出处："+ author + "</h6><hr><br>";
+        html[html.length] = "   <div class='content'>" + (content||"") + "</div><br>";
+        html[html.length] = "</div>";
+        html[html.length] = extendStr;
+        html[html.length] = "</div>";
 
-            $("div.portlet").html( html.join("") );
+        $("div.portlet").html( html.join("") );
 
-            setTimeout( fixPic, 100);
-        }
+        setTimeout( fixPic, 100);
     }
     request.onexception = function(){
         alert("内容错误: [" + this.getResponseText() + "]");

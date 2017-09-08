@@ -17,3 +17,23 @@ a.easyui-linkbutton { width: 90px; }
 .easyui-dialog table.l .label { background-color: #eee; width: 60px; text-align: right; box-sizing: content-box; }
 .easyui-dialog table.l input.easyui-textbox     { width: 172px; }
 .easyui-dialog table.l input.easyui-datetimebox { width: 172px; }
+
+.fileUpload {
+  height: 236px;
+  width: 300px;
+  position: relative;
+  background: url(../images/upload.png) no-repeat 25px bottom;
+}
+.fileUpload input[type='file'] {
+  height: 236px;
+  width: 256px;
+  overflow: hidden;
+  position: absolute;
+  cursor: pointer;
+  opacity: 0;
+  filter: alpha(opacity=0);
+}
+#importDiv input[type='button'] {
+  margin-left: 80px;
+  margin-top: 1px;
+}
