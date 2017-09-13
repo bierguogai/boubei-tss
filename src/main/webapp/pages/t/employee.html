@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>员工管理</title>
+<link rel="stylesheet" href="../../tools/tssJS/css/boubei.css">
+<link rel="stylesheet" href="../../css/easyui.css">
+
+<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+
+<script src="../../tools/easyui/jquery.min.js"></script>
+<script src="../../tools/easyui/jquery.easyui.min.js"></script>
+<script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+
+<script src="../../tools/easyui.js"></script>
+
+<script type="text/javascript">
+
+var tableId = 32;
+URL = record_urls(tableId);
+
+CREATE_URL = URL.CREATE;
+UPDATE_URL = URL.UPDATE;  //{id}
+DELETE_URL = URL.DELETE;  //{id}
+GET_URL    = URL.GET;  //{id}
+QUERY_URL  = URL.QUERY;
+ATTACH_URL = URL.ATTACH;
+
+var FIELDS = [
+    {field: 'ck', checkbox: true},    
+    {field: "staff_no", width: "5%", title: "员工号"},
+	{field: "name", width: "5%", title: "姓名"},
+	{field: "hiredate", width: "7%", title: "入职时间"},
+	{field: "duty_date", width: "7%", title: "上岗时间"},
+	{field: "tel_phone", width: "7%", title: "电话"},
+	{field: "id_card_num", width: "10%", title: "身份证号码"},
+	{field: "zizhi", width: "5%", title: "证件上传"}, 
+	{field: "certificate", width: "8%", title: "证件类型"},
+	{field: "post", width: "5%", title: "职务岗位"},
+	{field: "sex", width: "5%", title: "性别"},
+	{field: "age", width: "5%", title: "年龄"},
+	{field: "nation", width: "5%", title: "民族"},
+	{field: "address", width: "20%", title: "住址"},
+	{field: "marital_s", width: "5%", title: "婚否"},	
+	{field: "bank_name", width: "7%", title: "开户行"},
+	{field: "account", width: "5%", title: "户名"},
+	{field: "account_num", width: "8%", title: "卡号"},	
+	{field: "emergency_persion", width: "7%", title: "紧急联系人"},
+	{field: "emergency_relation", width: "7%", title: "联系关系"},
+	{field: "emergency_phone", width: "7%", title: "紧急联系电话"},
+	{field: "leave_date", width: "7%", title: "离职日期"},
+	{field: "disease", width: "10%", title: "突发性疾病"}
+	];
+$.each(FIELDS, function(i, field) {
+    field.align = "center";
+}); 
+
+$(document).ready(function () {
+    query();
+});
+
+
+var dg;
+function query(params) {
+    params = params || {};
+
+    dg = $('#t1').datagrid({
+        url: QUERY_URL,      // 数据地址
+        queryParams: params, // 参数
+        fit: true,
+        fitColumns: true,
+        pagination: true,
+        rownumbers: true,
+        pageSize : 30,
+        singleSelect: true,
+        checkOnSelect: true,
+        selectOnCheck: true,
+        toolbar: [ 
+            { text: '新增', iconCls: 'icon-add', handler: create }, //下面的create函数
+            '-', { text: '修改', iconCls: 'icon-edit', handler: update }, //下面的update函数
+            '-', { text: '删除', iconCls : 'icon-remove', handler : _remove }, //下面的_remove函数
+            '-', { text: '管理资质文件', iconCls : 'icon-add', handler : uploadX, id: "btn3" },//下面的uploadX函数
+            '-', { text: '离职登记', iconCls : 'icon-man', id: "btn4" },
+            '-', { text: '导入数据', iconCls : 'icon-add', handler : batchImport}
+        ] ,
+        columns: [FIELDS],
+        /* 返回的结果再处理 */
+        loadFilter: function (data) {
+            $.each(data, function (i, item) {                 
+                item.updateTime = (item.updateTime || "").split(" ")[0];
+            });
+
+            setTimeout(getAttachs, 1000);//下面的getAttachs函数
+            return data;
+        },
+        onSelect: function(index, row) {
+            $('#btn3').linkbutton("enable");
+        }
+    });
+}
+
+
+function create() {
+    openDialog('新增员工', true);
+
+    //$('#state').combobox('setValue', '启用');
+    //$('#staff_no').textbox('readonly', false);
+    $('#lockVersion').val('0'); // 給版本号设置默认值.
+}
+
+function update() {
+    var row = getSelectedRow();
+    if (row) {
+    	if (!row.leave_date) {
+        openDialog('修改员工信息');
+
+        $.getJSON(GET_URL + row.id, {}, function (data) {
+            
+            $('#fm').form('load', data);
+            $('#staff_no').textbox('readonly', true);
+        }, "GET")};
+        if (row.leave_date){
+	    	$.messager.alert({
+	            title: '提示',
+	            msg: '该员工已离职。'
+	        });
+    	}
+    };
+}
+
+function _remove(){               //删除某一行
+    doRemove("t1", tableId);
+}
+
+function beginQuery() {
+    var params = {};
+    params.name = $('#param1').val();
+
+    query(params);
+}
+
+function getAttachs() {
+    dg && $.each(dg.datagrid("getRows"), function(index, row) {   
+        tssJS.ajax({ 
+            url: ATTACH_URL + row.id, 
+            method: "GET", 
+            ondata: function(){
+                var data  = this.getResponseJSON();
+                if(data && data.length) {
+                    var item = data[0];
+                    row.zizhi = "<a href='" + item.downloadUrl + "' target='_blank' style='color:red'>点击查看</a>";
+                    dg.datagrid("refreshRow", index);
+                }
+            } 
+        });
+    });
+}
+
+var globalValiable = {"tableId": tableId}
+function uploadX() {
+    var row = getSelectedRow();
+    if (row) {
+        globalValiable.itemId = row.id;
+        var title = "管理【" + row.name + "】的资质文件";
+        tssJS.openIframePanel("if1", title, 710, 255, "../../modules/dm/recorder_upload.html", true);
+    }
+}
+
+
+
+
+</script>
+
+
+</head>
+<body>
+<div id="main" class="easyui-layout" fit="true">
+    <div id="queryContainer" data-options="region:'north'" border="false" style="display:none">
+        <label>姓名:</label><input id="param1" class="easyui-textbox"/>
+
+        <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'" onclick="beginQuery()">查 询</a>
+    </div>
+    <div id="dataContainer" data-options="region:'center'" border="false" title="员工列表">
+        <table id="t1" border="false"></table>
+    </div>
+</div>
+<div id="dlg" class="easyui-dialog" style="width:780px;height: 420px;" closed="true" buttons="#dlg-buttons">
+    <form id="fm" method="post" novalidate>
+        <input name="id" type="hidden"/>
+        <input id="lockVersion" name="lockVersion" type="hidden"/>
+        <input id="seqNo" name="seqNo" type="hidden" />
+        <table class="l">
+        <tr>
+            <td class="label">员工号:</td>
+			<td>
+			  <input name="staff_no"id="staff_no" class="easyui-textbox" required/>
+			</td>  
+			<td class="label">姓名:</td>
+			<td>
+			  <input name="name" id="name" class="easyui-textbox" required/>
+			</td> 
+			<td class="label">电话:</td>
+			<td>
+			  <input name="tel_phone" id="tel_phone" class="easyui-textbox" />
+			</td> 
+		</tr>
+		<tr>			 
+			<td class="label">身份证号:</td>
+			<td>
+			  <input name="id_card_num" id="id_card_num" class="easyui-textbox" />
+			</td>  
+			<td class="label">职务岗位:</td>
+			<td>
+			  <input name="post" id="post" class="easyui-combobox" data-options="required:false, editable:false, panelHeight: '180', valueField: 'value',textField: 'label', multiple:false, data: [{label: '驾驶员',value: '驾驶员'},{label: '调度',value: '调度'},{label: '车队长',value: '车队长'},{label: '车管员',value: '车管员'},{label: '仓管员',value: '仓管员'},{label: '行政人事',value: '行政人事'},{label: '会计',value: '会计'},{label: '出纳',value: '出纳'},{label: '结算',value: '结算'}]"/>
+			</td> 
+			<td class="label">证件类型:</td>
+			<td>
+			  <input name="certificate" id="certificate" class="easyui-combobox"  data-options="required:false, editable:false, panelHeight: '150', valueField: 'value',textField: 'label', multiple:false, data: [{label: '驾驶证A1',value: '驾驶证A1'},{label: '驾驶证A2',value: '驾驶证A2'},{label: '驾驶证B2',value: '驾驶证B2'},{label: '驾驶证C1',value: '驾驶证C1'},{label: '会计证初级',value: '会计证初级'},{label: '会计证中级',value: '会计证中级'},{label: '会计证高级',value: '会计证高级'}]"/>
+			</td> 
+		</tr>
+		<tr>			
+			<td class="label" style="width:40px;">入职时间:</td>
+			<td>
+			  <input name="hiredate" id="hiredate" class="easyui-datebox" required/>
+			</td>  
+			<td class="label">上岗时间:</td>
+			<td>
+			  <input name="duty_date" id="duty_date" class="easyui-datebox" />
+			</td> 
+			<td class="label">性别:</td>
+			<td>
+			  <input name="sex" id="sex" class="easyui-combobox"  data-options="required:false, editable:false, panelHeight: '50', valueField: 'value',textField: 'label', multiple:false, data: [{label: '男',value: '男'},{label: '女',value: '女'}]"/>
+			</td>
+		</tr>
+		<tr>	  
+			<td class="label">年龄:</td>
+			<td>
+			  <input name="age" id="age" class="easyui-numberspinner" precision="0" min="15" value="30" increment="1"/>
+			</td>  
+			<td class="label">民族:</td>
+			<td>
+			  <input name="nation" id="nation" class="easyui-textbox" />
+			</td> 
+			<td class="label">婚否:</td>
+			<td>
+			  <input name="marital_s" id="marital_s" class="easyui-combobox" data-options="required:false, editable:false, panelHeight: '50', valueField: 'value',textField: 'label', multiple:false, data: [{label: '已婚',value: '已婚'},{label: '未婚',value: '未婚'}]"/>
+			</td>
+		</tr>
+		<tr> 
+			<td class="label">住址:</td>
+			<td colspan="3">
+				<textarea name="address" id="address" cols="67" rows="3"></textarea>			  
+			</td>	
+			<td class="label">开户行:</td>
+			<td>
+			  <input name="bank_name" id="bank_name" class="easyui-textbox" />
+			</td>
+		</tr>
+		<tr> 
+			<td class="label">户名:</td>
+			<td>
+			  <input name="account" id="account" class="easyui-textbox" />
+			</td>
+			<td class="label">卡号:</td>
+			<td>
+			  <input name="account_num" id="account_num" class="easyui-textbox" />
+			</td>			 
+			<td class="label">紧急联系人:</td>
+			<td>
+			  <input name="emergency_persion" id="emergency_persion" class="easyui-textbox" />
+			</td>
+		</tr>
+		<tr> 
+			<td class="label">联系人关系:</td>
+			<td>
+			  <input name="emergency_relation" id="emergency_relation" class="easyui-combobox" data-options="required:false, editable:false, panelHeight: '150', valueField: 'value',textField: 'label', multiple:false, data: [{label: '夫妻',value: '夫妻'},{label: '母女',value: '母女'},{label: '父子',value: '父子'},{label: '兄弟',value: '兄弟'}]"/>
+			</td>
+			<td class="label">紧急联系电话:</td>
+			<td>
+			  <input name="emergency_phone" id="emergency_phone" class="easyui-textbox" />
+			</td>		
+			<td class="label">突发性疾病:</td>
+			<td colspan="3">
+				<textarea name="disease" id="disease" cols="25" rows="3"></textarea>			  
+			</td>	
+		</tr>		
+        </table>
+    </form>
+</div>
+<div id="dlg-buttons">
+    <a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="save(tableId)">保 存</a>
+    <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="closeDialog()">取 消</a>
+</div>
+
+</body>
+</html>

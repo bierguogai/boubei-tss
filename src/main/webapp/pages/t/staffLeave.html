@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>员工管理</title>
+<link rel="stylesheet" href="../../tools/tssJS/css/boubei.css">
+<link rel="stylesheet" href="../../css/easyui.css">
+
+<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+
+<script src="../../tools/tssJS/tssJS.all.js"></script>
+
+<script src="../../tools/easyui/jquery.min.js"></script>
+<script src="../../tools/easyui/jquery.easyui.min.js"></script>
+<script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+
+<script src="../../tools/easyui.js"></script>
+
+<script type="text/javascript">
+
+var tableId = 33;
+var employee={};
+URL = record_urls(tableId);
+
+
+
+CREATE_URL = URL.CREATE;
+UPDATE_URL = URL.UPDATE;  //{id}
+DELETE_URL = URL.DELETE;  //{id}
+GET_URL    = URL.GET;  //{id}
+QUERY_URL  = URL.QUERY;
+ATTACH_URL = URL.ATTACH;
+
+var FIELDS = [
+    {field: 'ck', checkbox: true},    
+    {field: "staff_no", width: "9%", title: "员工号"},
+	{field: "name", width: "9%", title: "姓名"},
+	{field: "leave_date", width: "10%", title: "离职时间"},
+	{field: "hand_over", width: "9%", title: "交接人"},
+	{field: "hand_detail", width: "30%", title: "交接详情"},		
+	{field: "hand_status", width: "7%", title: "交接是否完成"},
+	{field: "remark", width: "10%", title: "备注"},
+	{field: "zizhi", width: "7%", title: "交接文件"}, 
+	];
+$.each(FIELDS, function(i, field) {
+    field.align = "center";
+}); 
+
+$(document).ready(function () {
+    query();
+
+
+    $.getJSON("/tss/auth/xdata/json/32" , {}, function(data) {
+        data.each(function(i, item) {
+            employee[item.staff_no] = item;
+        });
+
+        $("#staff_no").combobox( {
+            panelHeight: '150px',
+            editable: true,
+            data: data,
+            textField: "staff_no",
+            valueField: "staff_no",
+            onChange: function( newOrg, oldOrg ) {
+                var u = employee[newOrg];
+                if(u) {
+                    $('#name').textbox('setValue', u.name);                    
+                }
+            }
+        });
+    });
+
+});
+
+
+var dg;
+function query(params) {
+    params = params || {};
+
+    dg = $('#t1').datagrid({
+        url: QUERY_URL,      // 数据地址
+        queryParams: params, // 参数
+        fit: true,
+        fitColumns: true,
+        pagination: true,
+        rownumbers: true,
+        pageSize : 30,
+        singleSelect: true,
+        checkOnSelect: true,
+        selectOnCheck: true,
+        toolbar: [ 
+            { text: '新增', iconCls: 'icon-add', handler: create }, //下面的create函数
+            '-', { text: '修改', iconCls: 'icon-edit', handler: update }, //下面的update函数
+            '-', { text: '删除', iconCls : 'icon-remove', handler : _remove }, //下面的_remove函数
+            '-', { text: '离职附件管理', iconCls : 'icon-add', handler : uploadX, id: "btn3" }//下面的uploadX函数            
+        ] ,
+        columns: [FIELDS],
+        /* 返回的结果再处理 */
+        loadFilter: function (data) {
+            $.each(data, function (i, item) {                 
+                item.updateTime = (item.updateTime || "").split(" ")[0];
+            });
+
+            setTimeout(getAttachs, 1000);//下面的getAttachs函数
+            return data;
+        },
+        onSelect: function(index, row) {
+            $('#btn3').linkbutton("enable");
+        }
+    });
+}
+
+
+function create() {
+    openDialog('离职登记', true);
+
+    //$('#state').combobox('setValue', '启用');
+    //$('#staff_no').textbox('readonly', false);
+    $('#lockVersion').val('0'); // 給版本号设置默认值.
+}
+
+function update() {
+    var row = getSelectedRow();
+    if (row) {
+        openDialog('修改离职信息');
+
+        $.getJSON(GET_URL + row.id, {}, function (data) {
+            
+            $('#fm').form('load', data);
+            $('#code').textbox('readonly', true);
+        }, "GET");
+    }    
+}
+
+function _remove(){               //删除某一行
+    doRemove("t1", tableId);
+}
+
+function beginQuery() {
+    var params = {};
+    params.name = $('#param1').val();
+
+    query(params);
+}
+
+function getAttachs() {
+    dg && $.each(dg.datagrid("getRows"), function(index, row) {   
+        tssJS.ajax({ 
+            url: ATTACH_URL + row.id, 
+            method: "GET", 
+            ondata: function(){
+                var data  = this.getResponseJSON();
+                if(data && data.length) {
+                    var item = data[0];
+                    row.zizhi = "<a href='" + item.downloadUrl + "' target='_blank' style='color:red'>点击查看</a>";
+                    dg.datagrid("refreshRow", index);
+                }
+            } 
+        });
+    });
+}
+
+var globalValiable = {"tableId": tableId}
+function uploadX() {
+    var row = getSelectedRow();
+    if (row) {
+        globalValiable.itemId = row.id;
+        var title = "【" + row.name + "】的离职文件";
+        tssJS.openIframePanel("if1", title, 710, 255, "../../modules/dm/recorder_upload.html", true);
+    }
+}
+
+</script>
+
+
+</head>
+<body>
+<div id="main" class="easyui-layout" fit="true">
+    <div id="queryContainer" data-options="region:'north'" border="false" style="display:none">
+        <label>姓名:</label><input id="param1" class="easyui-textbox"/>
+
+        <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'" onclick="beginQuery()">查 询</a>
+    </div>
+    <div id="dataContainer" data-options="region:'center'" border="false" title="员工列表">
+        <table id="t1" border="false"></table>
+    </div>
+</div>
+<div id="dlg" class="easyui-dialog" style="width:530px;height: 300px;" closed="true" buttons="#dlg-buttons">
+    <form id="fm" method="post" novalidate>
+        <input name="id" type="hidden"/>
+        <input id="lockVersion" name="lockVersion" type="hidden"/>
+        <input id="seqNo" name="seqNo" type="hidden" />
+        <table class="l">
+        <tr>
+            <td class="label">员工号:</td>
+			<td>
+			  <input name="staff_no"id="staff_no" class="easyui-textbox" required/>
+			</td>  
+			<td class="label">姓名:</td>
+			<td>
+			  <input name="name" id="name" class="easyui-textbox" required/>
+			</td>
+		</tr>
+		<tr> 
+			<td class="label" style="width:40px;">离职时间:</td>
+			<td>
+			  <input name="leave_date" id="leave_date" class="easyui-datebox" required/>
+			</td>  
+		
+			<td class="label">离职交接人:</td>
+			<td>
+			  <input name="hand_over" id="hand_over" class="easyui-textbox" />
+			</td>
+		</tr>
+		<tr> 
+			<td class="label">交接详情:</td>
+			<td colspan="3">
+				<textarea name="hand_detail" id="hand_detail" cols="68" rows="3"></textarea>			  
+			</td>
+		</tr>
+		<tr>
+			<td class="label">交接是否完成:</td>
+			<td>
+			  <input name="hand_status" id="hand_status" class="easyui-combobox"  data-options="required:false, editable:false, panelHeight: '50', valueField: 'value',textField: 'label', multiple:false, data: [{label: '是',value: '是'},{label: '否',value: '否'}]"/>
+			</td>
+			<td class="label">备注:</td>
+			<td colspan="3">
+				<textarea name="remark" id="remark" cols="25" rows="3"></textarea>			  
+			</td>	
+		</tr>		
+        </table>
+    </form>
+</div>
+<div id="dlg-buttons">
+    <a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="save(tableId)">保 存</a>
+    <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="closeDialog()">取 消</a>
+</div>
+
+</body>
+</html>
