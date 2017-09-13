@@ -120,6 +120,8 @@ function initMenu() {
 	$('#nav').accordion('select', selectedPanelname);
 
 	$('.navlist li a').click(function(){
+		$('#main').layout('collapse', 'west');	
+		
 		var tabTitle = $(this).children('.nav').text();
 
 		var reportId = $(this).attr("ref");
@@ -127,9 +129,7 @@ function initMenu() {
  
 		addTab(tabTitle, url);
 		$('.navlist li div').removeClass("selected");
-		$(this).parent().addClass("selected");
-
-		$('#main').layout('collapse', 'west');		
+		$(this).parent().addClass("selected");	
 	});
 }
 

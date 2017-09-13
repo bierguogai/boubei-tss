@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
 <meta charset="UTF-8">
-<title>报表查询性能监控</title>
+<title>流量|性能|异常监控</title>
 
 <link rel="stylesheet" href="../../tools/tssJS/css/boubei.css">
 
@@ -23,63 +23,94 @@
 
 <STYLE type="text/css">
 
-#x0 { cursor: pointer; text-decoration: underline; }
-#dlg1 table { margin: 5px; }
-#dlg1 table tr { height: 40px; }
+.querycondition { margin: 10px 3px; }
+.querycondition label { margin: 0 10px 0 5px; }
+.querycondition input { width: 105px; }
+
          
 </STYLE>
 
 <script type="text/javascript">
 
 TOMCAT_URL = "";
-// TOMCAT_URL = "http://10.9.45.68:8084";
 BASE_JSON_URL  = TOMCAT_URL + '/tss/data/json/';
 BASE_JSONP_URL = TOMCAT_URL + '/tss/data/jsonp/';
 
-function json_url(id) { return BASE_JSON_URL + id; }
+function json_url(id)  { return BASE_JSON_URL + id; }
 function jsonp_url(id) { return BASE_JSONP_URL + id; }
 
 
 $(document).ready(function(){
     beginQuery();
 
-    tssJS("#x0").click(function() {
-        $('#dlg1').dialog( {"modal": true} ).dialog('open');
-    });
     $('#time1').datebox("setValue", today);
     $('#time2').datebox("setValue", nextDay);
+
+    $("#theme").combobox( {
+        panelHeight: '80px',
+        data: [ 
+            {"text": "数据报表", "value": 1}, 
+            {"text": "数据录入", "value": 2}, 
+            {"text": "数据ETL", "value": 3}
+        ],
+        value: 1
+    });
 
     setInterval(query, 1000*60*10);
 });
 
 var FIELDS_1 = [
-    { field: '服务名称', title: '服务名称', width: 120, align: "center", sortable: true},
-    { field: '最长运行时长', title: '最长时长', width: 60, align: "right", sortable: true},
-    { field: '平均运行时长', title: '平均时长', width: 60, align: "right", sortable: true},
-    { field: '访问次数', title: '访问次数', width: 60, align: "right", sortable: true},
-    { field: '超时次数', title: '超时次数', width: 60, align: "right", sortable: true}
+    { field: 'f1', width: 120, align: "center", sortable: true},
+    { field: 'f2', width: 60, align: "right", sortable: true},
+    { field: 'f3', width: 55, align: "right"},
+    { field: 'f4', width: 60, align: "right", sortable: true},
+    { field: 'f5', width: 60, align: "right"}
 ];
 
 function query() {
     var params = {"param1": _params.time1, "param2": _params.time2};
+    params.param4 = _params.theme || '1';
     if(_params.vistor){
         params.param3 = _params.vistor;
+    }
+
+    FIELDS_1[3].hidden = FIELDS_1[4].hidden = false;
+    FIELDS_1[2].sortable = false;
+    switch( params.param4 ) {
+    case '1' :
+        FIELDS_1[0].title = '服务名称';
+        FIELDS_1[1].title = '平均时长';
+        FIELDS_1[2].title = '最长时长';
+        FIELDS_1[3].title = '访问次数';
+        FIELDS_1[4].title = '超时次数';
+        break;
+    case '2' :
+        FIELDS_1[0].title = '操作对象';
+        FIELDS_1[1].title = '次数';
+        FIELDS_1[2].title = '参与人数';
+        FIELDS_1[2].sortable = true;
+        FIELDS_1[3].hidden = true;
+        FIELDS_1[4].hidden = true;
+        break;
+    case '3' :
+        FIELDS_1[0].title = '任务名称';
+        FIELDS_1[1].title = '总次数';
+        FIELDS_1[2].title = '均耗时';
+        FIELDS_1[3].title = '最长耗时';
+        FIELDS_1[4].title = '数据量/次';
+        break;
     }
 
     tssJS.getJSON(json_url('visit-summary'), params, function(data){
         $('#t1').datagrid({
             fit : true,
             fitColumns : true,
-            rownumbers : true,
             singleSelect : true,
             remoteSort : false,
-            sortName : "平均运行时长",
-            sortOrder : "desc",
             columns : [FIELDS_1],
             data: data,
             onClickRow: function(index, row) {
-                var serviceName = row["服务名称"];
-                showDetail( serviceName );
+                showDetail( row["f1"] );
             }
         });
 
@@ -88,25 +119,42 @@ function query() {
     showDetail();
 }
 
-var FIELDS_2 = [
-    { field: '服务名称', title: '服务名称', width: 100 },
-    { field: '参数', title: '参数', width: 350 },
-    { field: '访问时间', title: '访问时间', width: 100, align: "right" },
-    { field: '运行时长', title: '运行时长', width: 60 },
-    { field: '访问人', title: '访问人', width: 60 }
+var FIELDS_2 = [[],
+    [
+        { field: '服务名称', title: '服务名称', width: 100 },
+        { field: '参数', title: '参数', width: 350 },
+        { field: '访问时间', title: '访问时间', width: 100 },
+        { field: '运行时长', title: '运行时长', width: 60, align: "right"},
+        { field: '访问人', title: '访问人', width: 60 }
+    ],
+    [
+        { field: '操作对象', title: '操作对象', width: 80 },
+        { field: '操作人', title: '操作人', width: 70 },
+        { field: '操作内容', title: '操作内容', width: 350},
+        { field: '操作时间', title: '操作时间', width: 100 },
+        { field: '浏览器', title: '浏览器', width: 180 },
+        { field: 'ip', title: 'ip', width: 90 }
+    ],
+    [
+        { field: '任务', title: 'ETL任务', width: 150 },
+        { field: '创建人', title: '创建人', width: 70 },
+        { field: '异常次数', title: '异常次数', width: 70},
+        { field: '异常原因', title: '异常原因', width: 350 },
+        { field: '耗时', title: '耗时', width: 50 },
+        { field: '最早一次出错', title: '最早一次出错', width: 90 },
+        { field: '最近一次出错', title: '最近一次出错', width: 90 }
+    ]
 ];
-$.each(FIELDS_2, function(i, field){
-    field.align = field.align||"center";
-});
 
 function showDetail(serviceName) {
     var params = {"pagesize": 200, "page": 1};    
     params.param3 = _params.time1; 
     params.param4 = _params.time2;
+    params.param5 = parseInt(_params.theme || '1');
     if(_params.vistor){
         params.param2 = _params.vistor;
     }
-    if(serviceName) {
+    if(serviceName && params.param5 != 3) {
         params.param1 = serviceName;
     }
 
@@ -116,13 +164,11 @@ function showDetail(serviceName) {
             fitColumns : true,
             rownumbers : true,
             remoteSort : false,
-            sortName : "运行时长",
-            sortOrder : "desc",
-            columns : [FIELDS_2],
-            data: data
+            columns : [ FIELDS_2[params.param5] ],
+            data: data.rows
         }, "POST", true);
 
-        tssJS("#x1").text(serviceName||'数据服务');
+        tssJS("#x1").text( params.param1||"" );
     });
 
     showChart( serviceName, 'H' );
@@ -136,30 +182,63 @@ function showDetail(serviceName) {
     $("#tabs1").tabs("select", 1); 
     $("#tabs1").tabs("select", 0); 
 
-    $("#tabs2").tabs("select", 1); 
-    $("#main").layout("collapse", "west");
+    $("#tabs2").tabs("select", params.param5 == 1 ? 1 : 0); 
 }
 
 function showChart(serviceName, type) {
-    var params = {"param5": type};    
+    var params = {};    
     params.param3 = _params.time1; 
     params.param4 = _params.time2;
+    params.param5 = type;
+    params.param6 = _params.theme || '1';
+
     if(_params.vistor) params.param2 = _params.vistor;
     if(serviceName)    params.param1 = serviceName;
 
     var canvas = "canvasDiv_" + type, wainting = true;
     if(type == 'd') {
-        params.param3 = subDateS(toDate(today), 16);
+        params.param3 = subDateS(toDate(today), 12);
         wainting = false;
     }
 
+    var legend1, legend2, ya1; 
+    switch( params.param6 ) {
+    case '1' :
+        legend1 = '访问速度(秒)';
+        legend2 = '访问次数';
+        ya1 = '秒/次';
+        break;
+    case '2' :
+        legend1 = '参与人数';
+        legend2 = '操作次数';
+        ya1 = '人数';
+        break;
+    case '3' :
+        legend1 = '执行速度(秒)';
+        legend2 = '抽取数据行'
+        ya1 = '秒/次';
+        break;
+    }
+
     tssJS.getJSON(json_url('visit-trend'), params, function(data){
-        var data2 = [], labels = [];
+        var data2 = [], labels = [], _v1 = 1000, _v2 = 0;
+
         data.each( function(i, item) {
-            data2.push( {"name": item.name, "value": item["访问次数"] } );
+            _v2 += item.v2||0;
+        } );
+        if(params.param6 == '2') { 
+            _v1 = 1;
+        }
+
+        _v2 = _v2/(data.length||1);
+        _v2 = _v2 >= 100000 ? 10000 : 1;
+        if(_v2 == 10000) legend2 += "(万)";
+
+        data.each( function(i, item) {
+            item.value = Math.round(item.value*10/_v1)/10;
+            data2.push( {"name": item.name, "value": Math.round(item.v2/_v2) } );
             labels.push(item.name);
         } );
-        // tssJS.Echart.line2D(canvas, serviceName||" ", {"访问速度": data, "访问次数": data2});  
 
         var chartObj = echarts.init($1(canvas));
         var option = {
@@ -169,7 +248,12 @@ function showChart(serviceName, type) {
             },
             calculable : false,
             legend: {
-                data:['访问速度', '访问次数']
+                data:[ legend1, legend2]
+            },
+            grid: { // 控制图表四周的留白区域大小
+                x: '35px',
+                x2: '35px',
+                y2: '40px'
             },
             xAxis : [
                 {
@@ -178,32 +262,30 @@ function showChart(serviceName, type) {
                 }
             ],
             yAxis : [
-                { type : 'value', name : '秒/次', splitNumber: 3 },
+                { type : 'value', name : ya1, splitNumber: 3 },
                 { type : 'value', name : '次', splitNumber: 3 },
             ],
             series : [
-                { name:'访问速度', type:'line', data: data,  yAxisIndex: 0, smooth: true, symbolSize: 2, itemStyle : { normal: {label : {show: true, position: 'top'}}},},
-                { name:'访问次数', type:'line', data: data2, yAxisIndex: 1, smooth: true, symbolSize: 2, itemStyle : { normal: {label : {show: true, position: 'top'}}},}
+                { name:legend1, type:'line', data: data,  yAxisIndex: 0, smooth: true, symbolSize: 2, itemStyle : { normal: {label : {show: true, position: 'top'}}},},
+                { name:legend2, type:'line', data: data2, yAxisIndex: 1, smooth: true, symbolSize: 2, itemStyle : { normal: {label : {show: true, position: 'top'}}},}
             ]
         };
         chartObj.setOption(option);             
 
-        $("#main").layout("expand", "west");  
-        setTimeout(function() {
-            $("#main").layout("collapse", "west");  
-        }, 5000);
+        // $("#main").layout("expand", "west");  
+        // setTimeout(function() {
+        //     $("#main").layout("collapse", "west");  
+        // }, 5000);
 
     }, "POST", wainting);
 }
 
 var _params = {};
 function beginQuery() {
-    $('#dlg1').dialog('close');
-
     _params.time1 = $('#time1').datebox("getValue") || today;
     _params.time2 = $('#time2').datebox("getValue") || nextDay;
-    if($('#service').val()) {
-        _params.service = $('#service').val();
+    if($('#theme').val()) {
+        _params.theme = $('#theme').combobox("getValue");
     }
     if( $('#vistor').val() ) {
         _params.vistor = $('#vistor').val();
@@ -232,14 +314,22 @@ var nextDay = subDateS(toDate(today), -1);
 <body>
    
    <div id="main" class="easyui-layout" data-options="fit:'true'">
-        <div data-options="region:'west',split:true" title="数据服务性能监控【<i id='x0'>设置条件</i>】" style="width:30%;" border="false">
+        <div data-options="region:'west',split:true" title="系统运行监控" style="width:30%;" border="false">
+            <div class="querycondition">
+                <label>主题:</label><input id="theme" class="easyui-textbox"/>
+                <label>人员:</label><input id="vistor" class="easyui-textbox" style="width: 140px;" />
+                <br><br>
+                <label>时间:</label><input id="time1" class="easyui-datebox"/> --
+                    <input id="time2" class="easyui-datebox"/> &nbsp;
+                <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="beginQuery()">查 询</a>
+            </div>
             <table id="t1" border="false"></table>
         </div>
         <div data-options="region:'center'"  style="width:70%;" border="false">
             <div class="easyui-layout" data-options="fit:'true'" border="false">
                 <div data-options="region:'north'"  style="height:60%;" border="false">
                     <div class="easyui-tabs" data-options="fit:true" border="false" id="tabs2">
-                        <div border="false" title="【<i id='x1'></i>】访问明细">
+                        <div border="false" title="<i id='x1'></i> 执行明细">
                             <table id="t2" border="false"></table>
                         </div>
                         <div border="false" title="运行中监控">
@@ -249,37 +339,14 @@ var nextDay = subDateS(toDate(today), -1);
                 </div>
                 <div data-options="region:'south'" style="height:40%;" border="false">
                     <div class="easyui-tabs" data-options="fit:true" border="false" id="tabs1">
-                        <div id='canvasDiv_H' title="按小时统计" style="height: 100%;"></div>
-                        <div id='canvasDiv_d' title="按天统计" style="height: 100%;"><br>&nbsp;&nbsp;加载中......</div>
+                        <div id='canvasDiv_H' title="按小时统计" style="height: 100%; "></div>
+                        <div id='canvasDiv_d' title="按天统计" style="height: 100%; ">
+                            <br>&nbsp;&nbsp;加载中......
+                        </div>
                     </div>
                 </div>
             </div>
         </div>       
-    </div>
-
-     <div id="dlg1" class="easyui-dialog" title="设置查询条件" style="width:410px;height:222px;" closed="true" buttons="#dlg1-buttons">
-        <table>
-            <tr>
-                <td class="label">访问服务:</td>
-                <td><input id="service" class="easyui-textbox" style="width:250px"/></td>              
-            </tr>
-            <tr>
-                <td class="label">访问人:</td>
-                <td>
-                    <input id="vistor" class="easyui-textbox" style="width:250px"/>
-                </td>              
-            </tr>
-            <tr>
-                <td class="label">访问时间:</td>
-                <td>
-                    <input id="time1" class="easyui-datebox"/> &nbsp;至&nbsp;
-                    <input id="time2" class="easyui-datebox"/>
-                </td>              
-            </tr>
-        </table>
-    </div>
-    <div id="dlg1-buttons">
-        <a href="#" class="easyui-linkbutton" iconCls="icon-search" onclick="beginQuery()">查 询</a>
     </div>
 
 <script type="text/javascript">
@@ -332,7 +399,6 @@ var nextDay = subDateS(toDate(today), -1);
             item.visitor = $row.attr("remark");
 
             if(key.indexOf('QC_') != 0) return true;
-            // QC_com.boubei.tss.dm.report.ReportService.queryReport(725, {param1=60379, param3=2016-12-05, param4=2016-12-05, page=1, rows=1000}, 1, 1000, -1)
 
             var info = key.substring(54, key.length-1);
             var _params = info.substring(info.indexOf("{")+1, info.indexOf("}"));

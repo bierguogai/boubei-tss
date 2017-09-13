@@ -76,6 +76,8 @@ $(function(){
         checkOnSelect: true,
         selectOnCheck: true,
         toolbar: [ 
+            '-', { text: '导入数据', iconCls: 'icon-redo', handler: function(){ batchImport(invTable); } }, 
+            '-', { text: '导出数据', iconCls: 'icon-undo', handler: function(){ _export(invTable, getParams()); }}, 
             '-', { text: '打印盘点单', iconCls: 'icon-print', handler: _print}, 
             '-', { text: '添加库存', iconCls: 'icon-add', handler: addItems },
             '-', { text: '保存盘点结果', iconCls: 'icon-save', handler: saveData}
@@ -107,20 +109,22 @@ $(function(){
     querySKUs();
 });
 
-function query() {
+function getParams() {
     var params = {};
     params.skucode = $("#param1").val();
-    params.sku = $("#param2").val();
+    params.sku   = $("#param2").val();
     params.brand = $("#param5").val();
 
     var param3 = $('#param3').datebox("getValue");
     var param4 = $('#param4').datebox("getValue");
-
-    if(param3 || param4) {
+    if(param3 && param4) {
         params.expiredate = "[" +param3 + "," + param4+ "]";
     }
+    return params;
+}
 
-    tssJS.getJSON( INV.QUERY, params, show);
+function query() {
+    tssJS.getJSON( INV.QUERY, getParams(), show);
 }
 
 function show(data) {
@@ -148,7 +152,8 @@ function querySKUs( isQuery ) {
         queryParams: params || {}, // 参数
         fit: true,
         pagination: true,
-        pageSize : 50,
+        pageSize : 100,
+        pageList: [100, 200, 500],
         checkOnSelect: true,
         selectOnCheck: true,
         columns: [FIELDS_3]
@@ -264,7 +269,7 @@ function _print() {
     </div>
 </div>
 
-<div id="dlg2" class="easyui-dialog" title="选择货品" style="width:900px;height:400px;padding: 0" closed="true" buttons="#dlg2-buttons">
+<div id="dlg2" class="easyui-dialog" title="选择货品" style="width:900px;height:500px;padding: 0" closed="true" buttons="#dlg2-buttons">
     <div id="main" class="easyui-layout" fit="true">
         <div id="queryContainer" data-options="region:'north'" border="false" style="display:none">
             <label>编码:</label><input id="_param1" class="easyui-textbox"/>

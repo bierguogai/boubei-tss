@@ -19,21 +19,11 @@ a.easyui-linkbutton { width: 90px; }
 .easyui-dialog table.l input.easyui-datetimebox { width: 172px; }
 
 .fileUpload {
-  height: 236px;
-  width: 300px;
-  position: relative;
+  position: relative; height: 236px; width: 300px;
   background: url(../images/upload.png) no-repeat 25px bottom;
 }
 .fileUpload input[type='file'] {
-  height: 236px;
-  width: 256px;
-  overflow: hidden;
-  position: absolute;
-  cursor: pointer;
-  opacity: 0;
-  filter: alpha(opacity=0);
+  position: absolute; height: 236px; width: 256px; overflow: hidden;
+  cursor: pointer; opacity: 0; filter: alpha(opacity=0);
 }
-#importDiv input[type='button'] {
-  margin-left: 80px;
-  margin-top: 1px;
-}
+#importDiv input[type='button'] { margin-left: 80px; margin-top: 1px; }

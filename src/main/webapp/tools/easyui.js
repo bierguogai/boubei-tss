@@ -149,10 +149,6 @@ function doRemove(elID, recordID, index){
     });
 }
 
-function _export() {
-
-}
-
 function getAttachs(tableId, itemId, callback) {
     tssJS.ajax({ 
         url: BASE_RECORD_URL + "attach/json/" + tableId + "/" + itemId, 
@@ -171,6 +167,37 @@ function clone(from, to){
       to[key] = from[key];   
    }   
 }  
+
+function _export(recordId, _params) {
+   if( _params ) {
+        _params.page = 1;
+        _params.pagesize = 10*0000;
+    } else {
+        _params = {};
+    }
+
+    var queryString = "?";
+    $.each(_params, function(key, value) {
+        if( queryString.length > 1 ) {
+            queryString += "&";
+        }
+        queryString += (key + "=" + value);
+    });
+
+    var url = encodeURI("/tss/auth/xdata/export/" + recordId + queryString);
+    tssJS("#" + createExportFrame()).attr( "src", url);
+}
+
+ /* 创建导出用iframe */
+function createExportFrame() {
+    var frameName = "exportFrame";
+    if( $1(frameName) == null ) {
+        var exportDiv = tssJS.createElement("div"); 
+        tssJS(exportDiv).hide().html("<iframe id='" + frameName + "' style='display:none'></iframe>");
+        document.body.appendChild(exportDiv);
+    }
+    return frameName;
+}
 
 function batchImport(recordId) {
     function checkFileWrong(subfix) {
