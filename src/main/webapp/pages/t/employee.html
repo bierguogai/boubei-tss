@@ -84,7 +84,7 @@ function query(params) {
             '-', { text: '删除', iconCls : 'icon-remove', handler : _remove }, //下面的_remove函数
             '-', { text: '管理资质文件', iconCls : 'icon-add', handler : uploadX, id: "btn3" },//下面的uploadX函数
             '-', { text: '离职登记', iconCls : 'icon-man', id: "btn4" },
-            '-', { text: '导入数据', iconCls : 'icon-add', handler : batchImport}
+            '-', { text: '导入数据', iconCls : 'icon-add', handler : function(){ batchImport(tableId); }}
         ] ,
         columns: [FIELDS],
         /* 返回的结果再处理 */
