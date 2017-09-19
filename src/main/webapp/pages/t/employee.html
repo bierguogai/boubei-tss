@@ -60,6 +60,10 @@ $.each(FIELDS, function(i, field) {
 
 $(document).ready(function () {
     query();
+    /*链接到离职员工登记*/
+    tssJS('#btn4').click(function(){
+        window.parent.addTab("离职登记", "/tss/pages/t/staffLeave.html");
+    });
 });
 
 
@@ -120,7 +124,7 @@ function update() {
         $.getJSON(GET_URL + row.id, {}, function (data) {
             
             $('#fm').form('load', data);
-            $('#staff_no').textbox('readonly', true);
+            $('#staff_no').textbox('readonly', false);
         }, "GET")};
         if (row.leave_date){
 	    	$.messager.alert({
@@ -196,7 +200,7 @@ function uploadX() {
         <tr>
             <td class="label">员工号:</td>
 			<td>
-			  <input name="staff_no"id="staff_no" class="easyui-textbox" required/>
+			  <input name="staff_no" id="staff_no" class="easyui-textbox" required/>
 			</td>  
 			<td class="label">姓名:</td>
 			<td>
@@ -214,7 +218,7 @@ function uploadX() {
 			</td>  
 			<td class="label">职务岗位:</td>
 			<td>
-			  <input name="post" id="post" class="easyui-combobox" data-options="required:false, editable:false, panelHeight: '180', valueField: 'value',textField: 'label', multiple:false, data: [{label: '驾驶员',value: '驾驶员'},{label: '调度',value: '调度'},{label: '车队长',value: '车队长'},{label: '车管员',value: '车管员'},{label: '仓管员',value: '仓管员'},{label: '行政人事',value: '行政人事'},{label: '会计',value: '会计'},{label: '出纳',value: '出纳'},{label: '结算',value: '结算'}]"/>
+			  <input name="post" id="post" class="easyui-combobox" data-options="required:false, editable:false, panelHeight: '270', valueField: 'value',textField: 'label', multiple:false, data: [{label: '驾驶员',value: '驾驶员'},{label: '调度',value: '调度'},{label: '车队长',value: '车队长'},{label: '车管员',value: '车管员'},{label: '仓管员',value: '仓管员'},{label: '行政人事',value: '行政人事'},{label: '会计',value: '会计'},{label: '出纳',value: '出纳'},{label: '结算',value: '结算'},{label: '文员',value: '文员'},{label: '主管',value: '主管'},{label: '经理',value: '经理'},{label: '总经理',value: '总经理'}]"/>
 			</td> 
 			<td class="label">证件类型:</td>
 			<td>
