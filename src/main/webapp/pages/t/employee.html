@@ -36,6 +36,7 @@ var FIELDS = [
 	{field: "hiredate", width: "7%", title: "入职时间"},
 	{field: "duty_date", width: "7%", title: "上岗时间"},
 	{field: "tel_phone", width: "7%", title: "电话"},
+	{field: "e_mail", width: "7%", title: "邮箱"},
 	{field: "id_card_num", width: "10%", title: "身份证号码"},
 	{field: "zizhi", width: "5%", title: "证件上传"}, 
 	{field: "certificate", width: "8%", title: "证件类型"},
@@ -191,7 +192,7 @@ function uploadX() {
         <table id="t1" border="false"></table>
     </div>
 </div>
-<div id="dlg" class="easyui-dialog" style="width:780px;height: 420px;" closed="true" buttons="#dlg-buttons">
+<div id="dlg" class="easyui-dialog" style="width:788px;height: 450px;" closed="true" buttons="#dlg-buttons">
     <form id="fm" method="post" novalidate>
         <input name="id" type="hidden"/>
         <input id="lockVersion" name="lockVersion" type="hidden"/>
@@ -211,7 +212,11 @@ function uploadX() {
 			  <input name="tel_phone" id="tel_phone" class="easyui-textbox" />
 			</td> 
 		</tr>
-		<tr>			 
+		<tr>
+			<td class="label">邮箱:</td>
+			<td>
+			  <input name="e_mail" id="e_mail" class="easyui-textbox" />
+			</td>		 
 			<td class="label">身份证号:</td>
 			<td>
 			  <input name="id_card_num" id="id_card_num" class="easyui-textbox" />
@@ -220,12 +225,12 @@ function uploadX() {
 			<td>
 			  <input name="post" id="post" class="easyui-combobox" data-options="required:false, editable:false, panelHeight: '270', valueField: 'value',textField: 'label', multiple:false, data: [{label: '驾驶员',value: '驾驶员'},{label: '调度',value: '调度'},{label: '车队长',value: '车队长'},{label: '车管员',value: '车管员'},{label: '仓管员',value: '仓管员'},{label: '行政人事',value: '行政人事'},{label: '会计',value: '会计'},{label: '出纳',value: '出纳'},{label: '结算',value: '结算'},{label: '文员',value: '文员'},{label: '主管',value: '主管'},{label: '经理',value: '经理'},{label: '总经理',value: '总经理'}]"/>
 			</td> 
+		</tr>
+		<tr>
 			<td class="label">证件类型:</td>
 			<td>
-			  <input name="certificate" id="certificate" class="easyui-combobox"  data-options="required:false, editable:false, panelHeight: '150', valueField: 'value',textField: 'label', multiple:false, data: [{label: '驾驶证A1',value: '驾驶证A1'},{label: '驾驶证A2',value: '驾驶证A2'},{label: '驾驶证B2',value: '驾驶证B2'},{label: '驾驶证C1',value: '驾驶证C1'},{label: '会计证初级',value: '会计证初级'},{label: '会计证中级',value: '会计证中级'},{label: '会计证高级',value: '会计证高级'}]"/>
-			</td> 
-		</tr>
-		<tr>			
+			  <input name="certificate" id="certificate" class="easyui-combobox"  data-options="required:false, editable:false, panelHeight: '160', valueField: 'value',textField: 'label', multiple:false, data: [{label: '驾驶证A1',value: '驾驶证A1'},{label: '驾驶证A2',value: '驾驶证A2'},{label: '驾驶证B2',value: '驾驶证B2'},{label: '驾驶证C1',value: '驾驶证C1'},{label: '会计证初级',value: '会计证初级'},{label: '会计证中级',value: '会计证中级'},{label: '会计证高级',value: '会计证高级'}]"/>
+			</td> 					
 			<td class="label" style="width:40px;">入职时间:</td>
 			<td>
 			  <input name="hiredate" id="hiredate" class="easyui-datebox" required/>
@@ -233,13 +238,14 @@ function uploadX() {
 			<td class="label">上岗时间:</td>
 			<td>
 			  <input name="duty_date" id="duty_date" class="easyui-datebox" />
-			</td> 
+			</td>
+		</tr>
+		<tr> 
 			<td class="label">性别:</td>
 			<td>
 			  <input name="sex" id="sex" class="easyui-combobox"  data-options="required:false, editable:false, panelHeight: '50', valueField: 'value',textField: 'label', multiple:false, data: [{label: '男',value: '男'},{label: '女',value: '女'}]"/>
 			</td>
-		</tr>
-		<tr>	  
+			  
 			<td class="label">年龄:</td>
 			<td>
 			  <input name="age" id="age" class="easyui-numberspinner" precision="0" min="15" value="30" increment="1"/>
@@ -248,36 +254,36 @@ function uploadX() {
 			<td>
 			  <input name="nation" id="nation" class="easyui-textbox" />
 			</td> 
+		</tr>
+		<tr>
 			<td class="label">婚否:</td>
 			<td>
 			  <input name="marital_s" id="marital_s" class="easyui-combobox" data-options="required:false, editable:false, panelHeight: '50', valueField: 'value',textField: 'label', multiple:false, data: [{label: '已婚',value: '已婚'},{label: '未婚',value: '未婚'}]"/>
-			</td>
-		</tr>
-		<tr> 
+			</td>		
 			<td class="label">住址:</td>
 			<td colspan="3">
 				<textarea name="address" id="address" cols="67" rows="3"></textarea>			  
-			</td>	
+			</td>
+		</tr>
+		<tr> 
 			<td class="label">开户行:</td>
 			<td>
 			  <input name="bank_name" id="bank_name" class="easyui-textbox" />
-			</td>
-		</tr>
-		<tr> 
+			</td>		
 			<td class="label">户名:</td>
 			<td>
 			  <input name="account" id="account" class="easyui-textbox" />
-			</td>
+			</td>		
 			<td class="label">卡号:</td>
 			<td>
 			  <input name="account_num" id="account_num" class="easyui-textbox" />
-			</td>			 
+			</td>
+		</tr>
+		<tr> 		 
 			<td class="label">紧急联系人:</td>
 			<td>
 			  <input name="emergency_persion" id="emergency_persion" class="easyui-textbox" />
-			</td>
-		</tr>
-		<tr> 
+			</td>		
 			<td class="label">联系人关系:</td>
 			<td>
 			  <input name="emergency_relation" id="emergency_relation" class="easyui-combobox" data-options="required:false, editable:false, panelHeight: '150', valueField: 'value',textField: 'label', multiple:false, data: [{label: '夫妻',value: '夫妻'},{label: '母女',value: '母女'},{label: '父子',value: '父子'},{label: '兄弟',value: '兄弟'}]"/>
@@ -285,7 +291,9 @@ function uploadX() {
 			<td class="label">紧急联系电话:</td>
 			<td>
 			  <input name="emergency_phone" id="emergency_phone" class="easyui-textbox" />
-			</td>		
+			</td>
+		</tr>
+		<tr> 		
 			<td class="label">突发性疾病:</td>
 			<td colspan="3">
 				<textarea name="disease" id="disease" cols="25" rows="3"></textarea>			  
