@@ -195,8 +195,6 @@ function queryOrder( params ) {
         },
         /* onClickRow 事件无法用JS去触发，故此优先用onSelect事件 */
         onSelect: function(index, row) {
-            // TODO 切换前判断前一个订单明细是否有修改，有的话提示是否先保存修改
-
             // 只有创建人本人 和 供销社人员 能编辑
             var opable = ( row.creator == userCode || userRoles.contains(role_owner) );
 
@@ -418,7 +416,7 @@ function send() {
         function() { /* 取消 */ }
     );
 
-    // TODO 自动把订单的货物从供销社库存里扣除
+    // TODO 自动把订单的货物从供销社库存里扣除：update inv
 }
 function receive() {
     tssJS.confirm("您确定要对此订单进行收货确认吗", "确认收货", 
@@ -428,7 +426,7 @@ function receive() {
         function() { /* 取消 */ }
     );
 
-    // TODO 自动把订单的货物加到客户的库存
+    // TODO 自动把订单的货物加到客户的库存：update/insert inv（MultiSQLExcutor）
 }
 
 function addItems() {
