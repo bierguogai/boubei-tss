@@ -100,12 +100,16 @@ function initSelected() {
     $.getJSON("/tss/auth/module/0", {}, function(data) {
         data.each(function(i, item) {
             var $li = $("#li" + item.id).addClass("selected");
-            $li.find("div.module>.bts>button")
+            $li.find("div.module>.bts>button:nth-child(1)")
                 .text("结束试用")
                 .addClass("orange")
                 .removeClass("blue")
                 .click( function() {
                     selectModule(item.id, "DELETE");
+                });
+
+            $li.find("div.module>.bts>button:nth-child(2)").click( function() {
+                    exportModule(item.id);
                 });
         });
     }, "GET");
@@ -117,6 +121,10 @@ function selectModule(moduleId, method) {
             refresh();
         }
     }, method);
+}
+
+function exportModule(moduleId) {
+  $("#exportFrame").attr( "src", "/tss/auth/module/x/" + moduleId );
 }
 
 function refresh() {
@@ -145,8 +153,11 @@ function refresh() {
   <div class="issue"></div> 
   <div class="bts">
     <button class="tssbutton blue medium"><span class="price"><!-- （<b>免费</b>） --></span>我要试用</button> 
+    <button class="tssbutton blue medium">导 出</button> 
   </div>
 </div>
+
+<iframe id="exportFrame" style="display:none"></iframe>
 
 </body>
 </html>

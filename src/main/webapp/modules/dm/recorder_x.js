@@ -37,11 +37,17 @@ function checkRole(roles) {
 
     var result = false;
     (roles + "").split(",").each(function(i, role){
-        if( userRoles.contains( parseInt(role) ) ) {
+        if( ( isInt(role) && userRoles.contains( parseInt(role) ) ) 
+            || userRoleNames.contains( role ) ) {
+            
             result = true;
         }
     });
     return result;
+}
+
+function isInt(x) {
+    return /^[1-9]+[0-9]*]*$/.test(x)
 }
 
 /** 
@@ -309,14 +315,13 @@ function before(day, delta) {
 function getNextLevelOption(nextL, serviceID, currParam, currParamValue) {
     if( !nextL || !serviceID || !currParam || $.isNullOrEmpty(currParamValue)) return;
 
-    var dreg = /^[1-9]+[0-9]*]*$/, xform;
-
-    nextL = dreg.test(nextL) ? "f" + nextL : nextL;
+    nextL = isInt(nextL) ? "f" + nextL : nextL;
     if( $("#" + nextL).length == 0 ) return; 
 
     // serviceID maybe is ID of record, maybe a serviceUrl
-    var url = dreg.test(serviceID) ? '../../data/json/' + serviceID : serviceID;
+    var url = isInt(serviceID) ? '../../data/json/' + serviceID : serviceID;
     
+    var xform;
     if( (currParam+"").indexOf('p_') >= 0 || url.indexOf('p_') >= 0) { // 查询表单的级联下拉
         currParam = currParam.replace('p_', '')
         url = url.replace('p_', '');
@@ -326,7 +331,7 @@ function getNextLevelOption(nextL, serviceID, currParam, currParamValue) {
         xform = $.F("page1Form");
     }
 
-    if( dreg.test(currParam) ) { // 数字
+    if( isInt(currParam) ) { // 数字
         currParam = "param" + currParam;
     }
     

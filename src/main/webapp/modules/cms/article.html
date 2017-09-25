@@ -192,7 +192,7 @@
 
 		initGridMenu();
 
-		var url;
+		var url, isNew = !articleId;
 		if(articleId) {
 			url = URL_ARTICLE_DETAIL + articleId;
 		} else {
@@ -205,7 +205,7 @@
             var articleContentNode = this.getNodeValue("ArticleContent");
             var attachsListNode    = this.getNodeValue("AttachsList");
 
-			$.F("articleForm", articleInfoNode);
+			var xform = $.F("articleForm", articleInfoNode);
 			editor.insertHtml(articleContentNode);
 
 			var grid = $.G("attachGrid", attachsListNode);
@@ -218,6 +218,12 @@
 
             $("#btSave").click( function() { saveArticle(false); } );
             $("#btSaveAndPublish").click( function() { saveArticle(true); } );
+
+            var title = $.Query.get("title");
+		    if(isNew && title) {
+		    	xform.updateDataExternal("title", decodeURI(title));    
+    			xform.updateData( $1("title") );
+		    }
         }
         
 		$.ajax({ url: url, method: "GET", onresult: onresult });

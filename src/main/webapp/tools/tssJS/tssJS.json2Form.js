@@ -232,16 +232,16 @@ var Field = function(info) {
 	}
 
 	// item的类型允许为[id, code, name] or [pk, id, text]
-	$.createOption = function(item) {
+	$.createOption = function(item, text, value) {
 		var option = new Option();
-		$.copy(option, $.vt(item));
+		$.copy(option, $.vt(item, text, value));
 		return option;
 	};
 
-	$.vt = function(item) {
+	$.vt = function(item, text, value) {
 		var result = {};
-		result.value = item.id   || item.pk   || item.value || item[0] || item.name || '';
-		result.text  = item.name || item.text || item.value || item[2] || item[1] || item[0] || '';
+		result.value = item[value] || item.id   || item.pk   || item.value || item[0] || item.name || '';
+		result.text  = item[text] || item.name || item.text || item.value || item[2] || item[1] || item[0] || '';
 		return result;
 	};
 

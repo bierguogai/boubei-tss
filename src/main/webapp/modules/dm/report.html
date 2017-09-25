@@ -33,43 +33,38 @@
 }
 #scheduleForm { margin: 5px 0 8px 8px; }
 
-#reportParamsDiv { width: 500px; height: 335px; padding: 5px; }
+#reportParamsDiv { width: 640px; height: 335px; padding: 5px; }
 #reportParamsDiv Tree, #paramForm { background-color: #fff; display: inline-block; }
-#reportParamsDiv Tree { width:152px; height:295px; overflow-y: auto; }
-#paramForm { width:320px; height:320px; padding:5px; position:absolute; top:5px; left:176px; }
-#reportParamsDiv .required {
-    color: red;
-    width: 10px;
-    display: inline-block;
- 	text-align: right;
-}
-#reportParamsDiv label {
-	display: inline-block;
-    width: 60px;
-    text-align: right;
-    line-height: 28px;
-    color: #CC99CC;
-}
-#reportParamsDiv input[type=text] {
+#reportParamsDiv Tree { width:194px; height:298px; overflow-y: auto; }
+
+#paramForm { width:420px; height:324px; padding:5px; position:absolute; top:5px; left:215px; }
+#paramForm .required { color: red; width: 10px; display: inline-block; text-align: right; }
+#paramForm label { color: #999; width: 60px; display: inline-block; text-align: right; line-height: 32px; }
+#paramForm input[type=text] {
     width: 200px;
-    height: 18px;
-    line-height: 18px;
+    height: 20px;
     border: 1px solid #95B8E7;
     border-radius: 2px;
     padding-left: 2px;
 }
-#reportParamsDiv input[type=range] {
-    width: 178px;
-    margin-right: 5px;
-}
-#reportParamsDiv select {
+#paramForm input[type=range] { width: 220px; margin-right: 5px; }
+#paramForm select {
+	width: 100px; height: 20px;
     border: 1px solid #95B8E7;
-    height: 20px;
-    width: 100px;
     border-radius: 2px;
 }
 hr { height: 4px; border: none; border-top: 1px dashed #95B8E7; }
-#reportParamsDiv .bts { margin-left:10px; padding-top:3px; position:absolute; top:313px; left:0; }
+#reportParamsDiv .bts { margin-left:10px; padding-top:3px; position:absolute; top:316px; left:0; }
+
+#manual {
+	position: absolute;
+    bottom: 10px;
+    left: 222px;
+    padding: 0 10px;
+    text-indent: 22px;
+    color: #999;
+    line-height: 20px;
+}
 
 </style>
 
@@ -156,7 +151,10 @@ hr { height: 4px; border: none; border-top: 1px dashed #95B8E7; }
 	<Tree id="paramTree" moveable="true"></Tree>
 	<div id="paramForm">
 		<label>参数名称：</label><input type="text" id="_label" autocomplete="off"/><em class="required">*</em>
-		<br><label>参数类型：</label>
+		<label style="margin-left: 15px;">是否必填：</label> 
+		<input name="_nullable" id="_nullable" type="checkbox" value="true">
+		<br>
+		<label>参数类型：</label>
 		<select id="_type">
 			<option value="string">字符串</option>
 			<option value="number">数字</option>
@@ -164,39 +162,37 @@ hr { height: 4px; border: none; border-top: 1px dashed #95B8E7; }
 			<option value="datetime">日期时间</option>
             <option value="hidden">隐藏</option>
 		</select> 
-		<br><label>是否必填：</label>
-		<select id="_nullable">
-			<option value="false">是</option>
-			<option value="true">否</option>
-		</select>  
-		<br><label>默认值：</label><input type="text" id="_defaultValue" placeholder="为参数添加一个默认值"/>
+		<label>默认值：</label>
+		<input type="text" id="_defaultValue" style="width: 140px;" placeholder="给参数一个默认值"/>
 		
 		<div id="optionalBox">
-			<label>校验正则：</label><input type="text" id="_checkReg" />
-            <label>出错提示：</label><input type="text" id="_errorMsg" />
-
+			<div style="display:none;">
+				<label>校验正则：</label><input type="text" id="_checkReg"/><br>
+            	<label>异常提示：</label><input type="text" id="_errorMsg" placeholder="正则校验失败提示"/>
+            </div>
 			<br><label>宽度：</label> 
 			<input type="range" id="_width" min="100" max="350" value="250" step="10"/><span id="_width_">250</span>px
-
 			<br><label>高度：</label>
 			<input type="range" id="_height" min="18" max="180" value="18" step="1"/><span id="_height_">18</span>px
 					
 			<hr>
-			<label>下拉列表：</label><input type="text" id="_options" placeholder="格式：1|2, A|B 或 数据服务地址"/>
-			&nbsp;<button class="tssbutton small blue" onclick="checkDataService()">选择</button>
-			<br><label>是否多选：</label>
-			<select id="_multiple">
-				<option value="true">是</option>
-				<option value="false">否</option>
-			</select> 
-			<br><label>联动方法：</label><input type="text" id="_onchange" />
+			<label>下拉列表：</label>
+			<input type="text" id="_options" placeholder="例: A|B 或 /tss/data/json/13" style="width: 175px;"/>
+			&nbsp;<button class="tssbutton small blue" onclick="checkDataService()">数据服务</button>
+			<label style="margin-left: 10px;">是否多选：</label>
+			<input name="_multiple" id="_multiple" type="checkbox" value="true">
+			<br>
+			<label>字段联动：</label><input type="text" id="_onchange" style="width: 178px" />
 		</div>
 
 		<input type="hidden" id="_isMacrocode" />
 	</div>
+	<div id="manual">
+		说明：鼠标右键点击左边根节点【参数列表】，新建一个字段，填写字段名称、编码、类型等必要信息。创建完所有字段后，点左下角【完成编辑】。如需修改某个字段，鼠标点击相应字段名称；删除字段，右键点击相应字段名称，再点菜单【删除字段】。
+	</div>
 	<div class="bts">
-		<input type="button" class="tssbutton small blue" value="完 成" onclick="saveConfigParams()"/>
-		<input type="button" class="tssbutton small blue" value="关 闭" onclick="closeConfigParams()"/>
+		<input type="button" class="tssbutton small blue" value="完成编辑" onclick="saveConfigParams()"/>
+		<input type="button" class="tssbutton small orange" value="关 闭" onclick="closeConfigParams()"/>
 	</div>
 </div>
 

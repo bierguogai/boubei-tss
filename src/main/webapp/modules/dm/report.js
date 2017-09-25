@@ -643,7 +643,14 @@ function editParamConfig() {
 				$('#_' + field + '_').html(this.value);
 			}
 		}
-		fieldEl.value = fieldValue;
+		if( $(fieldEl).attr("type") == 'checkbox' ) { // checkbox
+			fieldEl.checked = fieldValue == 'true';
+			if(field == 'nullable') {
+				fieldEl.checked = fieldValue == 'false';
+			}
+		} else {
+			fieldEl.value = fieldValue;
+		}
 
     	fieldEl.onblur = function() {
     		var newValue = fieldEl.value;

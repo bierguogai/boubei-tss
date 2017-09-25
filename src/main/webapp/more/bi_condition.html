@@ -351,6 +351,9 @@ function beginQuery() {
 
     function setToCookie(key) {
         tssJS.Cookie.setValue(key, $("#"+key).textbox("getValue"), expires);
+        if(key.indexOf("_g") === 0) {
+            tssJS.Cookie.setValue(key + "_text", $("#"+key).combobox("getText"), expires);
+        }
     }
 
 	tssJS.Cookie.setValue("_time_", tssJS.now(), expires);

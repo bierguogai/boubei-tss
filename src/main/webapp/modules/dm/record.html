@@ -25,40 +25,35 @@
 
 #recordFormDiv { width: 96%; height: 100%; padding: 10px; display: none; overflow-y: auto;}
 
-#recordDefinesDiv { width: 500px; height: 395px; padding: 5px; }
+#recordDefinesDiv { width: 700px; height: 395px; padding: 5px; }
 #recordDefinesDiv Tree, #defineForm { background-color: #fff; display:inline-block; }
-#recordDefinesDiv Tree { width:152px; height:90%; overflow-y: auto; }
-#defineForm { width:320px; height:95%; padding:5px; position:absolute; top:5px; left:176px; }
+#recordDefinesDiv Tree { width:202px; height:90%; overflow-y: auto; }
+#recordDefinesDiv .bts { margin-left: 10px; padding-top: 5px; position:absolute; bottom: 2px; left:0; }
 
-#recordDefinesDiv .required {
-    color: red;
-    width: 10px;
-    display: inline-block;
- 	text-align: right;
+#defineForm { width:473px; height:90.5%; padding:15px 5px; position:absolute; top:5px; left:222px; }
+#defineForm .required { color: red; width: 10px; display: inline-block; text-align: right; }
+#defineForm td:nth-child(odd) { 
+	color: #999; width: 60px; display: inline-block; text-align: right; line-height: 32px; 
 }
-#recordDefinesDiv label {
-	display: inline-block;
-    width: 60px;
-    text-align: right;
-    line-height: 28px;
-    color: #CC99CC;
-}
-#recordDefinesDiv input[type=text] {
-    width: 200px;
-    height: 18px;
-    line-height: 18px;
+#defineForm td:nth-child(2) { width: 180px; }
+#defineForm input[type=text] {
+    width: 140px;
+    height: 20px;
     border: 1px solid #95B8E7;
     border-radius: 2px;
     padding-left: 2px;
 }
-#recordDefinesDiv input[type=range] { width: 178px; margin-right: 5px; }
-#recordDefinesDiv select { 
-    height: 20px; width: 70px;
-    border: 1px solid #95B8E7;
-    border-radius: 2px;
+#defineForm input[type=range] { width: 120px; margin-right: 5px; }
+#defineForm select { height: 20px; border: 1px solid #95B8E7; border-radius: 2px; }
+#manual {
+	position: absolute;
+    bottom: 10px;
+    left: 222px;
+    padding: 0 10px;
+    text-indent: 22px;
+    color: #999;
+    line-height: 20px;
 }
-hr { height: 8px; border: none; border-top: 1px dashed #95B8E7; margin-top: 3px; }
-#recordDefinesDiv .bts { margin-left: 10px; padding-top: 5px; position:absolute; bottom: 2px; left:0; }
 
 </style>
 
@@ -98,66 +93,98 @@ hr { height: 8px; border: none; border-top: 1px dashed #95B8E7; margin-top: 3px;
 
 <div id="recordDefinesDiv" class="dialog Formbox">
 	<Tree id="fieldTree" moveable="true"></Tree>
-	<div id="defineForm">
-		<label>字段名称：</label><input type="text" id="_label" autocomplete="off"/><em class="required">*</em>
-		<label>字段编码：</label><input type="text" id="_code" autocomplete="off" placeholder="一律小写字母或数字"/><em class="required">*</em>
-		<br>
-		<label>是否必填：</label>
-		<select id="_nullable">
-			<option value="false">是</option>
-			<option value="true">否</option>
-		</select>
-		<label style="margin-left:5px;">字段类型：</label>
-		<select id="_type">
-			<option value="string">字符串</option>
-			<option value="number">数字</option>
-			<option value="date">日期</option>
-			<option value="datetime">日期时间</option>
-            <option value="hidden">隐藏</option>
-		</select> 		
-		<br>
-		<label>默认值：</label><input type="text" id="_defaultValue" placeholder="添加一个默认值" style="width: 108px;"/>
-		<label>作为条件：</label>
-		<select id="_isparam" style="width: 40px;">
-			<option value="true">是</option>
-			<option value="false">否</option>
-		</select> 
-		<br>
-		<label style="margin-left:5px;">谁能编辑：</label><select id="_role1"></select>
-		<label style="margin-left:5px;">谁能查看：</label><select id="_role2"></select> 
-		<br>
-		<label>列对齐：</label>
-		<select id="_calign">
-			<option value="center">居中对齐</option>
-			<option value="left">左对齐</option>
-			<option value="right">右对齐</option>
-		</select> 
-		<label>列宽度：</label><input type="text" id="_cwidth" placeholder="例:70px或10%" style="width: 80px;"/> 
+	<table id="defineForm">
+		<tr>
+			<td>字段名称：</td>
+			<td><input type="text" id="_label" autocomplete="off"/><em class="required">*</em></td>
+			<td>字段编码：</td>
+			<td>
+				<input type="text" id="_code" autocomplete="off" placeholder="一律小写字母或数字"/>
+				<em class="required">*</em>
+			</td>
+		</tr>
+		<tr>
+			<td>字段类型：</td>
+			<td>
+				<select id="_type" style="width: 100px;">
+					<option value="string">字符串</option>
+					<option value="number">数字</option>
+					<option value="date">日期</option>
+					<option value="datetime">日期时间</option>
+		            <option value="hidden">隐藏</option>
+				</select> 	
+			</td>
+			<td>是否必填：</td>
+			<td>
+				<input name="_nullable" id="_nullable" type="checkbox" value="true">
+			</td>
+		</tr>
+		<tr>
+			<td>默认值：</td>
+			<td>
+				<input type="text" id="_defaultValue" placeholder="添加一个默认值"/>
+			</td>
+			<td>作为条件：</td>
+			<td>
+				<input name="_isparam" id="_isparam" type="checkbox" value="true">
+			</td>
+		</tr>
+		<tr>
+			<td>谁能编辑：</td> <td> <select id="_role1" style="width: 140px;"></select> </td>
+			<td>谁能查看：</td> <td> <select id="_role2" style="width: 140px;"></select> </td>
+		</tr>
+		<tr>
+			<td>列对齐：</td>
+			<td>
+				<select id="_calign" style="width: 100px;">
+					<option value="center">居中对齐</option>
+					<option value="left">左对齐</option>
+					<option value="right">右对齐</option>
+				</select> 
+			</td>
+			<td>表格列宽：</td>
+			<td>
+				<input type="text" id="_cwidth" placeholder="例:70px或10%"/> 
+			</td>
+		</tr>
 
-		<div id="selectRelation">
-			<label>校验正则：</label><input type="text" id="_checkReg" />
-            <label>出错提示：</label><input type="text" id="_errorMsg" />
-
-			<br><label>宽度：</label> 
-			<input type="range" id="_width" min="60" max="350" value="200" step="10"/><span id="_width_">200</span>px
-
-			<br><label>高度：</label>
-			<input type="range" id="_height" min="18" max="180" value="18" step="1"/><span id="_height_">18</span>px
-					
-			<hr>
-			<label>下拉列表：</label><input type="text" id="_options" placeholder="格式：1|2, A|B 或 数据服务地址"/>
-			&nbsp;<button class="tssbutton small blue" onclick="checkDataService()">选择</button>
-			<br><label>是否多选：</label>
-			<select id="_multiple">
-				<option value="true">是</option>
-				<option value="false">否</option>
-			</select> 
-			<br><label>联动方法：</label><input type="text" id="_onchange" />
-		</div>
+		<tr class="selectRelation">
+			<td>输入框宽：</td> 
+			<td> 
+				<input type="range" id="_width" min="60" max="350" value="200" step="10"/><span id="_width_">200</span>px 
+			</td>
+			<td>输入框高：</td> 
+			<td> 
+				<input type="range" id="_height" min="18" max="180" value="18" step="1"/><span id="_height_">18</span>px
+			</td>
+		</tr>
+		<tr class="selectRelation">
+			<td>校验正则：</td> <td> <input type="text" id="_checkReg"/> </td>
+			<td>出错提示：</td> <td> <input type="text" id="_errorMsg"/> </td>
+		</tr>
+		<tr class="selectRelation">
+			<td>下拉列表：</td> 
+			<td colspan="2"> 
+				<input type="text" id="_options" placeholder="例: A|B 或 /tss/data/json/13" style="width: 175px;"/>&nbsp;
+				<button class="tssbutton small blue" onclick="checkDataService()">接口</button>
+			</td>
+			<td style="width: 120px; text-align: center;">
+				是否多选：<input name="_multiple" id="_multiple" type="checkbox" value="true">
+			</td>
+		</tr>
+		<tr class="selectRelation">		
+			<td>字段联动：</td> 
+			<td colspan="3"> 
+				<input type="text" id="_onchange" style="width: 360px;"/>
+			</td>
+		</tr>
+	</table>
+	<div id="manual">
+		说明：鼠标右键点击左边根节点【字段列表】，新建一个字段，填写字段名称、编码、类型等必要信息。创建完所有字段后，点左下角【完成编辑】。如需修改某个字段，鼠标点击相应字段名称；删除字段，右键点击相应字段名称，再点菜单【删除字段】。
 	</div>
 	<div class="bts">
-		<input type="button" class="tssbutton small blue" value="完 成" onclick="saveDefine()"/>
-		<input type="button" class="tssbutton small blue" value="关 闭" onclick="closeDefine()"/>
+		<input type="button" class="tssbutton small blue" value="完成编辑" onclick="saveDefine()"/>
+		<input type="button" class="tssbutton small orange" value="关 闭" onclick="closeDefine()"/>
 	</div>
 </div>
 

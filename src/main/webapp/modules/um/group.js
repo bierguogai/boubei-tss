@@ -517,9 +517,9 @@
     function syncGroup() {
         var treeNode = $.T("tree").getActiveTreeNode();
         var treeNodeID    = treeNode.id;
+        
         var applicationId = treeNode.getAttribute("fromApp");
         var fromGroupId   = treeNode.getAttribute("fromGroupId");
-
         if(applicationId == null || fromGroupId == null) {
             alert("该组没有配置对应的外部系统及外部系统的组织。");
             return;
@@ -537,7 +537,7 @@
             progress.start();
         }
 
-        $.ajax({url : URL_SYNC_GROUP + applicationId + "/" + treeNodeID, onresult : onresult});
+        $.ajax({url : URL_SYNC_GROUP + treeNodeID, onresult : onresult});
     }
     
     function getUserOperation(code) {

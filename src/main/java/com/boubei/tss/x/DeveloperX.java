@@ -1,6 +1,5 @@
 package com.boubei.tss.x;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -97,9 +96,8 @@ public class DeveloperX {
 	public String processUploadFile(HttpServletRequest request,
 			String filepath, String orignFileName) throws Exception {
 		
-		File targetFile = new File(filepath);
-		String json = FileHelper.readFile(targetFile);
-        
+//		File targetFile = new File(filepath);
+//		String json = FileHelper.readFile(targetFile);
         
 		return "parent.alert('导入成功'); parent.loadInitData();";
 	}

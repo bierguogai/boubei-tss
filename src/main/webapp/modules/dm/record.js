@@ -39,8 +39,8 @@ $(function() {
 	$.getJSON(URL_ROLE_LIST, {}, function(data) {
 		var el1 = $1("_role1"), el2 = $1("_role2");
 		data.each(function(i, role) {
-			el1.options[i] = $.createOption(role);
-			el2.options[i] = $.createOption(role);
+			el1.options[i] = $.createOption(role, 1, 1);
+			el2.options[i] = $.createOption(role, 1, 1);
 		});
 	}, "GET");
 });	
@@ -208,6 +208,7 @@ function loadRecordDetail(isCreate, type) {
 	
 	$("#chatFrame").hide();
 	$("#recordFormDiv").show(true);
+	closeDefine();
 	
 	var params = {};
 	if( isCreate ) {
@@ -440,8 +441,8 @@ function initFieldTreeMenus() {
 }
 
 function createNewField() {
-	var id = $.now(), name = '新增字段' + (++count);
-	var newNode = {'id': id, 'name': name, 'value': '{"label": "' +name+ '"}'};
+	var id = $.now(), name = '字段' + (++count);
+	var newNode = {'id': id, 'name': name, 'value': '{"label": "' +name+ '", "isparam": "true"}'};
 	var _root = fieldTree.getTreeNodeById("_root");
 	fieldTree.addTreeNode(newNode, _root);
 	fieldTree.setActiveTreeNode(id);
@@ -467,10 +468,10 @@ function editFieldConfig() {
 		if(field === 'type') {
 			fieldValue = fieldValue.toLowerCase();
 			if(fieldValue == "date" || fieldValue == "datetime") {
-				$("#selectRelation").css("display", "none");
+				$(".selectRelation").hide();
 			}
 			else {
-				$("#selectRelation").css("display", "block");
+				$(".selectRelation").show();
 			}
 		}
 
@@ -491,8 +492,15 @@ function editFieldConfig() {
 				$('#_' + field + '_').html(this.value);
 			}
 		}
-		fieldEl.value = fieldValue;
-
+		if( $(fieldEl).attr("type") == 'checkbox' ) { // checkbox
+			fieldEl.checked = fieldValue == 'true';
+			if(field == 'nullable') {
+				fieldEl.checked = fieldValue == 'false';
+			}
+		} else {
+			fieldEl.value = fieldValue;
+		}
+		
     	fieldEl.onblur = function() {
     		var newValue = fieldEl.value;
 			if( $.isNullOrEmpty(newValue) ) {
@@ -506,7 +514,7 @@ function editFieldConfig() {
 			}
 			else {
 				if(field === 'code') {
-					newValue = newValue.trim(); // code 不能有空格
+					newValue = newValue.trim().toLowerCase(); // code 不能有空格
 				}
 				valuesMap[field] = newValue;
 			}			
@@ -541,10 +549,10 @@ function editFieldConfig() {
     				if(newValue != "hidden") {
     					$1("_defaultValue").setAttribute("placeholder", "示例：today-3");
     				}
-					$("#selectRelation").css("display", "none");
+					$(".selectRelation").hide();
     			}
 				else {
-					$("#selectRelation").css("display", "block");
+					$(".selectRelation").show();
 				}
     		}
     		activeNode.setAttribute("value", JSON.stringify(valuesMap));

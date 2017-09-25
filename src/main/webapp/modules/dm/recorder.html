@@ -83,6 +83,7 @@ var _operation = ['1','2','3','4','5'],
     userName, 
     userGroups = [], 
     userRoles = [], 
+    userRoleNames = [], 
     userAssistGroups = [];
 
 // 监听器
@@ -146,6 +147,7 @@ function init() {
             var result = this.getResponseJSON();
             userGroups = result[0];
             userRoles  = result[1];
+            userRoleNames  = result[11];
             userCode   = result[3];
             userName   = result[4];
             userAssistGroups = result[5];

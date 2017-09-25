@@ -1,8 +1,6 @@
 package com.boubei.tss.x;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -13,7 +11,6 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,7 +40,6 @@ import com.boubei.tss.util.FileHelper;
  */
 @Controller
 @RequestMapping("/auth/module/x")
-@SuppressWarnings("unchecked")
 public class ModuleX implements AfterUpload {
 	
 	@Autowired ModuleService service;
@@ -118,72 +114,9 @@ public class ModuleX implements AfterUpload {
 	public String processUploadFile(HttpServletRequest request,
 			String filepath, String orignFileName) throws Exception {
 		
-		commonService = Global.getCommonService();
+		XService service = (XService) Global.getBean("XService");
+		service.importModule(filepath);
 		
-		File targetFile = new File(filepath);
-		String json = FileHelper.readFile(targetFile);
-        
-		Map<String, Object> result = new ObjectMapper().readValue(json, Map.class);
-		ModuleDef def = (ModuleDef) result.get("module");
-		List<Role> roles = (List<Role>) result.get("roles");
-		List<RecordPermission> recordPermissions = (List<RecordPermission>) result.get("recordPermissions");
-		List<ReportPermission> reportPermissions = (List<ReportPermission>) result.get("reportPermissions");
-		List<Record> records = (List<Record>) result.get("records");
-		List<Report> reports = (List<Report>) result.get("reports");
-		List<Param> dsList = (List<Param>) result.get("datasource");
-		
-		for(Param ds : dsList) {
-			ds.setId(null);
-			commonService.create(ds);
-		}
-		
-		Map<Long, Long> map0 = new HashMap<Long, Long>();
-		for(Role role : roles) {
-			Long oldId = role.getId();
-			role.setId(null);
-			commonService.create(role);
-			map0.put(oldId, role.getId());
-		}
-		
-		Map<Long, Long> map1 = new HashMap<Long, Long>();
-		for(Report report : reports) {
-			Long oldId = report.getId();
-			report.setId(null);
-			commonService.create(report);
-			map1.put(oldId, report.getId());
-		}
-		for(ReportPermission t : reportPermissions) {
-			t.setId(null);
-			t.setRoleId( map0.get(t.getRoleId()) );
-			t.setResourceId( map1.get(t.getResourceId()) );
-			commonService.create(t);
-		}
-		
-		Map<Long, Long> map2 = new HashMap<Long, Long>();
-		for(Record record : records) {
-			Long oldId = record.getId();
-			record.setId(null);
-			commonService.create(record);
-			map2.put(oldId, record.getId());
-		}
-		for(RecordPermission t : recordPermissions) {
-			t.setId(null);
-			t.setRoleId( map0.get(t.getRoleId()) );
-			t.setResourceId( map1.get(t.getResourceId()) );
-			commonService.create(t);
-		}
-		
-		def.setId(null);
-		String[] _roles = def.getRoles().split(",");
-		List<Object> defRoles = new ArrayList<Object>();
-		for(String _role : _roles) {
-			Long oldId = EasyUtils.obj2Long(_role);
-			Long newId = map0.get(oldId);
-			defRoles.add(newId);
-		}
-		def.setRoles( EasyUtils.list2Str(defRoles) );
-		commonService.create(def);
-        
-		return "parent.alert('导入成功'); parent.loadInitData();";
+		return "parent.alert('导入成功，如果模块包含有自定义的HTML页，其涉及数据服务需另外修改'); parent.loadInitData();";
 	}
 }

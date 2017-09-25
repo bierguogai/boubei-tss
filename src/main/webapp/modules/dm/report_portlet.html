@@ -476,7 +476,11 @@ function searchReport(params) {
 function shareData() {
     var msg = "您可以在特定栏目里创建一篇文章，把您当前查询到的数据结果及评论分享到数据门户里，以供其它人员查阅。";
     $.confirm(msg, "开始分享", 
-                function() { parent.parent.openUrl('modules/cms/channel.html'); },
+                function() { 
+                    var targetChannel = 2, // 目标栏目
+                        title = encodeURI(globalValiable.title);
+                    parent.parent.openUrl('modules/cms/channel.html?channel=' +targetChannel+ '&title='+title ); 
+                },
                 function() { return;}
             );
 }
