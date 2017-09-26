@@ -1,5 +1,6 @@
 package com.boubei.tss.x;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -32,7 +33,6 @@ import com.boubei.tss.util.FileHelper;
  */
 @Controller
 @RequestMapping("/auth/dev/x")
-@SuppressWarnings("unchecked")
 public class DeveloperX {
 	
 	@Autowired private ModuleService service;
@@ -42,7 +42,7 @@ public class DeveloperX {
 	@Autowired ILoginService loginService;
 	
 	// 导出模块
-	@RequestMapping("/{developer}")
+	@RequestMapping("/exp/{developer}")
 	public void export(HttpServletResponse response, 
             @PathVariable("developer") String developer) {
 		
@@ -60,7 +60,8 @@ public class DeveloperX {
 		List<Object> recordPermissions = new ArrayList<Object>();
 		List<Object> reportPermissions = new ArrayList<Object>();
 		
-		List<Role> roles = (List<Role>) commonService.getList("from Role where creatorId=?", developerId);
+		@SuppressWarnings("unchecked")
+		List<Role> roles = (List<Role>) commonService.getList("from Role where creatorId=? order by decode ", developerId);
 		for(Role role : roles) {
 			Long roleId = role.getId();
 			recordPermissions.addAll(commonService.getList(" from RecordPermission where roleId = ?", roleId));
@@ -68,8 +69,8 @@ public class DeveloperX {
 		}
 		
 		// 资源（录入表、报表）
-		List<?> records = commonService.getList("from Record where creatorId=?", developerId);
-		List<?> reports = commonService.getList("from Report where creatorId=?", developerId);
+		List<?> records = commonService.getList("from Record where creatorId=? order by decode ", developerId);
+		List<?> reports = commonService.getList("from Report where creatorId=? order by decode ", developerId);
 		
 		// Job、Task
 		List<?> jobs = commonService.getList("from JobDef where creator = ?", developer);
@@ -96,8 +97,9 @@ public class DeveloperX {
 	public String processUploadFile(HttpServletRequest request,
 			String filepath, String orignFileName) throws Exception {
 		
-//		File targetFile = new File(filepath);
-//		String json = FileHelper.readFile(targetFile);
+		File targetFile = new File(filepath);
+		String json = FileHelper.readFile(targetFile);
+		System.out.println(json);
         
 		return "parent.alert('导入成功'); parent.loadInitData();";
 	}
