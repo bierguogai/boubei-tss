@@ -1,5 +1,6 @@
 package com.boubei.tss.x;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.boubei.tss.EX;
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DataExport;
 import com.boubei.tss.dm.record.Record;
@@ -29,6 +31,7 @@ import com.boubei.tss.dm.report.permission.ReportPermission;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.persistence.entityaop.IDecodable;
+import com.boubei.tss.framework.sso.Environment;
 import com.boubei.tss.framework.web.servlet.AfterUpload;
 import com.boubei.tss.modules.cloud.ModuleDef;
 import com.boubei.tss.modules.cloud.ModuleService;
@@ -37,6 +40,7 @@ import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.um.entity.Role;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
+import com.boubei.tss.util.URLUtil;
 
 /**
  * 模块功能扩展：导入、导出（角色、录入表、报表、授权信息）
@@ -138,11 +142,46 @@ public class ModuleX implements AfterUpload {
         result.put("records", records);
         result.put("reports", reports);
         result.put("datasource", dsList);
-        
-        String exportPath = DataExport.getExportPath() + "/" + def.getModule() + ".json";
         String json = EasyUtils.obj2Json(result);
-        FileHelper.writeFile(exportPath, json, false);
-        DataExport.downloadFileByHttp(response, exportPath);
+        
+        // 导出pages目录，连json文件一起压缩打包
+        String resource = def.getResource();
+        if( !EasyUtils.isNullOrEmpty(resource) ) {
+        	String exportPath = DataExport.getExportPath() + "/" + def.getModule();
+        	String jsonFile = exportPath + "/module.json";
+        	FileHelper.writeFile(jsonFile, json, false);
+        	
+        	File fileDir = new File(exportPath + "/files");
+        	
+        	String[] resources = def.getResource().split(",");
+        	for(String r : resources) {
+        		File f = new File(URLUtil.getWebFileUrl(r).getPath());
+        		if(!f.exists())  continue;
+        		if(!f.isDirectory()) {
+        			FileHelper.copyFile(fileDir, f, true, false);
+        			continue;
+        		}
+        		
+        		// 如果是文件夹，则压缩后再复制到导出目录，然后重新解压开来（以保证文件夹内子目录不变）
+        		String zip = FileHelper.exportZip( DataExport.getExportPath(), f ); 
+        		File zipfile = new File(zip);
+				FileHelper.copyFile(fileDir, zipfile );
+        		try {
+        			zipfile = new File(fileDir.getPath() + "/" + zipfile.getName());
+    				FileHelper.upZip(zipfile, fileDir);
+    				zipfile.delete();
+    			} 
+        		catch (Exception e) { }
+        	}
+        	
+        	String zipFile = FileHelper.exportZip( DataExport.getExportPath(), new File(exportPath) ); 
+        	DataExport.downloadFileByHttp(response, zipFile);
+        }
+        else {
+        	String jsonFile = DataExport.getExportPath() + "/" + def.getModule() + ".json";
+            FileHelper.writeFile(jsonFile, json, false);
+            DataExport.downloadFileByHttp(response, jsonFile);
+        }
 	}
 	
 	// 导入模块
@@ -150,15 +189,24 @@ public class ModuleX implements AfterUpload {
 			String filepath, String orignFileName) throws Exception {
 		
 		XService service = (XService) Global.getBean("XService");
+		
+		if(filepath.endsWith("zip")) {
+			File zipFile = new File(filepath);
+			File tempDir = new File(zipFile.getParentFile() + "/" + System.currentTimeMillis());
+	        try {
+				FileHelper.upZip(zipFile, tempDir);
+			} catch (Exception e) { }
+	        
+	        filepath =  tempDir + "/module.json";
+	        
+	        String workDir = "pages/" + Environment.getUserCode();
+			File toDir = new File(URLUtil.getWebFileUrl(workDir).getPath());
+	        File fromDir = new File(tempDir.getPath() + "/files");
+	       	FileHelper.copyFolder(fromDir, toDir);
+		}
+		
 		service.importModule(filepath);
 		
-		return "parent.alert('导入成功，如果模块包含有自定义的HTML页，其涉及数据服务需另外修改'); parent.loadInitData();";
-	}
-	
-	public static void main(String args[]) {
-		String s1 = "'/tss/auth/xdata/json/39?fields=name'";
-		String s2 = "data/json/40'";
-		System.out.println(s1.replaceAll("xdata/json/2\\?", "xdata/json/69\\?"));
-		System.out.println(s2.replaceAll("json/0'", "json/69'"));
+		return "parent.alert('" +EX.MODULE_2+ "'); parent.loadGridData(1);";
 	}
 }

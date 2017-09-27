@@ -113,6 +113,15 @@ public class XServiceImpl implements XService {
 			record.setId(null);
 			record.setParentId( (Long) EasyUtils.checkNull(map2.get(record.getParentId()), recordGroupId) );
 			record.setDatasource( DMConstants.LOCAL_CONN_POOL ); // 强制替换为本地数据源，以防创建表结构失败
+			
+			// 替换定制的展示页面路径
+			String pagePath = record.getCustomizePage();
+			if(!EasyUtils.isNullOrEmpty(pagePath)) {
+				int index = pagePath.lastIndexOf("/");
+				pagePath = "/tss/pages/" + Environment.getUserCode() + pagePath.substring(index);
+				record.setCustomizePage(pagePath);
+			}
+			
 			recordService.createRecord(record);
 			
 			map2.put(oldId, record.getId());
@@ -138,6 +147,14 @@ public class XServiceImpl implements XService {
 			report.setId(null);
 			report.setParentId( (Long) EasyUtils.checkNull(map1.get(report.getParentId()), reportGroupId) );
 			report.setDatasource( DMConstants.LOCAL_CONN_POOL );
+			
+			// 替换定制的展示页面路径
+			String pagePath = report.getDisplayUri();
+			if(!EasyUtils.isNullOrEmpty(pagePath)) {
+				int index = pagePath.lastIndexOf("/");
+				pagePath = "/tss/pages/" + Environment.getUserCode() + pagePath.substring(index);
+				report.setDisplayUri(pagePath);
+			}
 			
 			Integer status = report.getDisabled();
 			reportService.createReport(report);
