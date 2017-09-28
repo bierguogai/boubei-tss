@@ -11,6 +11,7 @@ BASE_JSONP_URL = TOMCAT_URL + '/data/jsonp/';
 function json_url(id, appCode)  { return BASE_JSON_URL  + id + (appCode ? "?appCode="+appCode : ""); }
 function jsonp_url(id, appCode) { return BASE_JSONP_URL + id + (appCode ? "?appCode="+appCode : ""); }
 
+
 BASE_RECORD_URL= TOMCAT_URL + '/auth/xdata/';
 function record_urls(recordTableId) {   // 一个录入表所拥有的增、删、改、查等接口
     var result = {};
@@ -25,19 +26,33 @@ function record_urls(recordTableId) {   // 一个录入表所拥有的增、删�
     return result; 
 }
 
+// 依据录入表的名称或表名，获取ID，支持多个录入表一起查询
+function record_id(nameOrTable, callback) {
+    $.get(BASE_RECORD_URL + 'id', {'nameOrTables': nameOrTable}, function(ids) {
+        callback(ids);
+    });
+}
+
 // 用户权限信息
 var userCode, 
     userName, 
     userGroups = [], 
-    userRoles = [], 
+    userRoles = [],
+    userRoleNames = [], 
     userHas;
 
 tssJS.getJSON("/tss/auth/user/has", {}, function(result) {
         userGroups = result[0];
         userRoles  = result[1];
+        userRoleNames = result[11];
         userCode   = result[3];
         userName   = result[4];
         userHas    = result;
+
+        userRoleNames.each(function(i, item){
+            userRoles.push(item);
+        });
+
     }, "GET");
 
 function initCombobox(id, code, params, init) {

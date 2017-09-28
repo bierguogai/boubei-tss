@@ -22,8 +22,11 @@
 
 <script type="text/javascript">
 
-var role_owner = 18, role_customer = 19, group_customer = 7;
-var orderTable = 36, orderItemTable = 37, skuTable = 32, invTable = 33;
+var role_owner = '仓库主管', 
+    role_customer = '下单客户'; 
+
+// 使用表名作为录入表的标识
+var orderTable = 'j_order', orderItemTable = 'j_order_item', skuTable = 'j_sku', invTable = 'j_inv';
 
 var globalV = {}, 
     dg1, dg2, dg3,
@@ -130,24 +133,28 @@ $(function(){
 
     querySKUs();
 
-    $.getJSON("/tss/auth/service/gusers/" + group_customer, {}, function(data) {
-        data.each(function(i, item) {
-            receivers[item.userName] = item;
-        });
+    $.getJSON("/tss/auth/service/rid", {"role": role_customer}, function(result) { 
+        var role_customer_id = result;
 
-        $("#receiver").combobox( {
-            panelHeight: '150px',
-            editable: true,
-            data: data,
-            textField: "userName",
-            valueField: "userName",
-            onChange: function( newOrg, oldOrg ) {
-                var u = receivers[newOrg];
-                if(u) {
-                    $('#mobile1').textbox('setValue', u.telephone);
-                    $('#receiveaddr').textbox('setValue', u.address);
+        $.getJSON("/tss/auth/service/rusers/" + role_customer_id, {}, function(data) {
+            data.each(function(i, item) {
+                receivers[item.userName] = item;
+            });
+
+            $("#receiver").combobox( {
+                panelHeight: '150px',
+                editable: true,
+                data: data,
+                textField: "userName",
+                valueField: "userName",
+                onChange: function( newOrg, oldOrg ) {
+                    var u = receivers[newOrg];
+                    if(u) {
+                        $('#mobile1').textbox('setValue', u.telephone);
+                        $('#receiveaddr').textbox('setValue', u.address);
+                    }
                 }
-            }
+            });
         });
     });
 

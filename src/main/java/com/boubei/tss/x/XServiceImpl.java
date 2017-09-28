@@ -116,7 +116,7 @@ public class XServiceImpl implements XService {
 			
 			// 替换定制的展示页面路径
 			String pagePath = record.getCustomizePage();
-			if(!EasyUtils.isNullOrEmpty(pagePath)) {
+			if(!EasyUtils.isNullOrEmpty(pagePath) && pagePath.indexOf("/pages/") > 0) {
 				int index = pagePath.lastIndexOf("/");
 				pagePath = "/tss/pages/" + Environment.getUserCode() + pagePath.substring(index);
 				record.setCustomizePage(pagePath);
@@ -150,7 +150,7 @@ public class XServiceImpl implements XService {
 			
 			// 替换定制的展示页面路径
 			String pagePath = report.getDisplayUri();
-			if(!EasyUtils.isNullOrEmpty(pagePath)) {
+			if(!EasyUtils.isNullOrEmpty(pagePath) && pagePath.indexOf("/pages/") > 0) {
 				int index = pagePath.lastIndexOf("/");
 				pagePath = "/tss/pages/" + Environment.getUserCode() + pagePath.substring(index);
 				report.setDisplayUri(pagePath);

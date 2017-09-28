@@ -20,10 +20,10 @@
 
 <script type="text/javascript">
 
-var tableId = 30;
-
-URL = record_urls(tableId);
 /*
+优先使用录入表的ID 来访问录入表接口，但如果是一个需要反复导入导出的模块功能，其ID会不断变化，需使用table或name来获取其ID
+var tableId = 30; 
+URL = record_urls(tableId);
 URL.CREATE;
 URL.UPDATE;  //{id}
 URL.DELETE;  //{id}
@@ -32,8 +32,15 @@ URL.QUERY;
 URL.ATTACH;
 */
 
+var tableId = 'j_supplier',  // 录入表的ID or table（不能有前缀） or name（英文Name）
+    URL;
+
 $(document).ready(function () {
-    query();
+    record_id(tableId, function( result ) {
+        URL = record_urls( result[0] );
+
+        query();
+    });
 
     $('#state').combobox( {
         panelHeight: '60px',

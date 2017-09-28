@@ -459,7 +459,7 @@
 				<log.level>info</log.level>
 				<db.username>root</db.username>
 				<db.password>boubei@com</db.password>
-				<db.url>127.0.0.1:3306/tss</db.url>
+				<db.url>127.0.0.1:3306/tss1</db.url>
 				<tomcat.url>127.0.0.1:8080</tomcat.url>
 			</properties>
 		</profile>

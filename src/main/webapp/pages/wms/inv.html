@@ -22,11 +22,6 @@
 
 <script type="text/javascript">
 
-var invTable = 33, skuTable = 32;
-
-SKU = record_urls(skuTable);
-INV = record_urls(invTable);
-
 var FIELDS = [
     {field: "sku", title: "货品", width: "180px"},
     {field: "skucode", title: "货品编码"},
@@ -66,9 +61,21 @@ $.each(FIELDS_3, function(i, field) {
 
 var dg, dg3;
  
+var invTable = 'j_inv', skuTable = 'j_sku', 
+    INV, SKU;
+    
 $(function(){
 
-     dg = $('#t1').datagrid({
+    // 通过表名获取到录入表的ID信息，再生成此录入表的接口地址（也可以直接用表名）
+    record_id( [skuTable, invTable].join(","), function( result ) {
+        SKU = record_urls( result[0] );
+        INV = record_urls( result[1] );
+
+        query();
+        querySKUs();
+    });  
+
+    dg = $('#t1').datagrid({
         fit: true,
         fitColumns: true,
         rownumbers: true,
@@ -103,10 +110,7 @@ $(function(){
         data: []
     });
 
-    dg.datagrid('enableCellEditing');
-
-    query();
-    querySKUs();
+    dg.datagrid('enableCellEditing');  
 });
 
 function getParams() {
