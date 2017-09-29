@@ -31,12 +31,13 @@
 	}
 
 	var _condition = {}, 
-		operationCode = $.Query.get("operationCode");
+		operationCode = $.Query.get("operationCode"),
+		operateTable = $.Query.get("operateTable");
 	 
+	_condition.operateTable = decodeURI( operateTable );
 	if(operationCode) {
 		_condition.operationCode = decodeURI( operationCode );
 	}
-	_condition.operateTable = $.Query.get("operateTable"); 
 
     /* 页面初始化 */
     function init() {

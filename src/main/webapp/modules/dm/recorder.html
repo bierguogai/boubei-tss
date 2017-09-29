@@ -472,10 +472,10 @@ function removeBatch() {
 
 function showEditLog() {
     var selectedLineId = $.G("grid").getColumnValue("id"); 
-    var operateTable = "record-",
-        operationCode = recordName + ", " + selectedLineId;
+    var operateTable = encodeURI(recordName),
+        operationCode = encodeURI(", " + selectedLineId);
 
-    $.openIframePanel("logPanel", "数据修改日志", 960, 500, "../_log/log.htm?operateTable="+operateTable+"&operationCode=" + encodeURI(operationCode) );
+    $.openIframePanel("logPanel", "数据修改日志", 960, 500, "../_log/log.htm?operateTable="+operateTable+"&operationCode=" +operationCode);
     $("#logPanel").css("zIndex", "10001");
 }
 

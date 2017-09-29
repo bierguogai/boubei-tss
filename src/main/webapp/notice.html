@@ -51,6 +51,7 @@ $(function(){
             attachments.each(function(i, attach){
                 var name = $("name", attach).text();
                 var url = $("url", attach).text();
+                url = url.substring( url.indexOf('/tss') ); // 转成相对地址
                 str[str.length] = "<a href='" + url + "'>" + (i+1) + ". " + name + "</a> ";
             });
             extendStr += "<div class='attach'>相关附件: " + str.join(" | ") + "</div>";

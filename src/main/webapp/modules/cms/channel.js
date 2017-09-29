@@ -88,7 +88,7 @@ function initMenus() {
     }
     var item3 = {
         label:"新建文章",
-        callback:addNewArticle,
+        callback:function() { addNewArticle(); },
         visible:function() { return isChannel() && getOperation("3");}
     }
 
