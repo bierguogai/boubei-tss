@@ -41,7 +41,7 @@ var userCode,
     userRoleNames = [], 
     userHas;
 
-tssJS.getJSON("/tss/auth/user/has", {}, function(result) {
+$.getJSON("/tss/auth/user/has", {}, function(result) {
         userGroups = result[0];
         userRoles  = result[1];
         userRoleNames = result[11];
@@ -53,7 +53,7 @@ tssJS.getJSON("/tss/auth/user/has", {}, function(result) {
             userRoles.push(item);
         });
 
-    }, "GET");
+    });
 
 function initCombobox(id, code, params, init) {
     var url = '/tss/param/json/combo/' + code;

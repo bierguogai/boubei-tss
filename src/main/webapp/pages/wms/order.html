@@ -41,16 +41,16 @@ INV = record_urls(invTable);
 var FIELDS_1 = [
     {field: "orderno", title: "订单号", width:"12%"},
     {field: "day", title: "下单日期"},
-    {field: "receiveaddr", title: "收货地址", width:"12%"},    
+    {field: "receiveaddr", title: "收货地址", width:"15%"},    
     {field: "receiver", title: "收货人"},
     {field: "mobile1", title: "收货人电话"},
-    {field: "sendorg", title: "送货单位", editor: "text"},
+    {field: "sendorg", title: "送货单位", editor: "text", hidden: true},
     {field: "sender", title: "送货人", editor: "text"},
     {field: "mobile2", title: "送货人电话", editor: "text"},
     {field: "money", title: "金额合计", editor: {type:'numberbox',options:{precision:2}}},
     {field: "checker", title: "审核人"},
     {field: "status", title: "状态"},
-    {field: "remark", title: "备注", width:"12%"}
+    {field: "remark", title: "备注", width:"18%"}
 ];
 var FIELDS_2 = [
     {field: "sku", title: "货品", width: "180px", sortable: true},
@@ -133,10 +133,12 @@ $(function(){
 
     querySKUs();
 
-    $.getJSON("/tss/auth/service/rid", {"role": role_customer}, function(result) { 
+    // 获取到角色的ID
+    tssJS.getJSON("/tss/auth/service/rid", {"role": role_customer}, function(result) { 
         var role_customer_id = result;
 
-        $.getJSON("/tss/auth/service/rusers/" + role_customer_id, {}, function(data) {
+        // 根据角色ID获取 被授予此角色的用户列表
+        $.getJSON("/tss/auth/service/rusers/"+role_customer_id, {}, function(data) {
             data.each(function(i, item) {
                 receivers[item.userName] = item;
             });

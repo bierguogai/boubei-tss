@@ -20,6 +20,7 @@ import com.boubei.tss.dm.record.permission.RecordPermission;
 import com.boubei.tss.dm.report.Report;
 import com.boubei.tss.dm.report.ReportService;
 import com.boubei.tss.dm.report.permission.ReportPermission;
+import com.boubei.tss.dm.report.permission.ReportResource;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.ICommonDao;
 import com.boubei.tss.framework.sso.Environment;
@@ -102,6 +103,10 @@ public class XServiceImpl implements XService {
 			
 			Report reportGroup = reportService.getReport(reportGroupId);
 			ph.createPermission(newId, reportGroup, Report.OPERATION_VIEW, 1, 0, 0, ReportPermission.class.getName());
+			Report parent = reportService.getReport(reportGroup.getParentId()); // node[我的报表]
+			ph.createPermission(newId, parent, Report.OPERATION_VIEW, 1, 0, 0, ReportPermission.class.getName());
+			ReportResource gParent = (ReportResource) commonDao.getEntity(ReportResource.class, Report.DEFAULT_PARENT_ID);
+			ph.createPermission(newId, gParent, Report.OPERATION_VIEW, 1, 0, 0, ReportPermission.class.getName());
 		}
 		
 		Map<Long, Long> map2 = new HashMap<Long, Long>();
