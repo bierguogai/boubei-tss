@@ -121,13 +121,15 @@ function initMenu() {
 
 	$('.navlist li a').click(function(){
 		$('#main').layout('collapse', 'west');	
-		
-		var tabTitle = $(this).children('.nav').text();
 
+		var tabTitle = $(this).children('.nav').text();
 		var reportId = $(this).attr("ref");
 		var url = report_portlet_url + reportId;
- 
-		addTab(tabTitle, url);
+		
+		setTimeout( function() {
+			addTab(tabTitle, url);
+		}, 500 );
+
 		$('.navlist li div').removeClass("selected");
 		$(this).parent().addClass("selected");	
 	});
@@ -248,13 +250,13 @@ function showSearchDialog() {
 
     <div id="dlg" class="easyui-dialog" style="width:600px; min-height: 200px; max-height: 400px;" closed="true">
 	    <div class="navbar-form" style="margin: 20px 0 10px 30px;">  
-	        <select class="easyui-combobox" style="width:70px;" id="resource">
+	        <select class="easyui-combobox" style="width:80px;" id="resource">
 	            <option value="Article">文章</option>
-	            <option value="Report" selected>报表</option>
-	            <option value="Record">录入表</option>
-	            <option value="Group">组织</option>
+	            <option value="Report" selected>数据报表</option>
+	            <option value="Record">数据表</option>
+	            <option value="Group">用户组织</option>
 	            <option value="Channel">栏目</option>
-	            <option value="Navigator">菜单</option>
+	            <option value="Navigator">导航菜单</option>
 	        </select> - 
 	        <input class="easyui-textbox" style="width:250px;" prompt="请输入查询关键字" id="keyword">
 	        <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-search'" onclick="_search()" style="margin-left:10px; width: 100px;">开始检索</a>

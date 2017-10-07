@@ -71,14 +71,14 @@ function initMenus() {
 		visible:function() { return isRecordGroup() && getOperation("2"); }
 	}
 	var item22 = {
-		label:"修改录入表",
+		label:"修改数据表",
 		callback: function() {
 			loadRecordDetail(false, "1");
 		},
 		visible:function() { return isRecord() && getOperation("2"); }
 	}
 	var item3 = {
-		label:"新增录入表",
+		label:"新增数据表",
 		callback: function() {
 			loadRecordDetail(true, "1");
 		},
@@ -130,13 +130,13 @@ function initMenus() {
 		visible:function() { return isRecord() && getOperation("1") && canBatchImp(); }
 	}
 	var item13 = {
-        label:"导出录入表定义",
+        label:"导出数据表定义",
         callback:exportRecordDef,
         icon:ICON + "export.gif",
         visible:function() {return !isTreeRoot() && getOperation("2");}
     }
     var item14 = {
-        label:"导入录入表定义",
+        label:"导入数据表定义",
         callback:importRecordDef,
         icon:ICON + "import.gif",
         visible:function() {return !isRecord() && getOperation("2");}
@@ -369,7 +369,7 @@ function batchImport() {
     $(importDiv).show();
 }
 
-// -------------------------------------------------   配置数据录入表   ------------------------------------------------
+// -------------------------------------------------   配置数据数据表   ------------------------------------------------
 var fieldTree, count = 0;
 function configDefine() {
 	var rform = $.F("recordForm");
@@ -502,7 +502,16 @@ function editFieldConfig() {
 		}
 		
     	fieldEl.onblur = function() {
-    		var newValue = fieldEl.value;
+    		var newValue;
+    		if( $(fieldEl).attr("type") == 'checkbox' ) { // checkbox
+				newValue = fieldEl.checked ? 'true' : "";
+				if(field == 'nullable') {
+					newValue = fieldEl.checked ? 'false' : "";
+				}
+			} else {
+				newValue = fieldEl.value;
+			}
+    		
 			if( $.isNullOrEmpty(newValue) ) {
 				if(field === 'label') {
 					return $(fieldEl).notice("新建字段名称不能为空");

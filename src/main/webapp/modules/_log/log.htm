@@ -34,10 +34,8 @@
 		operationCode = $.Query.get("operationCode"),
 		operateTable = $.Query.get("operateTable");
 	 
-	_condition.operateTable = decodeURI( operateTable );
-	if(operationCode) {
-		_condition.operationCode = decodeURI( operationCode );
-	}
+	if(operateTable)  _condition.operateTable  = decodeURI( operateTable );
+	if(operationCode) _condition.operationCode = decodeURI( operationCode );
 
     /* 页面初始化 */
     function init() {

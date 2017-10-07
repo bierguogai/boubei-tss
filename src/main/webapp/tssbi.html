@@ -92,10 +92,16 @@ var resizeIFrame = function resizeIFrame() {
     $(".tssIFrame").css("height", (document.body.offsetHeight - 33) + "px"); 
 }
 
-function openUrl(url) {
+function openUrl(url, dialog, title) {
     if (url == "#") return;
 
     var id = "if" + tssJS.hashCode(url);
+    if( dialog ) { // 弹窗打开
+        window.open("/tss/" + url);
+        return;
+    }
+
+    // 在框架页里打开
     var $iframe = $("#" + id);
     if( $iframe.length == 0 ) {
         var iframe = $.createElement("iframe", "tssIFrame", id);
@@ -116,16 +122,12 @@ function openUrl(url) {
 }
 
 function openMsgPage() {
-    openUrl('modules/um/message.html');
+    openUrl('modules/um/message.html', true, "站内消息");
 }
 
 // report_portlet.html  的 feedback()方法调用到这里
 function feedback(module) {
-    openUrl( encodeURI('modules/dm/record.html?_default=系统使用反馈' + (module ? "&udf="+module : "")) );
-}
-
-function feedback2() {
-    openUrl( encodeURI('modules/dm/recorder.html?name=系统使用反馈') );
+    openUrl( encodeURI('modules/dm/recorder.html?name=系统使用反馈' + (module ? "&udf="+module : "")), true, "建议反馈" );
 }
 
 function manageJob() {
@@ -197,23 +199,21 @@ tssJS(function(){
 
 
 // ----------------------------------- 获取BI报表一级菜单 -----------------------------------
-var globalValiable = {},
-    _menus = {}, 
-    items = {}, 
-    rootId = 0,
+var rootId = 0,
+    globalValiable = {},
+    level_2_menus = {}, 
+    menusMap = {}, 
     fisrtGroup;
 
 function getBIMenu() {
     tssJS.getJSON( "/tss/auth/rp/my/" + rootId, {},
         function(data) {
 
-            if(data.length == 0) {
-                return openMsgPage();
-            }
+            if( data.length == 0) return openMsgPage();
 
             data.each( function(i, item) {
                 var id = item[0], pid = item[2], name = item[1], isReport = item[3];
-                items[id] = item;
+                menusMap[id] = item;
 
                 if( pid == 0 && rootId != 0 ) return true;
 
@@ -222,24 +222,24 @@ function getBIMenu() {
                     $(li).html("<a onclick='openLevelOne(" +id+ ")'>" +name+ "</a>");
                     $("#_bi>ul").appendChild(li);
 
-                    _menus[id] = [];
+                    level_2_menus[id] = [];
                     fisrtGroup = fisrtGroup || id;
                 }
                 else if( !isReport ) { 
-                    var brothers = _menus[pid];
+                    var brothers = level_2_menus[pid];
                     if(brothers) {
                         brothers.push(item); // 二级目录
                     }
                     else { // 三级目录，直接升级为二级，方便开发者定义多模块
-                        var parent = items[pid];
+                        var parent = menusMap[pid];
                         if(parent) {
-                            var uncles = _menus[parent[2]];
+                            var uncles = level_2_menus[parent[2]];
                             uncles && uncles.push(item);
                         }
                     }
                 }
                 else if( isReport ) {  // 报表
-                    var parent = items[pid];
+                    var parent = menusMap[pid];
                     if(parent) {
                         if( !parent.children ) {
                             parent.children = []; // 没有任何报表的二级目录将被过滤掉
@@ -256,7 +256,7 @@ function getBIMenu() {
 
 function openLevelOne(id, firstTime) {
     var fisrtReport;
-    globalValiable.list = _menus[id];
+    globalValiable.list = level_2_menus[id];
     globalValiable.list.each( function(i, _item) {
         (_item.children||[]).each(function(i, item){
             if(item[3]) { // isReport = true
@@ -290,7 +290,7 @@ function openLevelOne(id, firstTime) {
                 <ul></ul>
             </li>           
             <!-- 录入表都维护到报表目录里
-            <li class="r8"><a onclick="openUrl('modules/dm/record.html')">录入表</a></li>  
+            <li class="r8"><a onclick="openUrl('modules/dm/record.html')">数据表</a></li>  
             -->
             <li class="r8"><a onclick="openUrl('modules/um/group.html')">用户管理</a></li>
             <li class="r8"><a onclick="openUrl('modules/cms/channel.html')">发布公告</a></li>
@@ -299,8 +299,8 @@ function openLevelOne(id, firstTime) {
                 <ul>                    
                     <li><a onclick="openUrl('modules/um/role.html')">设置角色</a> </li>
                     <li><a onclick="openUrl('modules/dm/datasource.html')">数据源</a></li>
-                    <li><a onclick="openUrl('modules/dm/record.html')">录入表</a></li> 
-                    <li><a onclick="openUrl('modules/dm/report.html')">报表管理</a></li>
+                    <li><a onclick="openUrl('modules/dm/record.html')">数据表</a></li> 
+                    <li><a onclick="openUrl('modules/dm/report.html')">数据报表</a></li>
                     <li><a onclick="releaseModule()">功能发布</a> </li>
                     <li><a onclick="manageJob()">定时Job</a> </li>
                     <li><a onclick="manageETLTask()">ETL任务</a> </li>                   
@@ -314,7 +314,7 @@ function openLevelOne(id, firstTime) {
                     <li><a onclick="logout()">注销登陆</a></li>
                     <li><a onclick='changePasswd()'>修改密码</a></li>                    
                     <li><a onclick="openMsgPage()">站内消息</a></li> 
-                    <li><a onclick="feedback2()">问题建议</a></li>
+                    <li><a onclick="feedback()">问题建议</a></li>
                     <li class="r8"><a href='http://www.boubei.com' target="_blank">卜贝官网</a></li>
                     <li class="ra"><a href='index.html' target="_blank">Admin</a></li>
                 </ul>

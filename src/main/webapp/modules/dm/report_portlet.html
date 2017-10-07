@@ -478,8 +478,9 @@ function shareData() {
     $.confirm(msg, "开始分享", 
                 function() { 
                     var targetChannel = 2, // 目标栏目
-                        title = encodeURI(globalValiable.title);
-                    parent.parent.openUrl('modules/cms/channel.html?channel=' +targetChannel+ '&title='+title ); 
+                        title = encodeURI(globalValiable.title),
+                        url = 'modules/cms/channel.html?channel=' +targetChannel+ '&title='+title;
+                    parent.parent.openUrl(url, true, "分享数据"); 
                 },
                 function() { return;}
             );

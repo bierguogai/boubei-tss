@@ -86,7 +86,7 @@ function initMenus() {
 		visible:function() {return (isReportGroup() || isTreeRoot()) && getOperation("2");}
 	}
 	var item32 = {
-		label:"新增录入表链接",
+		label:"新增数据表链接",
 		callback: recordAsReport,
 		icon: ICON + "record_0.png",
 		visible:function() {return (isReportGroup() || isTreeRoot()) && getOperation("2");}
@@ -372,11 +372,11 @@ function recordAsReport() {
 	var treeNode = tree.getActiveTreeNode();
 	var id  = treeNode.id, name = treeNode.name;
 
-    var params = {"_title": "链接录入表到【" + name + "】", 'treeType':'multi'};
+    var params = {"_title": "链接数据表到【" + name + "】", 'treeType':'multi'};
     popupTree(URL_RECORD_TREE, "SourceTree", params, function(target) {
     	$.post(URL_IMPORT_RECORD, {"reportGroup": id, "recordIds": target.join(",")}, function(msg) {
     		loadInitData();
-    		$.alert("成功链接录入表");
+    		$.alert("成功链接数据表");
     	});
     });
 }
@@ -653,7 +653,16 @@ function editParamConfig() {
 		}
 
     	fieldEl.onblur = function() {
-    		var newValue = fieldEl.value;
+    		var newValue;
+    		if( $(fieldEl).attr("type") == 'checkbox' ) { // checkbox
+				newValue = fieldEl.checked ? 'true' : "";
+				if(field == 'nullable') {
+					newValue = fieldEl.checked ? 'false' : "";
+				}
+			} else {
+				newValue = fieldEl.value;
+			}
+
 			if( $.isNullOrEmpty(newValue) ) {
 				if(field === 'label') {
 					return $(fieldEl).notice("参数名称不能为空");
