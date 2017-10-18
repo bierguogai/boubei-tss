@@ -77,6 +77,14 @@ function initMenus() {
 		},
 		visible:function() { return isRecord() && getOperation("2"); }
 	}
+	var item23 = {
+		label:"查看数据表定义",
+		callback: function() {
+			loadRecordDetail(false, "1", true);
+		},
+		icon: ICON + "icon_view.gif",
+		visible:function() { return isRecord() && getOperation("1") && !getOperation("2"); }
+	}
 	var item3 = {
 		label:"新增数据表",
 		callback: function() {
@@ -151,6 +159,7 @@ function initMenus() {
 	menu.addItem(item4);
 	menu.addItem(item21);
 	menu.addItem(item22);
+	menu.addItem(item23);
 	menu.addItem(item6);
 	menu.addItem(item9);
 	menu.addItem(item13);
@@ -201,7 +210,7 @@ function loadInitData() {
 	$.ajax({url : URL_SOURCE_TREE, onresult : onresult});
 }
 
-function loadRecordDetail(isCreate, type) { 
+function loadRecordDetail(isCreate, type, readonly) { 
 	var treeNode = $.T("tree").getActiveTreeNode();
 	var treeNodeID = treeNode.id;
 	type = type || treeNode.getAttribute("type") ;
@@ -230,8 +239,15 @@ function loadRecordDetail(isCreate, type) {
 			$1("closeRecordForm").onclick = function() {
 				closeRecordFormDiv();
 			}
-			$1("sourceSave").onclick = function() {
-				saveRecord(treeNodeID);
+
+			if(readonly) {
+				$("#sourceSave").hide();
+				xform.setEditable("false");
+			} 
+			else {
+				$("#sourceSave").show().click( function() {
+					saveRecord(treeNodeID);
+				});
 			}
 		},
 		onexception : function() { 

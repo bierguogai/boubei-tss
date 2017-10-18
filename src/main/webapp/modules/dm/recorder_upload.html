@@ -132,7 +132,7 @@ function delAttach() {
     $.confirm("您确定要删除该附件吗？", "删除确认", function(){
         var attachId = $.G("attachGrid").getColumnValue("id"); 
         $.ajax({
-            url: URL_ATTACH_DELETE + attachId,
+            url: URL_ATTACH_DELETE + attachId + "?recordId=" + tableId,
             method: 'DELETE',
             waiting: true,
             onsuccess: function() {

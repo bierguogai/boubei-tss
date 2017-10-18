@@ -1,5 +1,6 @@
 # 登陆页保持不变
 # mv src/main/webapp/login.html src/main/webapp/login.htm
+mv src/main/webapp/WEB-INF/web.xml src/main/webapp/WEB-INF/web.xml0
 
 cp -r ../boubei-tss/src/main/webapp/  src/main/webapp/
 
@@ -18,6 +19,7 @@ cp -r ../boubei-tss/target/tss-all.jar  tools/
 mv tools/tss-all.jar  tools/tss-4.4.jar
 
 # mv -f src/main/webapp/login.htm src/main/webapp/login.html
+mv src/main/webapp/WEB-INF/web.xml0 src/main/webapp/WEB-INF/web.xml
 
 rm -rf temp
 rm -rf upload

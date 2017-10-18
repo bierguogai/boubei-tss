@@ -102,6 +102,9 @@ function query() {
     }
 
     tssJS.getJSON(json_url('visit-summary'), params, function(data){
+        data.push([]);
+        data.push([]);
+        data.push([]);
         $('#t1').datagrid({
             fit : true,
             fitColumns : true,
@@ -272,11 +275,6 @@ function showChart(serviceName, type) {
         };
         chartObj.setOption(option);             
 
-        // $("#main").layout("expand", "west");  
-        // setTimeout(function() {
-        //     $("#main").layout("collapse", "west");  
-        // }, 5000);
-
     }, "POST", wainting);
 }
 
@@ -366,9 +364,19 @@ var nextDay = subDateS(toDate(today), -1);
         field.align = field.align||"center";
     });
 
-    showRunning();
-    setInterval(showRunning, 5*1000);
+    $('#t3').datagrid({
+            fit : true,
+            fitColumns : true,
+            rownumbers : true,
+            remoteSort : false,
+            multiSort: true,
+            nowrap: false,
+            sortName : "datasource,hitLong",
+            sortOrder : "asc,desc",
+            columns : [FIELDS_3]
+        });
 
+    setInterval(showRunning, 5*1000);
     function showRunning() {
         tssJS.getXML("/tss/cache/list/SHORT", {}, function(xml) {
             var rootNode = xml.documentElement;
@@ -427,18 +435,7 @@ var nextDay = subDateS(toDate(today), -1);
             qcList.push(item);
         }) ;
 
-        $('#t3').datagrid({
-            fit : true,
-            fitColumns : true,
-            rownumbers : true,
-            remoteSort : false,
-            multiSort: true,
-            nowrap: false,
-            sortName : "datasource,hitLong",
-            sortOrder : "asc,desc",
-            columns : [FIELDS_3],
-            data: qcList
-        });
+        $('#t3').datagrid("loadData", qcList);
     }
 
 </script>
