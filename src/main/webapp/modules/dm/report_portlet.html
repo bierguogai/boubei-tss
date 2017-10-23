@@ -22,7 +22,6 @@ html, body { height: 100%; }
 body { width:100%; overflow: hidden; }
 #t1 { height: 100%; width: 100%; }
 #gridContainer { vertical-align: top; }
-.leftbar { left: -20px; border-right: 1px solid transparent; }
 
 #subscribeV { display:none; width: 600px; min-height: 200px;
     background-color: #fff; font-size: 13px; color: #555; 
@@ -73,7 +72,7 @@ body { width:100%; overflow: hidden; }
 .rbar>ul>li.item>a:hover .tip { display:block; }
 .rbar>ul>li.item>a>.tip>div { position:absolute; right:-6px; top:0; color:#c81623; }
 
-#tip1 { width:599px; min-height:320px; top:-18px; left:-601px; background:#fff; border-radius: 5px 0 0 5px; z-index: 9999; }
+#tip1 { width:599px; min-height:320px; top:-18px; left:-601px; background:#fff; border-radius: 5px 0 0 5px; z-index: 9999;}
 #tip1>div, #tip2>div, #tip3>div { top: 30px; color: #E4F0F8; }
 #tip1>iframe { border:solid 1px #E0ECFF; width: 600px; height: 320px; border-radius: 5px 0 0 5px; }
 #x6 { display: none; }
@@ -120,6 +119,12 @@ body { width:100%; overflow: hidden; }
         </div> 
       </a> 
     </li>
+    <li class="item" id="li3"> 
+      <a href="javascript:void(0)" onmouseover="showQueryForm();" > 
+        <div class="icon icon-search"></div>
+      </a> 
+    </li>
+
     <li class="line"></li>
     <li class="item" id="li2"> 
       <a href="javascript:void(0)"> 
@@ -215,11 +220,10 @@ body { width:100%; overflow: hidden; }
 var IS_TEST = (location.protocol === 'file:');
 
 var refresh  = $.Query.get("refresh");
-var leftBar  = $.Query.get("leftBar"); 
 var reportId = $.Query.get("id") || 497; 
 var fixedParams;
 
-/* http://localhost:8088/tss/modules/dm/report_portlet.html?leftBar=true&refresh=3&id=501&param1=today-10
+/* http://localhost:8088/tss/modules/dm/report_portlet.html?refresh=3&id=501&param1=today-10
    从邮件里打开 或 从文章里打开 */
    
 var index = 100;  // 最多100个参数
@@ -307,17 +311,16 @@ function init() {
             // 报表说明
             if( defines[5]) {
                 $("#tip3 pre").html( defines[5].replace(/【/g, "\n") );
+            } else {
+                $("#li2").hide();
             }
 
             // 自定义的通用查询条件界面
-            if( defines[6] && defines[6].trim() ) { 
-                if(defines[6].indexOf("no-need") >= 0) {
-                    $("#li1").hide();
-                    return initPortlet();
-                } 
-                else {
-                    $("#tip1>iframe").attr("src", defines[6]);
-                }               
+            if( defines[6] && defines[6].indexOf(".htm") > 0) { 
+                $("#tip1>iframe").attr("src", defines[6]);           
+            } else {
+                $("#li1").hide();
+                return initPortlet();
             }
 
             if( !parent.conditionReady ) {
@@ -360,13 +363,9 @@ function initPortlet() {
                 allReady = false;
             }
         });
-
-        leftBar && $.leftbar( showQueryForm );
-        window.parent.$ && window.parent.$("#panel" + reportId).find(".setQuery").click(showQueryForm);
     }
-    else { // 隐藏打开查询条件框的开关
-        $(".leftbar").hide();
-        window.parent.$ && window.parent.$("#panel" + reportId).find(".setQuery").hide();
+    else { // 没有配置参数，则隐藏打开查询条件框的开关
+        $("#li3").hide();
     }
     
     if(allReady) {
@@ -404,7 +403,7 @@ function showQueryForm(_params) {
 
     var formId = "searchFormDiv";
     if( $.cache.XmlDatas["searchFormXML"] ) {
-        $("#" + formId).show(true).center();
+        $("#" + formId).show(true);
         updateParams();
         return;
     }
@@ -418,7 +417,7 @@ function showQueryForm(_params) {
     }
 
     var searchForm = genQueryForm(globalValiable.title, globalValiable.define);
-    $searchForm.center();
+    $searchForm.css('right', '29px').css('left', 'auto').css('top', '58px');
     updateParams();   
 
     $searchForm.find(".btSearch").click( function () {
@@ -640,11 +639,15 @@ function queryCollected() {
 }
 
 // 点赞
+var OP_TYPES = ["操作","收藏","点赞","差评"];
 function dianzan(type) {
     $.ajax({
         url: "/tss/auth/rp/zan/" +reportId+"/"+type,
+        headers: {"noAlert": true},
         onsuccess: function() {
             getZanNum(type);
+            $.tip( OP_TYPES[type] + "成功，您还可以通过【反馈异常】进一步提供您宝贵的意见！");
+            $("#alert_box").css("right", "28px")
         }
     });
 }
@@ -655,7 +658,7 @@ function getZanNum(type) {
 }
 
 function openReport(id, name) {
-    var url = "/tss/modules/dm/report_portlet.html?leftBar=true&id=" + id;
+    var url = "/tss/modules/dm/report_portlet.html?id=" + id;
     parent.addTab(name, url);
 }
 

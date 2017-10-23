@@ -886,6 +886,9 @@ WorkSpace\:Box WorkSpace\:PageStep .tssbutton {
 #alert_box .prompt {
   background: url(../img/alert/help.gif) no-repeat 20px 14px;
 }
+#alert_box .tip {
+  background: url(../img/alert/info.gif) no-repeat 20px 18px;
+}
 #alert_box .content {
   padding: 20px 12px 10px 12px;
 }

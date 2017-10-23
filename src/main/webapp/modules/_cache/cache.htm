@@ -17,6 +17,9 @@
 #poolHitRate:hover { cursor: pointer; }
 #poolsGrid td>b { color: blue; font-size: 16px; }
 #poolsGrid td[title="停用"] { color: red; font-weight: bold; }
+#btbox { margin-left: 20px; display: inline-block; }
+#btbox>input { margin-left: 3px; }
+.refreshTreeBT { right: 10px; }
   
 </style>
 
@@ -47,16 +50,14 @@
 		URL_CACHE_INIT   = "data/_success.xml?";
 		URL_VIEW_ITEM    = "data/item.xml?";
 	}	
-	 
+
 	/*页面初始化 */
 	function init() {
 		initMenus();
 		initEvents();
-		$(".refreshTreeBT").click(function() { 
-			loadInitData();
-			loadInitGrid();
-			$("#poolHitRate").html("");
-		});
+
+		closePalette();
+		$("div.leftbar").hide();
 
 		var panel = $.createElement("div", "panel", "cacheStrategyDiv");
     	document.body.appendChild(panel);   	
@@ -64,8 +65,8 @@
     	$panel.css("width", "580px").css("height", "350px").center().hide();
 	    $panel.panel("维护缓存策略", '<div id="cacheStrategy"></div><div class="bts"><button class="tssbutton blue medium" onclick="editCacheStrategy()">保存策略</button></div>', false);
 
-		loadInitData();
 		loadInitGrid();
+		$(".refreshTreeBT").click( loadInitGrid );
 
 		window.setInterval(function() {
 			if( !$("#poolHitRate").html() ) {
@@ -73,52 +74,38 @@
 			}
 		}, 1000 * 10);  // 每10秒刷新一次
 	}
- 
-	/* 页面初始化加载数据(包括工具条、菜单树) */
-	function loadInitData() {
-		$.ajax({
-			url : URL_INIT_TREE, 
-			onresult : function() {					
-				var tree = $.T("tree", this.getNodeValue(XML_MAIN_TREE)); 
-				tree.onTreeNodeDoubleClick = function(ev) {
-					showCachePools();
-				}
-				tree.onTreeNodeRightClick = function(ev) {
-					onTreeNodeRightClick(ev);
-	            }
-			}
-		});
-	}
 
-	// 初始化右边Grid
+	// 初始化缓存池Grid
 	function loadInitGrid() {
 		$.ajax({
 			url : URL_INIT_GRID, 
 			onresult : function() {
 				$.G("poolsGrid", this.getNodeValue(XML_MAIN_GRID)); 
 				$("#poolHitRate").html("");	
+				$("#btbox, #gridToolBar").hide();
+
+				initMenus();
+				currCode = currName = null;
 			}
 		});
 	}
 
+	var currCode, currName;
 	function initMenus() {
+		// 只有管理员能管理缓存池
+		if( !(window.parent.roles||[-1]).contains(-1) ) return;
+
 		var item1 = {
 			label:"查看缓存池明细",
-			callback:showCachePools,
+			callback: function() { showCachePools(); },
 			icon:"images/view.gif"
 		}
 		var item2 = {
-			label:"初始化缓存池",
-			callback:initCache,
-			icon:"images/init.gif",
-			visible:function() {return getTreeAttribute("released") == "1";}
+			label:"重置缓存池",
+			callback: function() { resetCache(); },
+			icon:"images/init.gif"
 		}
 		var item3 = {
-			label:"清空缓存池",
-			callback:clearCache,
-			icon:"images/clear.gif"
-		}
-		var item4 = {
 			label:"维护缓存策略",
 			callback: function() { showCachePools(1, true); },
 			icon:"images/edit.gif"
@@ -126,55 +113,59 @@
 
 		var menu = new $.Menu();
 		menu.addItem(item1);
-		menu.addItem(item4);
 		menu.addItem(item2);
 		menu.addItem(item3);
 
-		$1("tree").contextmenu = menu;
+		var gridEl = $1("poolsGrid");
+		gridEl.contextmenu = menu;
+
+		gridEl.onRightClickRow = function() {
+			gridEl.contextmenu.show(event.clientX, event.clientY);
+		}
+	}
+
+	function getPoolCode() {
+		var grid = $.G("poolsGrid");
+		currCode = grid.getColumnValue("code");  
+		currName = grid.getColumnValue("name");  
+
+		return currCode;
 	}
  
-	/* 初始化缓存池  */
-	function initCache() {
+	/* 清空并重新初始化缓存池  */
+	function resetCache(code) {
 		hideStrategy();
-		
-		var treeNode = getActiveTreeNode();
-		if ( treeNode ) {
-			$.ajax({
-				url : URL_CACHE_INIT + treeNode.id,
-				onsuccess : function() {
-					treeNode.setAttribute("released", "0");
-					showCachePools();
-				}
-			});
-		}
+
+		code = code || getPoolCode();  
+		$.ajax({
+			url : URL_CACHE_CLEAR + "/" + code,
+			onsuccess : function() {
+				initCache(code);
+			}
+		});
 	}
 
-	/* 清空缓存池  */
-	function clearCache() {
-		hideStrategy();
-
-		var treeNode = getActiveTreeNode();
-		if ( treeNode ) {
-			$.ajax({
-				url : URL_CACHE_CLEAR + "/" + treeNode.id,
-				onsuccess : function() {
-					treeNode.setAttribute("released", "1");   
-					showCachePools();
-				}
-			});
-		}
+	/* 初始化缓存池  */
+	function initCache(code) {
+		$.ajax({
+			url : URL_CACHE_INIT + code,
+			onsuccess : function() {
+				showCachePools();
+			}
+		});
 	}
 
 	/*
 	 *	缓存池详细信息 
-	 *	参数：	string: page                页码
-			boolean: isShowStrategy    false: 只刷新grid列表
+	 *	参数：string: page              页码
+			 boolean: isShowStrategy   false: 只刷新grid列表
 	 */
 	function showCachePools(page, isShowStrategy) {
-		var tree = $.T("tree");
-		var treeNode = tree.getActiveTreeNode();
+		var code = currCode || getPoolCode();  
+		var name = currName;
+
 		$.ajax({ 
-			url: URL_CACHE_DETAIL + treeNode.id, 
+			url: URL_CACHE_DETAIL + code, 
 			onresult: function() {
 				var strategyXML = this.getNodeValue(XML_CACHE_STRATEGY);
 				if( strategyXML ) {
@@ -194,8 +185,9 @@
 				
 				//设置点击率
 				var hitRateData = this.getNodeValue(XML_HIT_RATE);
-				var title = "『 " + treeNode.name + " -- 命中率：" + hitRateData + " 』";
+				var title = "『 " + name + " -- 命中率：" + hitRateData + " 』";
 				$("#poolHitRate").html(title).click( showStrategy );
+				$("#btbox, #gridToolBar").show();
 			}
 		});
 	}
@@ -241,7 +233,7 @@
 	/* 查看缓存项信息  */
 	function showItemInfo() { 
 		var itemKey = $.G("poolsGrid").getColumnValue("key");
-		var poolCode = getTreeNodeId();
+		var poolCode = currCode;
 
 		var url = URL_VIEW_ITEM + "/" + poolCode + "?key=" + itemKey;
 		window.open(url, "查看缓存项信息", "");
@@ -249,7 +241,7 @@
 
 	function removeCacheItem() {
 		var itemKey = $.G("poolsGrid").getColumnValue("key");
-		var poolCode = getTreeNodeId();
+		var poolCode = currCode;
 		$.ajax({
 			url : URL_VIEW_ITEM + "/" + poolCode + "?key=" + itemKey,
 			method : "DELETE",
@@ -290,41 +282,39 @@
 
 <body>
 
-	<!-- 版面 开始 -->
-	<table class="panel">
-	  <tr class="header"> <td/><td/><td/><td/> </tr>
-	  <tr class="body"> 
-		<td/>
-		<td id="palette">
-		  <div>
-		  	<div class="bar">
-				<span class="icon"></span>缓存池
-				<span class="refreshTreeBT"></span>
-			</div>
-			<Tree id="tree"><div class="loading"></div></Tree>
-		  </div> 
-		</td>
-		<td class="groove">
-			<table>
-				<tr> 
-					<td id="gridTitle">
-						<span class="icon"></span>缓存池明细
-						<span id="poolHitRate"></span>
-						<span class="buttonBox" id="gridToolBar"></span>
-					</td> 
-				</tr>
-				<tr> 
-					<td id="gridContainer"> 
-						<Grid id="poolsGrid"></Grid> 
-					</td> 
-				</tr>
-			</table>                            
-		</td>
-		<td/>
-	  </tr>
-	  <tr class="footer"> <td/><td/><td/><td/> </tr>
-	</table>
-	<!-- 版面 结束 -->
+<!-- 版面 开始 -->
+<table class="panel">
+  <tr class="header"> <td/><td/><td/><td/> </tr>
+  <tr class="body"> 
+	<td/>
+	<td id="palette">
+	</td>
+	<td class="groove">
+		<table>
+			<tr> 
+				<td id="gridTitle">
+					<span class="icon"></span>缓存池
+					<span class="refreshTreeBT"></span>
+					<span id="poolHitRate"></span>
+					<span class="buttonBox" id="gridToolBar"></span>
+					<span id="btbox">
+					  	<input type="button" class="tssbutton small blue" value="返 回" onclick="loadInitGrid()"/>
+					  	<input type="button" class="tssbutton small blue" value="重 置" onclick="resetCache(currCode)"/>
+					</span>
+				</td> 
+			</tr>
+			<tr> 
+				<td id="gridContainer"> 
+					<Grid id="poolsGrid"></Grid> 
+				</td> 
+			</tr>
+		</table>                            
+	</td>
+	<td/>
+  </tr>
+  <tr class="footer"> <td/><td/><td/><td/> </tr>
+</table>
+<!-- 版面 结束 -->
 
 </body>
 </html>

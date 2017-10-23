@@ -83,7 +83,7 @@ table {
   margin-right: 6px;
   background: url(../images/icon_title.gif) no-repeat center;
 }
-#palette > div .bar .refreshTreeBT {
+.refreshTreeBT {
   position: absolute;
   top: 4px;
   right: 2px;
