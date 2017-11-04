@@ -71,10 +71,11 @@ function initMenus() {
 		visible:function() { return isRecordGroup() && getOperation("2"); }
 	}
 	var item22 = {
-		label:"修改数据表",
+		label:"修改数据表定义",
 		callback: function() {
 			loadRecordDetail(false, "1");
 		},
+		icon: ICON + "icon_define.gif",
 		visible:function() { return isRecord() && getOperation("2"); }
 	}
 	var item23 = {
@@ -84,6 +85,13 @@ function initMenus() {
 		},
 		icon: ICON + "icon_view.gif",
 		visible:function() { return isRecord() && getOperation("1") && !getOperation("2"); }
+	}
+	var item24 = {
+		label:"测试数据表",
+		callback: function() {
+			window.open( "recorder.html?id=" + getTreeNodeId() );
+		},
+		visible:function() { return isRecord() && getOperation("2"); }
 	}
 	var item3 = {
 		label:"新增数据表",
@@ -160,6 +168,7 @@ function initMenus() {
 	menu.addItem(item21);
 	menu.addItem(item22);
 	menu.addItem(item23);
+	menu.addItem(item24);
 	menu.addItem(item6);
 	menu.addItem(item9);
 	menu.addItem(item13);

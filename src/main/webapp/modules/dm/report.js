@@ -78,7 +78,7 @@ function initMenus() {
 		visible:function() { return !isTreeRoot() && getOperation("2"); }
 	}
 	var item3 = {
-		label:"新增报表",
+		label:"新增报表（服务）",
 		callback: function() {
 			openReportDefine(true, false, "1");
 		},
@@ -396,16 +396,16 @@ function testRestfulReportService() {
 	}
 
 	function sendAjax(params) {
-		$.ajax({
-			url : url,
-			method : "POST",
-			params : params,
-			type : "json",
-			waiting : true,
-			ondata : function() { 
-				alert(this.getResponseText(), "调试接口：" + url + "，返回结果：");
+		$.getJSON(url, params, function(data) { 
+				var result = "执行接口调用脚本:<br>";
+				result += "$.getJSON('" + url + "', " + JSON.stringify(params||{});
+				result += ", function(data) { alert(data.length); });<br>";
+				result += "返回JSON格式数据:<br>"
+				result += JSON.stringify(data);
+
+				alert(result, "调试数据服务接口：" + url);
 			}
-		});
+		);
 	}
 }
 

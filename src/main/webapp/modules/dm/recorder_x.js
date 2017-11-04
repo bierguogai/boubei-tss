@@ -47,7 +47,7 @@ function checkRole(roles) {
 }
 
 function isInt(x) {
-    return /^[1-9]+[0-9]*]*$/.test(x)
+    return /^-?[1-9]+[0-9]*]*$/.test(x)
 }
 
 /** 

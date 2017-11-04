@@ -184,7 +184,8 @@ function _search() {
 
     var resource = tssJS("#resource").value();
     if(resource == 'Article') {
-        window.open( "/tss/searchResult.portal?1=1&searchStr=" + escape(key) );
+    	var boubeiSite = 1; // CMS站点ID
+        window.open( "/tss/searchResult.portal?siteId=" +boubeiSite+ "&searchStr=" + escape(key) );
     } 
     else {
         var params = {};
@@ -223,7 +224,7 @@ function _search() {
 }
 
 function showSearchDialog() {
-	$('#dlg').dialog( {"modal": true} ).dialog('open').dialog('setTitle', "内容|功能检索");
+	$('#dlg').dialog( {"modal": true} ).dialog('open').dialog('setTitle', "内容|功能|目录检索");
 }
     </script>
 

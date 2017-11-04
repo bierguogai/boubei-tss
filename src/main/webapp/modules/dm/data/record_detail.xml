@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?><Response><SourceInfo>
 <xform>
 	<declare>	
-		<column name="id"     caption="录入表ID"  mode="number" editable="false"/>
-		<column name="name"   caption="录入表名" maxLength="30" empty="false"/>
+		<column name="id"     caption="数据表ID"  mode="number" editable="false"/>
+		<column name="name"   caption="数据表名" maxLength="30" empty="false"/>
 		<column name="datasource" caption="目标数据库" mode="combo" empty="false"/>
 		<column name="table"  caption="目标数据表" maxLength="100"/>
 		<column name="define" caption="表字段定义" maxLength="10000" empty="false"/>
@@ -10,7 +10,7 @@
 		<column name="customizeJS" caption="录入表单控制" maxLength="10000"/>
 		<column name="customizeTJ" caption="数据过滤条件" maxLength="1000"/>
 		<column name="customizeGrid" caption="全局JS" maxLength="4000"/>
-		<column name="remark" caption="录入表简介" maxLength="200"/>
+		<column name="remark" caption="数据表简介" maxLength="200"/>
 		<column name="needLog"  caption="记录更新日志" mode="combo" values="0|1" texts="否|是"/>
 		<column name="needFile" caption="是否上传文件" mode="combo" values="0|1" texts="否|是"/>
 		<column name="batchImp" caption="允许批量导入" mode="combo" values="0|1" texts="否|是"/>

@@ -128,6 +128,8 @@ function showNotice(id, title) {
 }
 
 tssJS(function(){
+    if( $("#notice").length == 0 ) return;
+    
     var request = new $.HttpRequest();
     request.url =  "/tss/auth/article/list/xml/" +notice_channel+ "/1/5/false";
     request.method = "GET";

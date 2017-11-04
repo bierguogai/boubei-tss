@@ -518,8 +518,6 @@ function subscribe() {
     $.getJSON("/tss/auth/rp/schedule?reportId=" +reportId+ "&self=true", {}, 
         function(scheduleInfo) {
             if(scheduleInfo && scheduleInfo.length >= 3) {
-                x[0].defaultValue = scheduleInfo[1];
-
                 var jobInfo = scheduleInfo[2].split(":");
                 x[1].defaultValue = jobInfo[2];
 
@@ -532,6 +530,8 @@ function subscribe() {
                         }
                     });
                 });
+
+                x[0].defaultValue = scheduleInfo[1].trim().split(" ")[2]; // "0 0 12 * * ?" ==> 12
             }   
 
             scheduleForm = $.json2Form("scheduleForm", x);
