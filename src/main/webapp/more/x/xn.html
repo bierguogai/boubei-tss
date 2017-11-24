@@ -168,7 +168,7 @@ function showDetail(serviceName) {
             rownumbers : true,
             remoteSort : false,
             columns : [ FIELDS_2[params.param5] ],
-            data: data.rows
+            data: data.rows || data
         }, "POST", true);
 
         tssJS("#x1").text( params.param1||"" );

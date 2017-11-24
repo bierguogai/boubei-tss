@@ -1,27 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1" />
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1" />
 
-    <title>洗车记账</title>
-    <link rel="stylesheet" href="../tools/easyui/themes/default/easyui.css">
-    <link rel="stylesheet" href="../tools/easyui/themes/mobile.css">
-    <link rel="stylesheet" href="../tools/easyui/themes/color.css">
-    <link rel="stylesheet" href="../tools/easyui/themes/icon.css">
+<title>营业记账</title>
+<link rel="stylesheet" href="../tools/easyui/themes/default/easyui.css">
+<link rel="stylesheet" href="../tools/easyui/themes/mobile.css">
+<link rel="stylesheet" href="../tools/easyui/themes/color.css">
+<link rel="stylesheet" href="../tools/easyui/themes/icon.css">
 
-    <script src="../tools/tssJS/tssJS.all.js"></script>
-    <script src="../tools/tssJS/tssJS.data.js"></script>
-    <script src="../tools/util_date.js"></script>
-    <script src="js/mobile.js"></script>
+<script src="../tools/tssJS/tssJS.all.js"></script>
+<script src="../tools/tssJS/tssJS.data.js"></script>
+<script src="../tools/util_date.js"></script>
+<script src="js/mobile.js"></script>
 
-    <script src="../tools/easyui/jquery.min.js"></script>
-    <script src="../tools/easyui/jquery.easyui.min.js"></script>
-    <script src="../tools/easyui/jquery.easyui.mobile.js"></script>
-    <script src="../tools/easyui/easyui-lang-zh_CN.js"></script>
+<script src="../tools/easyui/jquery.min.js"></script>
+<script src="../tools/easyui/jquery.easyui.min.js"></script>
+<script src="../tools/easyui/jquery.easyui.mobile.js"></script>
+<script src="../tools/easyui/easyui-lang-zh_CN.js"></script>
 
-    <style type="text/css">
+<script src="../tools/easyui.js"></script>
+
+
+<style type="text/css">
 
 input[disabled], textarea[disabled], input[readonly], textarea[readonly] { background-color: #eee; }
 
@@ -32,10 +35,10 @@ input[disabled], textarea[disabled], input[readonly], textarea[readonly] { backg
 #f1>div input { width: 85%; font-size: 1rem; }  /* 防止input一输入界面就放大, font-size小于1rem也不行 */
 #f1>div a.easyui-linkbutton { width:46%; }
 
-    </style>
+</style>
 
 </head>
-<body>
+<body style="max-width:600px;">
 
     <div class="easyui-navpanel" id="p0" style="position:relative;padding:15px">
         <header>
@@ -62,16 +65,16 @@ input[disabled], textarea[disabled], input[readonly], textarea[readonly] { backg
                 <input type="hidden" id="_id"/>
             </div>
             <div>
-                <input class="easyui-numberbox" label="收费：" style="width:50%; min-width:160px;" id="_fee">
+                <input class="easyui-numberbox" label="数量：" style="width:50%; min-width:150px;" id="_qty">
             </div>
             <div>
-                <input class="easyui-textbox" label="车品牌：" style="width:70%; min-width:280px;" id="_carbrand">
+                <input class="easyui-numberbox" label="收费：" style="width:50%; min-width:150px;" id="_fee">
             </div>
             <div>
-                <input class="easyui-textbox" label="车型：" style="width:70%; min-width:280px;" id="_cartype">
+                <input class="easyui-textbox" label="业务员：" style="width:70%; min-width:250px;" id="_salesman">
             </div>
             <div>
-                <input class="easyui-textbox" label="车牌号：" style="width:70%; min-width:280px;" id="_carno">
+                <input class="easyui-textbox" label="客户：" style="width:70%; min-width:250px;" id="_customer">
             </div>
             <div>
                 <input class="easyui-textbox" label="备注：" id="_remark">
@@ -132,13 +135,21 @@ input[disabled], textarea[disabled], input[readonly], textarea[readonly] { backg
     </div>
 
     <script>
+
+var orderTable = 's_order', itemTable = 's_price_list';
+ORDER = record_urls(orderTable);
+ITEM = record_urls(itemTable);
+
+var orderFields = [ "day", "item", "qty", "fee", "salesman", "customer", "remark"];
+
 var dg1, dg2;
 
 var FIELDS_1 = [
     { field: 'day', title: '日期', width: 90, align: "center", sortable: true},
-    { field: 'item', title: '项目', width: 110, align: "center", sortable: true},
+    { field: 'item', title: '商品服务', width: 100, align: "center", sortable: true},
+    { field: 'qty', title: '数量', width: 50, align: "center"},
     { field: 'fee', title: '收费', width: 60, align: "right", sortable: true},
-    { field: 'carno', title: '车牌号', width: 90, align: "center"}
+    { field: 'customer', title: '客户', width: 80, align: "center"}
 ];
 
 var FIELDS_2 = [
@@ -204,10 +215,9 @@ function subDay(days) {
 
 function goP0( row, init ) {
     $.mobile.go('#p0','slide','right');  // $.mobile.back();
-   
-    var fields = [ "day", "item", "fee", "carbrand", "cartype", "carno", "remark"];
+
     if(row){
-        fields.each(function(i, f) {
+        orderFields.each(function(i, f) {
             $("#_" + f).textbox("setValue", row[f]);
         });
         tssJS("#_id").value( row.id );
@@ -227,7 +237,7 @@ function goP3() {
 }
 
 function listItem() {
-    $.getJSON("/tss/data/json/select_list", {"param1": "car_mr_item"}, function(data) { 
+    $.getJSON(ITEM.QUERY, {}, function(data) { 
         data.each(function(i, item) {
             var li = tssJS.createElement("li");
             li.fee = item.fee;
@@ -245,9 +255,8 @@ function selectItem(item) {
 
 function save() {
     var params = {};
-    var fields = [ "day", "item", "fee", "carbrand", "cartype", "carno", "remark"];
 
-    fields.each(function(i, f) {
+    orderFields.each(function(i, f) {
         params[f] = $("#_" + f).textbox("getValue");
     });
 
@@ -257,15 +266,15 @@ function save() {
 
     var id = tssJS("#_id").value();
     if(!id) {
-        tssJS.post('/tss/auth/xdata/rid/48', params, 
-            function(newID){
+        $.post(ORDER.CREATE, params, 
+            function(result){
                 refreshToday();
             }
         );
     }
     else {
         tssJS.ajax({
-            url: '/tss/auth/xdata/48/' + id,
+            url: ORDER.UPDATE + id,
             params : params,
             headers : {"noAlert": true },
             onsuccess : function(){
@@ -291,11 +300,11 @@ function loadDay( days, _day ) {
     }
     var dayVal = "[" + currDay + "," + currDay + "]";
 
-    tssJS.getJSON( "/tss/auth/xdata/json/48/1", {"rows": 100, "day": dayVal}, 
+    tssJS.getJSON( ORDER.QUERY, {"rows": 100, "day": dayVal}, 
         function(data) {
             var foot = {'day': '合计', 'fee': 0};
 
-            data.each(function(i, item) {
+            (data.rows||data).each(function(i, item) {
                 item.day = item.day.split(" ")[0];
                 foot.fee += item.fee;
             });
@@ -323,7 +332,7 @@ function loadMon( mons ) {
 
     var dayVal = "[" + currMonFirstDay + "," + currMonLastDay + "]";
 
-    tssJS.getJSON( "/tss/data/json/710?noCache=true", {"param1": currMonFirstDay, "param2": currMonLastDay}, 
+    tssJS.getJSON( json_url(19) + "?noCache=true", {"param1": currMonFirstDay, "param2": currMonLastDay}, 
         function(data) {
             var foot = {'day': '合计', 'fee': 0}, _data = [];
 

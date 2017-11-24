@@ -22,16 +22,13 @@ public class Snapshot extends AbstractRecordTable {
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "snapshot_sequence")
     private Long id; 
 	
-	@Lob
-	@Column(nullable = false)
-	private String key;
+	@Column(nullable = false, length = 1000)
+	private String ikey;
 	
 	@Lob
 	@Column(nullable = false)
-	private String value;
+	private String ivalue;
 	
-	private String cacheLife; // @see CacheLife
-
 	public Long getId() {
 		return id;
 	}
@@ -40,31 +37,23 @@ public class Snapshot extends AbstractRecordTable {
 		this.id = id;
 	}
 
-	public String getKey() {
-		return key;
-	}
-
-	public void setKey(String key) {
-		this.key = key;
-	}
-
-	public String getValue() {
-		return value;
-	}
-
-	public void setValue(String value) {
-		this.value = value;
-	}
-
-	public String getCacheLife() {
-		return cacheLife;
-	}
-
-	public void setCacheLife(String cacheLife) {
-		this.cacheLife = cacheLife;
-	}
-
 	public Serializable getPK() {
 		return this.getId();
+	}
+
+	public String getIkey() {
+		return ikey;
+	}
+
+	public void setIkey(String ikey) {
+		this.ikey = ikey;
+	}
+
+	public String getIvalue() {
+		return ivalue;
+	}
+
+	public void setIvalue(String ivalue) {
+		this.ivalue = ivalue;
 	}
 }

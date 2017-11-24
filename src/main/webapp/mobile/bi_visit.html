@@ -89,10 +89,10 @@ function query1() {
 
 	$.getJSON(
         json_url("visit-trend"), 
-        { "param3": 'today-0', "param5": 'd'},
+        { "param3": 'today-0', "param5": 'd', 'param6': '1'},
         function(result) { 
 			var row = result.length ? result[0] : {};
-			tssJS("#header>div:nth-child(1)>div>b").html( row["访问次数"]||0 );
+			tssJS("#header>div:nth-child(1)>div>b").html( row["v2"]||0 );
 			tssJS("#_h1").html( row["访问人数"]||0 );
         }
    );
@@ -127,7 +127,7 @@ function showByDay(day) {
 
 	$.getJSON(
         json_url("visit-trend"), 
-        { "param3": day, "param4": subDateS(toDate(day), -1), "param5": 'H'},
+        { "param3": day, "param4": subDateS(toDate(day), -1), "param5": 'H', 'param6': '1'},
         function(result) { 
         	var data = [];
 			tssJS.each(result, function(i, item){
@@ -135,7 +135,7 @@ function showByDay(day) {
 				var row = tssJS.createElement("tr");
 				tssJS(row).html("<td/><td/><td/><td/>");
 				tssJS("td:nth-child(1)", row).html( item["name"] );
-				tssJS("td:nth-child(2)", row).html( item["访问次数"] );
+				tssJS("td:nth-child(2)", row).html( item["v2"] );
 				tssJS("td:nth-child(3)", row).html( item["访问人数"] );
 				tssJS("td:nth-child(4)", row).html( item["value"] );
 
@@ -146,17 +146,17 @@ function showByDay(day) {
 }
 
 function query2() {
-	var labels = genLabels(8);
+	var labels = genLabels(7);
 
 	$.getJSON(
         json_url("visit-trend"), 
-        { "param3": 'today-8', "param5": 'd'},
+        { "param3": 'today-8', "param5": 'd', 'param6': '1'},
         function(result) { 
         	var values = [0, 0, 0, 0, 0, 0, 0, 0];
 			tssJS.each(result, function(i, item) {
 				tssJS.each(labels, function(j, label) {
 					if(label === item.name) {
-						values[j] = item["访问次数"];
+						values[j] = item["v2"];
 					}
 				});
 			});
