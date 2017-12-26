@@ -48,6 +48,10 @@ var Field = function(info) {
 				this.checkReg = this.checkReg || "^(-?\\d+)(\\.\\d+)?$"; // 浮点数
 				this.errorMsg = this.errorMsg || "请输入数字";
 				break;
+			case "int":
+				this.checkReg = this.checkReg || "^(-?\\d+)$"; // 整数
+				this.errorMsg = this.errorMsg || "请输入整数";
+				break;
 			case "string":
 			case "combo":
 			case "combotree":
@@ -85,9 +89,11 @@ var Field = function(info) {
 				this.options = {"codes": "", "names": ""};
 			}
 			if(this.options) {
+				// 如果只有Code列表
+				this.options.names = this.options.names || this.options.codes;
+
 				if (this.options.codes == "year") {
 					this.options.codes = '2010|2011|2012|2013|2014|2015|2016|2017|2018|2019|2020|2021|2022|2023|2024';
-					this.options.names = '2010|2011|2012|2013|2014|2015|2016|2017|2018|2019|2020|2021|2022|2023|2024';
 				}
 				if (this.options.codes == "month") {
 					this.options.codes = '1|2|3|4|5|6|7|8|9|10|11|12';
@@ -240,8 +246,8 @@ var Field = function(info) {
 
 	$.vt = function(item, text, value) {
 		var result = {};
-		result.value = item[value] || item.id   || item.pk   || item.value || item[0] || item.name || '';
-		result.text  = item[text] || item.name || item.text || item.value || item[2] || item[1] || item[0] || '';
+		result.value = item[value] || item.value || item.name || item.id    || item[0] || '';
+		result.text  = item[text]  || item.name  || item.text || item.value || item[2] || item[1] || item[0] || '';
 		return result;
 	};
 

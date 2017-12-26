@@ -502,7 +502,12 @@ function editFieldConfig() {
 
 		if( field === 'options' ) {
 			if(fieldValue.codes) {
-				fieldValue = fieldValue.codes + ',' + fieldValue.names;
+				var names = fieldValue.names;
+
+				fieldValue = fieldValue.codes;
+				if( names ) {
+					fieldValue += ',' + names;
+				}
 			}
 			else if( valuesMap['jsonUrl'] ) {
 				fieldValue = valuesMap['jsonUrl']
@@ -547,6 +552,9 @@ function editFieldConfig() {
 				delete valuesMap[field];
 			}
 			else {
+				if(field === 'label') {
+					newValue = newValue.replace(/\|/g, ""); // 过滤名称里的特殊字符:|
+				}
 				if(field === 'code') {
 					newValue = newValue.trim().toLowerCase(); // code 不能有空格
 				}
@@ -562,15 +570,18 @@ function editFieldConfig() {
     		if(field === 'options') {
     			if( newValue ) {
 	    			newValue = newValue.replace(/，/ig, ',') // 替换中文逗号
-	    			if(newValue.indexOf('|') < 0 && newValue.indexOf(',') < 0) {
+	    			if( newValue.indexOf('|') < 0 ) { // 必须要两个或以上选项，否则当做jsonUrl
 	    				delete valuesMap['options'];
 	    				valuesMap['jsonUrl'] = newValue;
 	    			}
 	    			else {
 		    			delete valuesMap['jsonUrl'];
 						var tmpArray = newValue.split(",");
-						var names = (tmpArray.length > 1 ? tmpArray[1] : tmpArray[0]);
-		    			valuesMap['options'] = {"codes": tmpArray[0], "names": names};
+						valuesMap['options'] = {"codes": tmpArray[0]};
+
+						if(tmpArray.length > 1) {
+							valuesMap['options'].names = tmpArray[1];
+						} 
 		    		}
 		    	} else {
 		    		delete valuesMap['options'];

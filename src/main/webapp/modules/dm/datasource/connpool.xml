@@ -9,8 +9,8 @@
 		<column name="poolSize"  caption="最大连接个数" mode="number" inputReg="^\d*$" empty="false" errorMsg="请填入整数数字"/>
 		
 		<column name="driver"  caption="数据库连类型" empty="false" mode="combo" 
-			values="com.mysql.jdbc.Driver|oracle.jdbc.driver.OracleDriver" 
-			texts="MySQL|Oracle"/>
+			values="com.mysql.jdbc.Driver|oracle.jdbc.driver.OracleDriver|org.postgresql.Driver|com.microsoft.sqlserver.jdbc.SQLServerDriver" 
+			texts="MySQL|Oracle|Postgres|SQLServer"/>
 		<column name="connUrl"  caption="数据库连接地址" empty="false"/>
 		<column name="connUser" caption="数据库连接账号" empty="false"/>
 		<column name="connPwd"  caption="数据库连接密码" type="password" empty="false" />
@@ -44,14 +44,14 @@
 			<TD><label binding="driver"/></TD>
 			<TD colspan="3">
 				<input binding="driver" style="width:150px;"/>
-				<b style="color: red; padding-left: 8px; display: inline-block;">目前支持的数据库类型：MySQL、Oracle.</b>
+				<b style="color: red; padding-left: 8px; display: inline-block;">目前支持的数据库类型：MySQL、Oracle、PostgresQL、SQLServer.</b>
 			</TD>
 		</TR>
 		<TR>
 			<TD><label binding="connUrl"/></TD>
 			<TD colspan="3">
-				<textarea binding="connUrl" style="width:88%;height:80px"/>
-				<b style="color: #999; padding-left: 8px; display: inline-block;">MySQL示例: 【 jdbc:mysql://127.0.0.1:3306/tssbi ], Oracle示例: 【 jdbc:oracle:thin:@boubei.com:1521:orcl1 】</b>
+				<textarea binding="connUrl" style="width:88%;height:65px"/>
+				<b style="color: #999; padding-left: 8px; display: inline-block;">MySQL示例: jdbc:mysql://127.0.0.1:3306/tssbi , Oracle示例: jdbc:oracle:thin:@10.1.12.1:1521:orcl1 , PostgreSQL示例: jdbc:postgresql://127.0.0.1:5432/tssdata , SQLServer示例: jdbc:sqlserver://127.0.0.1:1433;DatabaseName=tssdata</b>
 			</TD>
 		</TR>
 		<TR>

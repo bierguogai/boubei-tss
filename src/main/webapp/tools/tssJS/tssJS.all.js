@@ -3500,9 +3500,6 @@
         var fieldObj;
         var fieldType = field.getAttribute("mode");
         switch(fieldType) {
-            case "number":
-                fieldObj = new StringField($el, this);
-                break;
             case "date":
             case "function":
             case "datetime":
@@ -3517,6 +3514,8 @@
             case "combotree":
                 fieldObj = new ComboTreeField($el, this);
                 break;
+            case "int":
+            case "number":
             case "string":
             default:
                 fieldObj = new StringField($el, this);
@@ -3632,7 +3631,8 @@
                         else if(mode == "string" && nodeName == 'textarea') {
                             htmls.push("<textarea " + copyNodeAttribute(childNode) + copyColumnAttribute(column) + " spellcheck='false'>" + (value ? value : "") + "</textarea>");
                         }
-                        else if(mode == "string" || mode == "number" || mode == "function" || mode == "date" || mode == "datetime" || mode == "combotree") {
+                        else if(mode == "string" || mode == "number" || mode == "int" 
+                             || mode == "function" || mode == "date" || mode == "datetime" || mode == "combotree") {
                             htmls.push("<input " + copyNodeAttribute(childNode) + copyColumnAttribute(column) + _value + " spellcheck='false'></input>");
                         }
                     }
@@ -4290,6 +4290,7 @@
 
         switch(column.getAttribute("mode")) {
             case "number":
+            case "int":
                 return "right";
             case "boolean":
             case "date":
@@ -4598,7 +4599,8 @@
 
             var mode  = column.getAttribute("mode") || "string";
             switch( mode ) {
-                case "number":  
+                case "number": 
+                case "int":  
                 case "date":
                     cell.title = value;
                     break;         

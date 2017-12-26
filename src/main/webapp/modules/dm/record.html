@@ -107,7 +107,8 @@
 			<td>
 				<select id="_type" style="width: 100px;">
 					<option value="string">字符串</option>
-					<option value="number">数字</option>
+					<option value="number">数字(小数)</option>
+					<option value="int">数字(整数)</option>
 					<option value="date">日期</option>
 					<option value="datetime">日期时间</option>
 		            <option value="hidden">隐藏</option>
@@ -162,7 +163,7 @@
 			<td>出错提示：</td> <td> <input type="text" id="_errorMsg"/> </td>
 		</tr>
 		<tr class="selectRelation">
-			<td>下拉列表：</td> 
+			<td>选项列表：</td> 
 			<td colspan="2"> 
 				<input type="text" id="_options" placeholder="例: A|B 或 /tss/data/json/13" style="width: 175px;"/>&nbsp;
 				<button class="tssbutton small blue" onclick="checkDataService()">接口</button>

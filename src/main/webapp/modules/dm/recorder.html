@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
 <meta charset="UTF-8">
-<title>录入表</title>
+<title>数据录入表</title>
 
 <link href="../../tools/tssJS/css/boubei.css" rel="stylesheet">
 <link href="../../css/css.css" rel="stylesheet">
@@ -557,7 +557,7 @@ function showQueryForm() {
     var _sortObj = {"label":"按字段排序", "name":"sortField", "options": {"codes":codes.join("|"), "names":names.join("|")}};
     _sortObj.defaultValue = "createtime";
     paramsConfig.push(_sortObj);
-    var _sortType = {"label":"排序方式", "name":"sortType", "options": {"codes":"asc|desc|onlynull", "names": "升序|降序|只取为空"}};
+    var _sortType = {"label":"排序方式", "name":"sortType", "options": {"codes":"asc|desc|onlynull|notnull", "names": "升序|降序|只取为空|只取不为空"}};
     _sortType.defaultValue = "desc";
     paramsConfig.push(_sortType);
 
@@ -738,8 +738,8 @@ function delAttach() {
           <td id="gridTitle">
 <span class="icon"></span><span id="rcTitle">资源列表</span>
 <!-- <input type="button" class="tssbutton small blue" value="备 份" id="btn_bk" onclick="backup()"/> -->
-<input type="button" class="tssbutton small blue" value="批量导入" id="btn_imp" onclick="batchImport()"/>
-<input type="button" class="tssbutton small blue" value="下载导入模板" id="btn_tl" onclick="getImportTL()"/>
+<input type="button" class="tssbutton small blue" value="Excel模板" id="btn_tl" onclick="getImportTL()"/>
+<input type="button" class="tssbutton small blue" value="Excel导入" id="btn_imp" onclick="batchImport()"/>
 
 <input type="button" class="tssbutton small green" value="新 增" id="btn_create" onclick="showDetail('_new')"/>
 <input type="button" class="tssbutton small orange" value="批量删除" id="btn_batch_del" onclick="removeBatch()"/>

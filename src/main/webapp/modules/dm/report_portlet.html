@@ -299,7 +299,7 @@ function init() {
             globalValiable.remark = defines[5];
             globalValiable.reportId = reportId;
 
-            // if recorder.html 
+            // if recorder.html， 如果需要录入表也展示右侧栏的简介、收藏等功能，则注释掉下面代码
             if( (globalValiable._url||"").indexOf("dm/recorder.html?id=") >= 0 ) {
                 location.href = globalValiable._url;
                 return;
