@@ -274,7 +274,10 @@
     }
 
     function delelteUser() {
-        $.confirm("您确定要删除该用户记录吗？", "删除确认", function(){
+        var grid = $.G("grid");
+        var userName  = grid.getColumnValue("userName");
+
+        $.confirm("您确定要删除用户【" +userName+ "】吗？", "删除确认", function(){
             var grid = $.G("grid");
             var userID  = grid.getColumnValue("id");
             var groupId = grid.getColumnValue("groupId");
