@@ -368,3 +368,17 @@ function loadRemoteAttach(recordId, itemId, appUrl, appCode, callback) {
         } 
     });
 }
+
+/* 表单里控制字段值的唯一性：
+var uniqueFlag = false;
+$("#name").blur( function() {
+     $.getJSON("/tss/auth/xdata/json/xxx", {"name": $("#name").value(), "strictQuery": "true"}, function(result) {
+            if( isNew() ) { uniqueFlag = result.length > 0; }
+            else { uniqueFlag = result.length > 1; }  // 修改行自身不算 
+    
+            if(uniqueFlag) $.alert("同名记录已经存在，请更换名称");
+     }  );
+});
+
+preListener = function() {  if(uniqueFlag) $.alert("同名记录已经存在，请更换名称"); return flag; }
+ */

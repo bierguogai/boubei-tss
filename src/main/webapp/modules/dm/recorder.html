@@ -310,6 +310,7 @@ function showDetail(rowID) {
     $("#ws").show(true);    
 }
 
+var uniqueFlag = false, uniqueMsg;
 function loadDetailData(rowID, version) {
     var form, dataNode = $.cache.XmlDatas[rowID];
 
@@ -319,10 +320,30 @@ function loadDetailData(rowID, version) {
         $.cache.XmlDatas[rowID] = xform.template.dataNode;
         attachReminder(rowID, xform); // 离开提醒
 
-        // 控制字段是否能被编辑和查看（按角色）
         recordDefine.each(function(i, f){
+            // 控制字段是否能被编辑和查看（按角色）
             f.role1 && forbid(f.code, f.role1);
             f.role2 && !checkRole(f.role2) && hideFiled(f.code);
+
+            // 为有唯一性约束要求的字段添加检查事件
+            var code = f.code, unique = f.unique == 'true';
+            unique && $("#"+code).blur( function() {
+                var val = ($("#"+code).value()||'').trim();
+                updateField(code, val);
+                var params = {"strictQuery": "true"};
+                params[code] = val;
+
+                val && $.getJSON("/tss/auth/xdata/json/"+recordId, params, 
+                    function(result) {
+                        if( isNew() ) { uniqueFlag = result.length > 0; }
+                        else { uniqueFlag = result.length > 1; }  // 修改行自身不算 
+                
+                        if(uniqueFlag) {
+                            uniqueMsg = f.label+"为【" +val+ "】的记录已存在，不能重复";
+                            $.alert(uniqueMsg);
+                        }
+                }  );
+            });
         });
 
         // 设置保存/关闭按钮操作
@@ -392,6 +413,10 @@ function loadDetailData(rowID, version) {
 function saveSource(rowID, version) {
     var xform = $.F("page1Form");  
     if( !xform.checkForm() ) return;
+
+    if(uniqueFlag) {
+        return $.alert(uniqueMsg);
+    }
 
     if( preListener && $.isFunction(preListener) ) {
         var result = preListener();

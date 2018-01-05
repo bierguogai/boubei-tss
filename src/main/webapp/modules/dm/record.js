@@ -478,7 +478,7 @@ function closeDefine() {
 	$("#recordDefinesDiv").hide();
 }
 
-var RECORD_PARAM_FIELDS = ['label', 'code', 'type', 'nullable', 'defaultValue', 'isparam', 'role1', 'role2',
+var RECORD_PARAM_FIELDS = ['label', 'code', 'type', 'nullable', 'unique', 'defaultValue', 'isparam', 'role1', 'role2',
 	'calign', 'cwidth', 'checkReg', 'errorMsg', 'width', 'height', 'options', 'multiple', 'onchange'];
 
 function editFieldConfig() {
