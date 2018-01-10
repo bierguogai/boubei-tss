@@ -818,7 +818,7 @@ WorkSpace\:Box WorkSpace\:PageStep .tssbutton {
 @media (max-width: 600px) {
   #alert_box {
     width: 62%;
-    min-width: 300px;
+    min-width: 360px;
   }
 }
 #alert_box .title {

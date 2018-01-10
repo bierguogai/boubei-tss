@@ -308,7 +308,7 @@
                 showUserList(defaultOpenId || rootId);
 
                 var selfRegisterNode = tree.getTreeNodeById(-7);
-                getTreeOperation(selfRegisterNode); // 获取对此节点的权限信息
+                selfRegisterNode && getTreeOperation(selfRegisterNode); // 获取对此节点的权限信息
             }
 
             tree.onTreeNodeActived = function(ev){ onTreeNodeActived(ev); }
