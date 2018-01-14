@@ -1,4 +1,4 @@
-package com.boubei.tssbi;
+package com.boubei.tssx;
 
 import java.util.Date;
 import java.util.List;

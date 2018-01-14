@@ -1,4 +1,4 @@
-package com.boubei.tssbi;
+package com.boubei.tssx;
 
 import java.awt.Color;
 import java.awt.Font;

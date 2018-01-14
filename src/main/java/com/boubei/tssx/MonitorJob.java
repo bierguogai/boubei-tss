@@ -1,4 +1,4 @@
-package com.boubei.tssbi;
+package com.boubei.tssx;
 
 import java.util.List;
 import java.util.Map;
@@ -14,7 +14,7 @@ import com.boubei.tss.util.MailUtil;
  * 生成异常信息放到系统异常日志里，再通过定时任务发送出去。
  * 每30分钟，轮询最近30分钟 Monitor-Err 日志， 有的话发邮件出来。
  * 
- * com.boubei.tssbi.MonitorJob | 0 0/30 * * * ? | X
+ * com.boubei.tssx.MonitorJob | 0 0/30 * * * ? | X
  * 
  */
 public class MonitorJob extends AbstractJob {

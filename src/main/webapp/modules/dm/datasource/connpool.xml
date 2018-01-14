@@ -10,7 +10,7 @@
 		
 		<column name="driver"  caption="数据库连类型" empty="false" mode="combo" 
 			values="com.mysql.jdbc.Driver|oracle.jdbc.driver.OracleDriver|org.postgresql.Driver|com.microsoft.sqlserver.jdbc.SQLServerDriver" 
-			texts="MySQL|Oracle|Postgres|SQLServer"/>
+			texts="MySQL|Oracle|PostgreSQL|SQLServer"/>
 		<column name="connUrl"  caption="数据库连接地址" empty="false"/>
 		<column name="connUser" caption="数据库连接账号" empty="false"/>
 		<column name="connPwd"  caption="数据库连接密码" type="password" empty="false" />
@@ -44,7 +44,7 @@
 			<TD><label binding="driver"/></TD>
 			<TD colspan="3">
 				<input binding="driver" style="width:150px;"/>
-				<b style="color: red; padding-left: 8px; display: inline-block;">目前支持的数据库类型：MySQL、Oracle、PostgresQL、SQLServer.</b>
+				<b style="color: red; padding-left: 8px; display: inline-block;">目前支持的数据库类型：MySQL、Oracle、PostgreSQL、SQLServer.</b>
 			</TD>
 		</TR>
 		<TR>

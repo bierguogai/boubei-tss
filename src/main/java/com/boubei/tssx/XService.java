@@ -1,4 +1,4 @@
-package com.boubei.tss.x;
+package com.boubei.tssx;
 
 public interface XService {
 

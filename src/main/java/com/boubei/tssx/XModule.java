@@ -1,4 +1,4 @@
-package com.boubei.tss.x;
+package com.boubei.tssx;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -47,7 +47,7 @@ import com.boubei.tss.util.URLUtil;
  */
 @Controller
 @RequestMapping("/auth/modulex")
-public class ModuleX implements AfterUpload {
+public class XModule implements AfterUpload {
 	
 	@Autowired ModuleService service;
 	@Autowired ICommonService commonService;

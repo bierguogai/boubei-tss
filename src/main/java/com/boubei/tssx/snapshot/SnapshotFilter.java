@@ -1,4 +1,4 @@
-package com.boubei.tssbi.snapshot;
+package com.boubei.tssx.snapshot;
 
 import java.io.IOException;
 import java.util.List;

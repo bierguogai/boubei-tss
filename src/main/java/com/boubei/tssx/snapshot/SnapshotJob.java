@@ -1,4 +1,4 @@
-package com.boubei.tssbi.snapshot;
+package com.boubei.tssx.snapshot;
 
 import java.util.Date;
 import java.util.Set;
@@ -14,7 +14,7 @@ import com.boubei.tss.modules.timer.AbstractJob;
 import com.boubei.tss.util.EasyUtils;
 
 /**
- * 快照数据，留作系统演示. com.boubei.tssbi.snapshot.SnapshotJob | 0 0/2 * * * ? | X
+ * 快照数据，留作系统演示. com.boubei.tssx.snapshot.SnapshotJob | 0 0/2 * * * ? | X
  * 
  * 本Job开启后，对Shorter Cache和dm_snapshot的快照数据进行双向同步。
  * 制作快照时，对Cache里的缓存项进行持续输出到dm_snapshot；
