@@ -185,7 +185,12 @@ CONTEXTPATH = "tss";
         },
 
         getResponseJSON: function() {
-            return $.parseJSON(this.responseText);
+            var obj = $.parseJSON(this.responseText);
+            if(obj && obj.errorMsg) {
+                popupMessage(obj.errorMsg);
+            }
+            
+            return obj;
         },
 
         /*

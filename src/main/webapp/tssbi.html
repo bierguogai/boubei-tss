@@ -74,9 +74,9 @@ $(function(){
             function(info) {
                 userHas = info;
                 if( info && info[1] ) {
-                    roles = info[1], isSelfDomain = (info[0].length && info[0][0][0] == -7);
-                    roles.contains(-8) && !isSelfDomain && $("li.r8").show(true);  // 域管理员(非自注册域)
+                    roles = info[1], isSelfDomain = (info[0].length && info[0][0][0] == -7);                   
                     roles.contains(-9) && $("li.r9").show(true) && $("li.r8").hide();  // 开发者
+                    roles.contains(-8) && !isSelfDomain && $("li.r8").show(true);  // 域管理员(非自注册域)
                     roles.contains(-1) && $("li.r9,li.r8,li.ra").show(true);  // Admin
                 }
             }, 
@@ -187,7 +187,7 @@ function openLevelOne(id, firstTime) {
             <li class="r8"><a onclick="openUrl('modules/dm/record.html')">数据表</a></li>  
             -->
             <li class="r8"><a onclick="openUrl('modules/um/group.html')">用户管理</a></li>
-            <li class="r8"><a onclick="openUrl('modules/cms/channel.html')">发布公告</a></li>
+            <li class="r8"><a onclick="openUrl('modules/cms/channel.html')">栏目公告</a></li>
             <li class="r9">
                 <a>开发管理</a> 
                 <ul>                    

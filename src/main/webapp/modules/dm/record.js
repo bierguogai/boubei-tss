@@ -467,7 +467,7 @@ function initFieldTreeMenus() {
 
 function createNewField() {
 	var id = $.now(), name = '字段' + (++count);
-	var newNode = {'id': id, 'name': name, 'value': '{"label": "' +name+ '", "isparam": "true"}'};
+	var newNode = {'id': id, 'name': name, 'value': '{"label": "' +name+ '"}'};
 	var _root = fieldTree.getTreeNodeById("_root");
 	fieldTree.addTreeNode(newNode, _root);
 	fieldTree.setActiveTreeNode(id);

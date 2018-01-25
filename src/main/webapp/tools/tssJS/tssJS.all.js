@@ -1418,7 +1418,12 @@
         },
 
         getResponseJSON: function() {
-            return $.parseJSON(this.responseText);
+            var obj = $.parseJSON(this.responseText);
+            if(obj && obj.errorMsg) {
+                popupMessage(obj.errorMsg);
+            }
+            
+            return obj;
         },
 
         /*
@@ -4250,7 +4255,9 @@
 });
 
 /* Grid组件 
- * 事件： onLoad, Grid更新加载完成后触发 $("#grid").attr("onLoad", "f1()");
+ * 事件: onLoad, Grid更新加载完成后触发 $("#grid").attr("onLoad", "f1()");
+ * TODO:
+ *  !. Grid控件表头增加求和功能
  */
 ;(function ($, factory) {
 

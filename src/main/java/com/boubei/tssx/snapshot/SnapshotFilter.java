@@ -24,7 +24,7 @@ import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sso.context.RequestContext;
  
 @WebFilter(filterName = "SnapshotFilter",
-	urlPatterns = {"/data/json/*", "/api/json/*"}
+	urlPatterns = {"/data/json/*", "/data/jsonp/*", "/api/json/*"}
 )
 public class SnapshotFilter implements Filter {
     

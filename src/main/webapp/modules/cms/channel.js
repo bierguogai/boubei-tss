@@ -508,7 +508,7 @@ function initGridMenu() {
         label:"移动到...",
         callback:moveArticleTo,
         icon:ICON + "icon_move.gif",
-        visible:function() { return getGridOperation("6");}
+        visible:function() { return getGridOperation("5");}
     }
     var item4 = {
         label:"置顶",

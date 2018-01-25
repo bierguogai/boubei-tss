@@ -150,11 +150,11 @@ function query2() {
 
 	$.getJSON(
         json_url("visit-trend"), 
-        { "param3": 'today-8', "param5": 'd', 'param6': '1'},
+        { "param3": 'today-7', "param5": 'd', 'param6': '1'},
         function(result) { 
-        	var values = [0, 0, 0, 0, 0, 0, 0, 0];
-			tssJS.each(result, function(i, item) {
-				tssJS.each(labels, function(j, label) {
+        	var values = [0, 0, 0, 0, 0, 0, 0];
+        	tssJS.each(labels, function(j, label) {
+        		tssJS.each(result, function(i, item) {
 					if(label === item.name) {
 						values[j] = item["v2"];
 					}
