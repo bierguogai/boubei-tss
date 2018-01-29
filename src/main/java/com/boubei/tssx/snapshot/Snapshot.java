@@ -11,12 +11,12 @@ import javax.persistence.Lob;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
-import com.boubei.tss.dm.record.AbstractRecordTable;
+import com.boubei.tss.dm.record.ARecordTable;
 
 @Entity
 @Table(name = "dm_snapshot")
 @SequenceGenerator(name = "snapshot_sequence", sequenceName = "snapshot_sequence", initialValue = 1, allocationSize = 10)
-public class Snapshot extends AbstractRecordTable {
+public class Snapshot extends ARecordTable {
 
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "snapshot_sequence")
