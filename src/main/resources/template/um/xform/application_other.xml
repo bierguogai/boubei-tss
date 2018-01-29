@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xform>
+	<declare>
+		<column name="applicationType" caption="应用系统类型" display="none"/>
+		<column name="applicationId" caption="应用系统ID" empty="false" maxLength="100"/>
+		<column name="name" caption="名称" empty="false" maxLength="100"/>
+		<column name="description" caption="描述" maxLength="400"/>
+		<column name="dataSourceType" caption="数据库类型" mode="combo" values="1|2" texts="LDAP|关系数据库" empty="false"/>
+		<column name="paramDesc" caption="参数描述(XML格式)" maxLength="4000" empty="false"/>
+	</declare>
+	<layout>
+		<TR>
+			<TD width="100"><label binding="applicationId"/></TD>
+			<TD><input binding="applicationId"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="name"/></TD>
+			<TD><input binding="name"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="dataSourceType"/></TD>
+			<TD><input binding="dataSourceType"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="paramDesc"/></TD>
+			<TD><textarea binding="paramDesc" style="width:90%;height:400px"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="description"/></TD>
+			<TD><textarea binding="description" style="width:90%;height:60px"/></TD>
+		</TR>
+		<TR>
+			<TD colspan="2" align="center">
+				<a href="#" class="tssbutton small blue" id="appSaveBt">完成</a>
+			</TD>
+		</TR>
+	</layout>
+	<data>
+	</data>
+</xform>

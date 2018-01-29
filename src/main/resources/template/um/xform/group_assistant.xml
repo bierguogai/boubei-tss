@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xform>
+	<declare>
+		<column name="id" caption="ID" mode="number" editable="false"/>
+		<column name="name" caption="名称" empty="false" maxLength="50"/>
+		<column name="description" caption="描述" maxLength="255"/>
+	</declare>
+	<layout>
+		<TR>
+			<TD width="100"><label binding="id"/></TD>
+			<TD><input binding="id" style="width:50px;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="name"/></TD>
+			<TD><input binding="name" style="width:50%;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="description"/></TD>
+			<TD><textarea binding="description" style="width:400px;height:100px;"/><br/>注：最多255字 </TD>
+		</TR>
+	</layout>
+</xform>

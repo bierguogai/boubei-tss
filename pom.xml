@@ -20,13 +20,15 @@
 	</properties>
 
 	<dependencies>
-		<!-- TSS dependency -->
+		<!-- 1、all: 基于TSS 2、client: 围绕TSS -->
+		<!-- TSS dependency 
 		<dependency>
 			<groupId>com.boubei</groupId>
 			<artifactId>tss</artifactId>
 			<version>${tss.version}</version>
-			<classifier>all</classifier>  <!-- 1、all: 基于TSS 2、client: 围绕TSS -->
+			<classifier>all</classifier>  
 		</dependency>		
+		-->
 		
 		<!-- tss dependencies start -->
 		<!-- BASE dependency -->
@@ -188,7 +190,6 @@
 		    <groupId>org.quartz-scheduler</groupId>
 		    <artifactId>quartz</artifactId>
 		    <version>2.2.1</version>
-		    <!-- <version>1.8.6</version> -->
 		</dependency>
 
 		<!-- Jackson JSON Mapper -->
@@ -226,14 +227,6 @@
 			<version>2.2.0</version>
 		</dependency>
 		<!-- tss dependencies end -->
-		
-		<!-- Oracle DB driver 4 release -->
-		<dependency>
-			<groupId>ojdbc</groupId>
-			<artifactId>ojdbc</artifactId>
-			<version>14</version>
-		</dependency>
-		
 		
 		<!-- 条形码、二维码 -->
 		<dependency>

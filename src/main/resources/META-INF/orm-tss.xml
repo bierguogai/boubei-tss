@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
+   version="1.0">
+   
+   	<!-- framework & modules -->	
+   	<entity class="com.boubei.tss.framework.persistence.Temp"/>
+	<entity class="com.boubei.tss.modules.log.Log"/>
+	<entity class="com.boubei.tss.modules.param.Param"/>
+	<entity class="com.boubei.tss.modules.timer.JobDef"/>
+	<entity class="com.boubei.tss.modules.cloud.ModuleDef"/>
+	<entity class="com.boubei.tss.modules.cloud.ModuleUser"/>
+ 
+	<!-- um -->	
+	<entity class="com.boubei.tss.um.sso.online.DBOnlineUser"/>
+	
+	<entity class="com.boubei.tss.um.entity.Application"/>
+	<entity class="com.boubei.tss.um.entity.ResourceType"/>
+	<entity class="com.boubei.tss.um.entity.ResourceTypeRoot"/>
+	<entity class="com.boubei.tss.um.entity.Operation"/>
+	
+	<entity class="com.boubei.tss.um.entity.Group"/>
+	<entity class="com.boubei.tss.um.entity.User"/>
+	<entity class="com.boubei.tss.um.entity.GroupUser"/>
+	
+	<entity class="com.boubei.tss.um.entity.Role"/>
+	<entity class="com.boubei.tss.um.entity.RoleGroup"/>
+	<entity class="com.boubei.tss.um.entity.RoleUser"/>
+	<entity class="com.boubei.tss.um.entity.SubAuthorize"/>
+	
+	<entity class="com.boubei.tss.um.entity.permission.RoleUserMapping"/>
+	<entity class="com.boubei.tss.um.entity.permission.ViewRoleUser"/>
+	<entity class="com.boubei.tss.um.entity.permission.ViewRoleUser4SubAuthorize"/>
+	
+	<entity class="com.boubei.tss.um.entity.permission.GroupResource"/>
+	<entity class="com.boubei.tss.um.entity.permission.GroupPermission"/>
+	<entity class="com.boubei.tss.um.entity.permission.RoleResource"/>
+	<entity class="com.boubei.tss.um.entity.permission.RolePermission"/>
+	
+	<entity class="com.boubei.tss.um.entity.Message"/>
+	<entity class="com.boubei.tss.um.entity.UserToken"/>
+	
+	<!-- dm -->	
+	<entity class="com.boubei.tss.dm.etl.Task"/>
+	<entity class="com.boubei.tss.dm.etl.TaskLog"/>
+	
+	<entity class="com.boubei.tss.dm.report.Report"/>
+	<entity class="com.boubei.tss.dm.report.ReportUser"/>
+	<entity class="com.boubei.tss.dm.report.permission.ReportPermission"/>
+	<entity class="com.boubei.tss.dm.report.permission.ReportResource"/>
+	<entity class="com.boubei.tss.dm.report.log.AccessLog"/>
+	
+	<entity class="com.boubei.tss.dm.record.Record"/>
+	<entity class="com.boubei.tss.dm.record.file.RecordAttach"/>
+	<entity class="com.boubei.tss.dm.record.permission.RecordPermission"/>
+	<entity class="com.boubei.tss.dm.record.permission.RecordResource"/>
+	
+	<!-- cms -->	
+	<entity class="com.boubei.tss.cms.entity.Channel"/>
+	<entity class="com.boubei.tss.cms.entity.Article"/>
+	<entity class="com.boubei.tss.cms.entity.Attachment"/>
+ 
+	<entity class="com.boubei.tss.cms.entity.permission.ChannelResource"/>
+	<entity class="com.boubei.tss.cms.entity.permission.ChannelPermission"/>
+	
+	<!-- portal -->	
+	<entity class="com.boubei.tss.portal.entity.Component"/>
+	<entity class="com.boubei.tss.portal.entity.FlowRate"/>
+	<entity class="com.boubei.tss.portal.entity.ReleaseConfig"/>
+	<entity class="com.boubei.tss.portal.entity.Navigator"/>
+	<entity class="com.boubei.tss.portal.entity.Structure"/>
+	<entity class="com.boubei.tss.portal.entity.ThemePersonal"/>
+	<entity class="com.boubei.tss.portal.entity.Theme"/>
+	<entity class="com.boubei.tss.portal.entity.ThemeInfo"/>
+ 
+	<entity class="com.boubei.tss.portal.entity.permission.NavigatorResource"/>
+	<entity class="com.boubei.tss.portal.entity.permission.NavigatorPermission"/>
+	
+	<entity class="com.boubei.tss.portal.entity.permission.PortalResource"/>
+	<entity class="com.boubei.tss.portal.entity.permission.PortalPermission"/>
+
+</entity-mappings>

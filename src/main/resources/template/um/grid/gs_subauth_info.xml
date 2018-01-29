@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grid>
+	<declare sequence="true">
+		<column caption="用户id" name="subAuthorized2UserId" display="none"/>
+		<column caption="姓名" name="subAuthorized2UserName"/>
+		<column caption="用户所在组ID" name="subAuthorized2GroupId"  display="none"/>
+		<column caption="用户所在组" name="subAuthorized2GroupName"/>
+		<column caption="角色id" name="roleId" display="none"/>
+		<column caption="角色名" name="roleName"/>
+		<column caption="转授策略id" name="strategyId" display="none"/>
+		<column caption="转授人id" name="subAuthorizedUserId" display="none"/>
+		<column caption="转授人" name="subAuthorizedUserName"/>
+		<column caption="转授人所在组ID" name="subAuthorizedGroupId" display="none"/>
+		<column caption="转授人所在组" name="subAuthorizedGroupName"/>
+	</declare>
+	<data>
+	</data>
+</grid>
+ 

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xform>
+	<declare>
+		<column name="id" mode="hidden"/>
+		<column name="name" caption="名称" mode="string" maxLength="50" empty="false"/>	
+		<column name="code" caption="编码" mode="string" maxLength="50" empty="false"/>	
+		<column name="description" caption="描述信息" mode="string"/>
+	</declare>
+	<layout>
+		<TR>
+			<TD width="80"><label binding="name"/></TD>
+			<TD><input binding="name"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="code"/></TD>
+			<TD><input binding="code"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="description"/></TD>
+			<TD><textarea binding="description" style="width:100%;height:100px;"/></TD>
+		</TR>
+	</layout>
+	<data>
+	</data>
+</xform>

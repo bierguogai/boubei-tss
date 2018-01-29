@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grid>
+	<declare>
+		<column name="code"          caption="键值 "   width="100px"/>
+		<column name="name"          caption="名称 "   width="120px"/>
+		<column name="accessMethod"  caption="存取方式" values="1|2|3|4|5" texts="FIFO|LIFO|RANDOM|LRU|LFU"/>
+		<column name="disabled"      caption="状态 "   values="0|1" texts="启用|停用"/>
+		<column name="cyclelife"     caption="生命周期(秒)" />
+		<column name="interruptTime" caption="等待时间(微秒)" />
+		<column name="poolSize"      caption="池容量 "  />
+		<column name="initNum"       caption="初始化数" />
+		<column name="requests"      caption="总请求数" />
+		<column name="hitrate"       caption="命中率 "  />
+		<column name="hitLong"       caption="命中占时(微秒/次)" />
+		<column name="freeItemNum"   caption="空闲中 "  />
+		<column name="busyItemNum"   caption="忙碌中 "  />
+	</declare>			
+	<data>
+	</data>
+</grid>
+
+ 

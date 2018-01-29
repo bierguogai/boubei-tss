@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xform>
+	<declare>
+		<column name="resourceTypeId" caption="资源类型ID" mode="string" empty="false"/>
+		<column name="rootId" caption="根节点ID" mode="number" inputReg="^\-?\d*$" empty="false"/>
+		<column name="name" caption="名称" mode="string" empty="false"/>
+		<column name="description" caption="描述" mode="string"/>
+		<column name="permissionTable" caption="权限表名" mode="string" empty="false"/>
+		<column name="resourceTable" caption="资源表名" mode="string" empty="false"/>
+	</declare>
+	<layout>
+		<TR>
+			<TD width="100"><label binding="resourceTypeId"/></TD>
+			<TD><input binding="resourceTypeId"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="rootId"/></TD>
+			<TD><input binding="rootId"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="name"/></TD>
+			<TD><input binding="name"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="permissionTable"/></TD>
+			<TD><input binding="permissionTable" style="width:500px;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="resourceTable"/></TD>
+			<TD><input binding="resourceTable" style="width:500px;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="description"/></TD>
+			<TD><input binding="description" style="width:500px;"/></TD>
+		</TR>
+	</layout>
+	<data>
+	</data>
+</xform>

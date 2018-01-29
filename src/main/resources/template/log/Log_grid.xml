@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grid>
+	<declare>
+		<column name="id"            caption="ID号"   display="none"/>
+		<column name="operateTable"  caption="操作对象"  mode="string" width="65px"/>
+		<column name="operationCode" caption="操作方法"  mode="string" width="150px"/>
+		<column name="methodExcuteTime" caption="执行时长" mode="string"  width="65px"/>
+		<column name="operatorName"  caption="操作人"   mode="string" width="80px"/>
+		<column name="operatorIP"    caption="操作人IP" mode="string" width="90px"/>
+		<column name="operatorBrowser"  caption="浏览器" mode="string" width="150px"/>
+		<column name="operateTime"   caption="操作完成时间"  mode="date" pattern="yyyy-MM-dd HH:mm:ss" width="120px"/>
+	</declare>			
+	<data>
+	</data>
+</grid>

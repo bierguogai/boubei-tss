@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xform>
+	<declare prefix="user">
+		<column name="id" mode="hidden"/>
+		<column name="userName"  caption="姓名" empty="false" maxLength="20"/>
+		<column name="loginName" caption="账号" empty="false" maxLength="20" editable="false"/>
+		<column name="password"  caption="密码" empty="false" maxLength="20" inputReg="^[\u0000-\u00FF]*$"/>
+		<column name="passwordQuestion" caption="提示问题" empty="true" maxLength="100"/>
+		<column name="passwordAnswer"   caption="提示答案" empty="true" maxLength="100"/>
+		<column name="sex" caption="性别" mode="combo" values="1|0" texts="男|女"/>
+		<column name="birthday" caption="出生年月" mode="date" pattern="yyyy-MM-dd" maxLength="32"/>
+		<column name="employeeNo" caption="员工编号" maxLength="100"/>
+		<column name="email" caption="电子邮件" maxLength="100" inputReg="\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*"/>
+		<column name="telephone" caption="手机" maxLength="30"/>
+		<column name="address"   caption="地址" maxLength="100"/>
+		<column name="postalCode" caption="邮编" maxLength="10" inputReg="^\d{0,10}$"/>
+		
+		<column name="certificate" caption="证件种类" mode="combo" values="1|2" texts="工作证|身份证"/>
+		<column name="certificateNo" caption="证件号" maxLength="50"/>
+		<column name="accountLife" caption="账户有效期" mode="date" pattern="yyyy-MM-dd" editable="false"/>
+		
+		<column name="groupId" mode="hidden"/>
+		<column name="groupName" mode="hidden"/>
+		<column name="disabled"  mode="hidden"/>
+	</declare>
+	<layout>
+		<TR>
+			<TD width="60"><label binding="loginName"/></TD>
+			<TD><input binding="loginName"/></TD>
+			
+			<TD width="60"><label binding="password"/></TD>
+			<TD><input binding="password" type="password" autocomplete="new-password" style="width:200px;"/></TD>
+		</TR>
+		<TR>
+			<TD width="60"><label binding="userName"/></TD>
+			<TD><input binding="userName" style="width:200px;"/></TD>
+			
+			<TD><label binding="telephone"/></TD>
+			<TD><input binding="telephone"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="email"/></TD>
+			<TD><input binding="email" style="width:250px;"/></TD>
+
+			<TD><label binding="address"/></TD>
+			<TD><input binding="address" style="width:250px;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="passwordQuestion"/></TD>
+			<TD><input binding="passwordQuestion" style="width:250px;"/></TD>
+
+			<TD><label binding="passwordAnswer"/></TD>
+			<TD><input binding="passwordAnswer" style="width:250px;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="employeeNo"/></TD>
+			<TD><input binding="employeeNo"/></TD>
+			
+			<TD><label binding="certificateNo"/></TD>
+			<TD><input binding="certificateNo" style="width:250px;"/></TD>
+		</TR>
+		<TR>	
+			<TD><label binding="birthday"/></TD>
+			<TD><input binding="birthday"/></TD>
+			
+			<TD><label binding="sex"/></TD>
+			<TD><input binding="sex"/></TD>
+		</TR>
+	</layout>
+</xform>

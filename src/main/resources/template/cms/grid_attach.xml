@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grid>
+	<declare sequence="true">
+		<column caption="所属文章ID" name="articleId" mode="number" display="none"/>
+		<column caption="附件件序号" name="seqNo" mode="number" display="none"/>
+		<column caption="类型" name="type" mode="string" values="1|2" texts="图片|文档" width="50px;"/>
+		<column caption="文件后缀" name="fileExt" mode="string" display="none"/>
+		
+		<column caption="文件名" name="name" mode="string" width="130px;"/>
+		<column caption="下载地址" name="downloadUrl" mode="string" width="270px;"/>
+		<column caption="存放路径" name="localPath" mode="string" width="170px;"/>
+		<column caption="下载次数" name="hitCount" mode="string" width="55px" />
+	</declare>
+	<data>
+	</data>
+</grid>

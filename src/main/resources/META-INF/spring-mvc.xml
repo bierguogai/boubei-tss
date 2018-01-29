@@ -37,20 +37,23 @@
     <!-- 配置静态资源，直接映射到对应的文件夹，不被DispatcherServlet处理 -->  
     <mvc:resources mapping="/css/**"    location="/css/"/>  
     <mvc:resources mapping="/images/**" location="/images/"/>  
-	<mvc:resources mapping="/modules/**" location="/modules/"/> 
-	<mvc:resources mapping="/more/**" location="/more/"/>  
-	<mvc:resources mapping="/tools/**" location="/tools/"/> 
-
-	<mvc:resources mapping="/_mobile/**" location="/_mobile/"/>
+	<mvc:resources mapping="/modules/**" location="/modules/"/>  
+	<mvc:resources mapping="/more/**" location="/more/"/> 
+	<mvc:resources mapping="/mobile/**" location="/mobile/"/>  
+	<mvc:resources mapping="/tools/**" location="/tools/"/>  
+	
+	<mvc:resources mapping="/bi/**" location="/bi/"/> 
 	<mvc:resources mapping="/pages/**" location="/pages/"/> 
-	<mvc:resources mapping="/cloud/**" location="/cloud/"/>
 	
 	<mvc:resources mapping="/*.html" location="/"/>  
 	<mvc:resources mapping="/*.htm" location="/"/>  
 	<mvc:resources mapping="/*.xml" location="/"/>  
 	<mvc:resources mapping="/*.css" location="/"/>  
-	<mvc:resources mapping="/*.js" location="/"/>  
-	<mvc:resources mapping="/*.json" location="/"/>  
-	<mvc:resources mapping="/*.swf" location="/"/>  
+	<mvc:resources mapping="/*.js" location="/"/> 
+	<mvc:resources mapping="/*.json" location="/"/> 
+	
+	<mvc:resources mapping="/*.in" location="/"/>  
+	<mvc:resources mapping="/*.do" location="/"/>  
+	<mvc:resources mapping="/*.portal" location="/"/>  
 	
 </beans>

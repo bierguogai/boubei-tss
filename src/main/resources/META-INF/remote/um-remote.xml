@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<beans xmlns="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xmlns:tx="http://www.springframework.org/schema/tx" 
+	xmlns:p="http://www.springframework.org/schema/p" 
+	xmlns:aop="http://www.springframework.org/schema/aop" 
+	xsi:schemaLocation="http://www.springframework.org/schema/beans  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd  http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context-3.0.xsd  http://www.springframework.org/schema/tx  http://www.springframework.org/schema/tx/spring-tx-3.0.xsd  http://www.springframework.org/schema/aop  http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+	 
+ 	<!-- Permission Relation -->	
+	<bean id="permissionHelper" class="com.boubei.tss.um.permission.PermissionHelper" />
+ 
+	<!-- 资源权限手动补全 -->
+	<bean id="ResourcePermission" class="com.boubei.tss.um.permission.ResourcePermissionImpl"/>
+	
+	<!--  PermissionService   -->
+	<bean id="PermissionService" class="com.boubei.tss.um.permission.PermissionServiceImpl"/>
+	
+	<!-- Remote --> 
+	<!-- Remote 获取每种资源类型对应的"未补全表"和"补全表"和"资源表名" --> 
+	<bean id="RemoteResourceTypeDao" class="com.boubei.tss.framework.web.rmi.HttpInvokerProxyFactory">
+		<property name="serviceUrl">
+			<value>/remote/ResourceTypeDao</value>
+		</property>
+		<property name="appCode">
+			<value>TSS</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.boubei.tss.um.permission.RemoteResourceTypeDao</value>
+		</property>
+	</bean>
+	
+	<!-- Remote Login Service -->
+	<bean id="LoginService" class="com.boubei.tss.framework.web.rmi.HttpInvokerProxyFactory">
+		<property name="serviceUrl">
+			<value>/remote/LoginService</value>
+		</property>
+		<property name="appCode">
+			<value>TSS</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.boubei.tss.um.service.ILoginService</value>
+		</property>
+	</bean>
+	
+	<!-- Remote Online Service -->
+	<bean id="RemoteOnlineUserManager" class="com.boubei.tss.framework.web.rmi.HttpInvokerProxyFactory">
+		<property name="serviceUrl">
+			<value>/remote/OnlineUserService</value>
+		</property>
+		<property name="appCode">
+			<value>TSS</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.boubei.tss.framework.sso.online.IOnlineUserManager</value>
+		</property>
+	</bean>
+</beans>

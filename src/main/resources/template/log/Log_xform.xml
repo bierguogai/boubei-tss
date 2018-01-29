@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xform>
+	<declare prefix="layout">
+		<column name="id" caption="ID号" mode="string" editable="false"/>
+		<column name="_operatorName" caption="操作人" mode="string" editable="false"/>
+		<column name="_operateTime" caption="操作完成时间" mode="string" editable="false"/>
+        <column name="_content" caption="操作内容" mode="string"/>
+	</declare>
+	<layout>
+		<TR>
+			<TD width="50"><label binding="id"/></TD>
+			<TD><input binding="id"/></TD>
+			<TD width="50"><label binding="_operatorName"/></TD>
+			<TD><input binding="_operatorName"/></TD>
+			<TD width="90"><label binding="_operateTime"/></TD>
+			<TD><input binding="_operateTime"/></TD>
+		</TR>
+		<TR>
+			<TD valign="top"><label binding="_content"/></TD>
+			<TD colspan="5"><textarea binding="_content" style="width:100%;height:135px" readOnly="true"/></TD>
+		</TR>
+	</layout>
+	<data>
+	</data>
+</xform>

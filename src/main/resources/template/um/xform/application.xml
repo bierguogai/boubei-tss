@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xform>
+	<declare prefix="application">
+		<column name="applicationType" caption="应用系统类型" display="none"/>
+		<column name="applicationId" caption="应用系统ID" empty="false" maxLength="100"/>
+		<column name="name" caption="名称" empty="false" maxLength="100"/>
+		<column name="description" caption="描述" maxLength="400"/>
+	</declare>
+	<layout>
+		<TR>
+			<TD width="100"><label binding="applicationId"/></TD>
+			<TD><input binding="applicationId" style="width:250;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="name"/></TD>
+			<TD><input binding="name" style="width:300px;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="description"/></TD>
+			<TD><input binding="description" style="width:500px;"/></TD>
+		</TR>
+		<TR>
+			<TD colspan="2">
+				<a href="#" class="tssbutton small blue" id="appSaveBt">完成</a>
+			</TD>
+		</TR>
+	</layout>
+	<data>
+	</data>
+</xform>

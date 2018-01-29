@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xform>
+	<declare>
+		<column name="operationId" caption="操作Id" empty="false"/>
+		<column name="name" caption="名称" empty="false"/>
+		<column name="description" caption="描述"/>
+	</declare>
+	<layout>
+		<TR>
+			<TD width="50"><label binding="operationId"/></TD>
+			<TD><input binding="operationId"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="name"/></TD>
+			<TD><input binding="name"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="description"/></TD>
+			<TD><input binding="description"/></TD>
+		</TR>
+	</layout>
+	<data>
+	</data>
+</xform>

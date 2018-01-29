@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xform>
+	<declare>
+		<column name="id" mode="hidden"/>
+		<column name="name" caption="名称" mode="string" maxLength="50" empty="false"/>	
+		<column name="content.id" mode="hidden" />
+		<column name="content.name" caption="显示Portlet" mode="function" cmd="getContent('content.name','content.id', 0)"/>		
+		<column name="methodName" caption="方法名" mode="string" empty="false"/>	
+		<column name="params" caption="参数" mode="string"/>				
+		<column name="description" caption="描述信息" mode="string"/>
+		
+		<column name="parentId" mode="hidden"/>
+		<column name="portalId" mode="hidden"/>
+		<column name="type"  mode="hidden"/>
+		<column name="seqNo" mode="hidden"/>	
+	</declare>
+	<layout>
+		<TR>
+			<TD width="100"><label binding="name"/></TD>
+			<TD><input binding="name"/></TD>
+		</TR>
+		<TR>
+			<TD valign="top"><label binding="content.name"/></TD>
+			<TD><textarea binding="content.name"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="methodName"/></TD>
+			<TD><input binding="methodName"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="params"/></TD>
+			<TD><textarea binding="params" style="width:100%;height:100px;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="description"/></TD>
+			<TD><textarea binding="description" style="width:100%;height:100px;"/></TD>
+		</TR>
+	</layout>
+	<data>
+	</data>
+</xform>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xform>
+	<declare>
+		<column name="id" mode="hidden"/>
+		<column name="name" caption="名称" mode="string"  maxLength="50" empty="false"/>
+		<column name="description" caption="备注" mode="string"/>
+        <column name="script" caption="JS脚本" mode="string"/>
+        <column name="style" caption="CSS样式" mode="string"/>
+        <column name="html" caption="HTML片段" mode="string" empty="false"/>
+        <column name="events" caption="事件" mode="string"/>
+        <column name="parameters" caption="参数" mode="string"/>
+		<column name="definition" caption="描述信息" mode="string"/>
+		<column name="version" caption="版本信息" mode="string" maxLength="100"/>
+	</declare>
+	<layout>
+		<TR>
+			<TD width="60"><label binding="name"/></TD>
+			<TD width="360"><input binding="name" style="width:200px;"/></TD>
+			<TD width="60" valign="top"><label binding="description"/></TD>
+			<TD><textarea binding="description" style="width:96%;height:30px" class="fullscreenable"/></TD>
+		</TR>
+		<TR>
+			<TD valign="top"><label binding="html"/></TD>
+			<TD colspan="3"><textarea binding="html" style="width:96%;height:150px" class="fullscreenable"/></TD>
+		</TR>
+		<TR>
+			<TD valign="top"><label binding="script"/></TD>
+			<TD colspan="3"><textarea binding="script" style="width:96%;height:80px" class="fullscreenable"/></TD>
+		</TR>
+		<TR>
+			<TD valign="top"><label binding="style"/></TD>
+			<TD colspan="3"><textarea binding="style" style="width:96%;height:150px" class="fullscreenable"/></TD>
+		</TR>
+		<TR>
+			<TD valign="top"><label binding="events"/></TD>
+			<TD><textarea binding="events" style="width:95%;height:60px"/>
+				<br/><span>注:按照"事件名=处理方法"格式填写，例:"onload=${js.layout}.onload"</span>
+			</TD>
+			<TD valign="top">
+				<label binding="parameters"/><br/><br/>
+				<a href="javascript:void(0)" onclick="editParamsTemplate(2)" class="tssbutton small blue">配置</a>
+			</TD>
+			<TD><textarea binding="parameters" style="width:98%;height:60px"/>
+				<br/><span>注:按照"参数名=参数值"格式填写，例:"bgColor=#FFFFFF"，不能有空格。</span>
+			</TD>	
+		</TR>
+	</layout>
+	<data>
+	</data>
+</xform>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<params>
+	<!--
+	<url>jdbc:mysql://localhost:3306/tss</url>
+	<driver>com.mysql.jdbc.Driver</driver>
+	-->
+	<url>jdbc:h2:mem:h2db;DB_CLOSE_DELAY=-1;LOCK_MODE=0</url>
+	<driver>org.h2.Driver</driver>
+	<user>sa</user>
+	<password>123</password>
+	<groupSql>
+		select distinct g.id, g.parentId, g.name as name, g.description, g.disabled
+		from xxx_group g 
+		where g.id >= :groupId 
+	</groupSql>
+	<userSql>
+		select distinct u.id, u.groupId, u.loginName, '111111' as password, u.userName, 
+			u.email, u.sex, u.birthday, u.employeeNo, null authMethod, u.disabled
+		from xxx_user u 
+		where u.groupId >= :groupId
+	</userSql>
+</params>

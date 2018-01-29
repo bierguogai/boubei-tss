@@ -1,0 +1,25 @@
+<params>
+	<url>ldap://localhost:10389</url>
+	<user>cn=admin2,ou=RD2,o=jinhe</user>
+	<password>123456</password>
+	<groupSql>
+		&lt;attributes&gt;
+			&lt;applicationId defaultValue="OA"&gt;applicationId&lt;/applicationId&gt;
+			&lt;id defaultValue=""&gt;id&lt;/id&gt;
+			&lt;parentGroupId defaultValue=""&gt;parentGroupId&lt;/parentGroupId&gt;
+			&lt;groupName defaultValue=""&gt;groupName&lt;/groupName&gt;
+			&lt;description defaultValue=""&gt;description&lt;/description&gt;
+		&lt;/attributes&gt; 
+	</groupSql>
+	<userSql>
+		&lt;attributes&gt;
+		&lt;id defaultValue=""&gt;id&lt;/id&gt;
+		&lt;groupId defaultValue=""&gt;groupId&lt;/groupId&gt;
+		&lt;loginName defaultValue=""&gt;uid&lt;/loginName&gt;
+		&lt;email defaultValue=""&gt;email&lt;/email&gt;
+		&lt;sex defaultValue=""&gt;sex&lt;/sex&gt;
+		&lt;birthday defaultValue=""&gt;birthday&lt;/birthday&gt;
+		&lt;employeeNo defaultValue=""&gt;employeeNo&lt;/employeeNo&gt;
+		&lt;/attributes&gt; 
+	</userSql>
+</params>

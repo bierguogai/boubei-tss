@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xform>
+	<declare>
+		<column mode="string" empty="false" maxLength="20" name="userName"  caption="姓名" />
+		<column mode="string" empty="false" maxLength="20" name="loginName" caption="账号"/>
+		<column mode="string" empty="false" maxLength="50" name="email"     caption="电子邮件" inputReg="\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*"/>
+		<column mode="string" empty="false" maxLength="20" name="password"  caption="密码" />
+		<column mode="string" empty="false" maxLength="20" name="password2" caption="密码确认" />
+		<column mode="string" empty="true" maxLength="50" name="passwordQuestion" caption="密码提示" />
+		<column mode="string" empty="true" maxLength="50" name="passwordAnswer" caption="密码答案" />
+	</declare>
+	<layout>
+		<TR>
+			<TD width="60"><label binding="loginName"/></TD>
+			<TD><input binding="loginName" style="width:250px;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="userName"/></TD>
+			<TD><input binding="userName" style="width:250px;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="email"/></TD>
+			<TD><input binding="email" style="width:250px;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="password"/></TD>
+			<TD><input binding="password" type="password" style="width:250px;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="password2"/></TD>
+			<TD><input binding="password2" type="password" style="width:250px;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="passwordQuestion"/></TD>
+			<TD><input binding="passwordQuestion" style="width:350px;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="passwordAnswer"/></TD>
+			<TD><input binding="passwordAnswer" style="width:350px;"/></TD>
+		</TR>
+	</layout>
+</xform>

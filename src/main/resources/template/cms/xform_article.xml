@@ -1,0 +1,40 @@
+<xform>
+	<declare>
+		<column name="title" caption="标题"  empty="false" maxLength="100"/>
+		<!--
+		<column name="subtitle" caption="副标题"  empty="true" maxLength="100"/>
+		-->
+		<column name="author" caption="作者"  empty="false" maxLength="50"/>
+		<column name="summary" caption="摘要"  maxLength="500"/>
+		<column name="keyword" caption="关键字"  empty="false" maxLength="100"/>
+		<column name="issueDate" caption="发布日期" mode="date"/>
+		<column name="overdueDate" caption="过期日期" mode="date"/>
+		<column name="seqNo" caption="排序号" inputReg="^\d{0,10}$"/>
+	</declare>
+	<layout>
+		<TR>
+			<TD width="50"><label binding="title"/></TD>
+			<TD><input binding="title" style="width:88%"/></TD>
+			<TD width="50"><label binding="seqNo"/></TD>
+			<TD><input binding="seqNo" style="width:60px; margin-right:15px;"/><span>注：从大到小排序</span></TD>
+		</TR>
+		<TR>
+			<TD><label binding="author"/></TD>
+			<TD><input binding="author"/></TD>
+			<TD><label binding="issueDate"/></TD>
+			<TD><input binding="issueDate"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="keyword"/></TD>
+			<TD><input binding="keyword" style="width:88%"/></TD>
+			<TD><label binding="overdueDate"/></TD>
+			<TD><input binding="overdueDate"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="summary"/></TD>
+			<TD colspan="3">
+				<textarea binding="summary" style="width:80%;height:40px;"/>
+			</TD>
+		</TR>
+	</layout>
+</xform>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<decorator>
+	<property>
+		<name>默认修饰器</name>
+	</property>
+	<script><![CDATA[]]></script>
+	<style><![CDATA[]]></style>
+	<html>
+		<![CDATA[<table id=${id} class="decorator">
+		  <tbody>
+			<tr>
+			  <td>
+				${content}
+			  </td>
+			</tr>
+		  </tbody>
+		</table>]]>
+	</html>
+	<events></events>
+	<parameters></parameters>
+</decorator>

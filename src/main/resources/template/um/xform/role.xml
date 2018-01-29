@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xform>
+	<declare>
+		<column name="id" caption="ID" mode="number" editable="false"/>
+		<column name="name" caption="名称" mode="string" maxLength="20" empty="false" />
+		<column name="description" caption="描述" maxLength="255" mode="string"/>
+		<column name="startDate" caption="生效日期" mode="date" empty="false" />
+		<column name="endDate" caption="失效日期" mode="date" empty="false" />
+	</declare>
+	<layout>
+		<TR>
+			<TD width="80"><label binding="id"/></TD>
+			<TD><input binding="id" style="width:50px;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="name"/></TD>
+			<TD><input binding="name" style="width:40%;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="startDate"/></TD>
+			<TD><input binding="startDate"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="endDate"/></TD>
+			<TD><input binding="endDate"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="description"/></TD>
+			<TD><textarea binding="description" style="width:70%;height:100px"/></TD>
+		</TR>
+	</layout>
+	<data/>
+</xform>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grid>
+	<declare sequence="true">		
+		<column caption="文章编号" name="id" display="none"/>
+		<column caption="图标"   name="icon" mode="image" width="35px"/>
+		<column caption="标题"   name="title" width="300px"/>
+		<column caption="文章状态" name="status" width="60px" values="1|2|3|4" texts="编辑中|待发布|已发布|已过期"/>
+		<column caption="作者"   name="author" mode="string"/>
+		<column caption="创建日期" name="createTime"  mode="date" pattern="yyyy-MM-dd" width="75px" />
+		<column caption="发布时间" name="issueDate"   mode="date" pattern="yyyy-MM-dd" width="75px" />
+		<column caption="过期日期" name="overdueDate" mode="date" pattern="yyyy-MM-dd" width="75px" />
+		<column caption="置顶"   name="isTop" width="35px" texts="是|否" values="1|0"/>
+		<column caption="排序号"  name="seqNo" width="40px" />
+		<column caption="点击次数" name="hitCount" width="50px" />
+		<column caption="所属栏目" name="channel.name" width="80px"/>
+		<column caption="栏目编号" name="channel.id" display="none"/>
+	</declare>
+	<data/>
+</grid>

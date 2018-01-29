@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xform>
+	<declare prefix="cacheStrategy">
+		<column name="code" caption="键值" editable="false"/>
+		<column name="name" caption="名称" editable="false"/>
+		<column name="remark" caption="备注" />
+		<column name="disabled" caption="状态" mode="combo" values="0|1" texts="启用|停用"/>
+		<column name="accessMethod" caption="存取方式" mode="combo" values="1|2|3|4|5" texts="FIFO|LIFO|RANDOM|LRU|LFU" empty="false"/>
+		<column name="interruptTime" caption="等待时间" mode="number" inputReg="^\d*$" empty="false"/>	
+		<column name="cyclelife"     caption="生命周期" mode="number" inputReg="^\d*$" empty="false"/>
+		<column name="initNum"       caption="初始化数" mode="number" inputReg="^\d*$" empty="false"/>
+		<column name="poolSize"      caption="池容量"  mode="number" inputReg="^\d*$" empty="false"/>
+		
+		<column name="poolClass"          caption="缓存池类" empty="false"/>
+		<column name="poolContainerClass" caption="池容器类" empty="false"/>
+		<column name="customizerClass"    caption="自定义类" />
+		<column name="paramFile"          caption="参数文件" />
+	</declare>
+	<layout>
+		<TR>
+			<TD width="80"><label binding="name"/></TD>
+			<TD><input binding="name"/></TD>
+			<TD width="80"><label binding="code"/></TD>
+			<TD><input binding="code"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="disabled"/></TD>
+			<TD><input binding="disabled"/></TD>
+			<TD><label binding="accessMethod"/></TD>
+			<TD><input binding="accessMethod"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="poolSize"/></TD>
+			<TD><input binding="poolSize" style="width:100px;"/></TD>
+			<TD><label binding="initNum"/></TD>
+			<TD><input binding="initNum" style="width:100px;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="cyclelife"/></TD>
+			<TD><input binding="cyclelife" style="width:100px;"/>ms</TD>
+			<TD><label binding="interruptTime"/></TD>
+			<TD><input binding="interruptTime" style="width:100px;"/>ms</TD>
+		</TR>
+		<TR>
+            <TD colspan="4"> *注: 0或空表示不限制</TD>
+        </TR>
+        <TR>
+            <TD colspan="4"><hr noshade="true" size="1"/></TD>
+        </TR>
+		<TR>
+			<TD><label binding="poolClass"/></TD>
+			<TD colspan="3"><input binding="poolClass" style="width:88%;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="poolContainerClass"/></TD>
+			<TD colspan="3"><input binding="poolContainerClass" style="width:88%;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="customizerClass"/></TD>
+			<TD colspan="3"><input binding="customizerClass" style="width:88%;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="paramFile"/></TD>
+			<TD colspan="3"><input binding="paramFile" style="width:88%;"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="remark"/></TD>
+			<TD colspan="3"><textarea binding="remark" style="width:88%;height:40px"/></TD>
+		</TR>
+	</layout>
+	<data>
+	</data>
+</xform>

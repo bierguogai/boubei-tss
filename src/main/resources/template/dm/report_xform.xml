@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xform>
+	<declare>	
+		<column name="id"     caption="报表ID"  mode="number" editable="false"/>
+		<column name="name"   caption="报表名称" mode="string" maxLength="30" empty="false"/>
+		<column name="script" caption="报表脚本" mode="string" maxLength="40000"/>
+		<column name="param"  caption="报表参数" mode="string" maxLength="2000"/>
+		<column name="datasource"  caption="数据源"  mode="combo"/>
+		<column name="displayUri"  caption="展示页面" mode="string" maxLength="200"/>
+		<column name="paramUri"  caption="查询页面" mode="string" maxLength="200"/>
+		<column name="remark" caption="报表简介" mode="string" maxLength="2000"/>
+		<column name="needLog" caption="记录访问日志" mode="combo" values="1|0" texts="是|否"/>
+	</declare>
+	<layout>
+		<TR>
+			<TD width="70"><label binding="name"/></TD>
+			<TD width="230"><input binding="name" style="width:200px;"/></TD>
+			<TD width="50"><label binding="datasource"/></TD>
+			<TD width="280">
+				<input binding="datasource" style="width:150px;margin-right:10px;"/>
+				<a href="#" onclick="manageDS()" class="tssbutton small blue">管理数据源</a>
+			</TD>
+			<TD width="50"><label binding="id"/></TD>
+			<TD width="70"><input binding="id" style="width:60px;"/></TD>
+			<TD width="80"><label binding="needLog"/></TD>
+			<TD><input binding="needLog"/></TD>
+		</TR>
+		<TR>
+			<TD valign="top"><label binding="script"/></TD>
+			<TD colspan="7"><textarea binding="script" style="width:97%;height:250px" class="fullscreenable"/></TD>
+		</TR>
+		<TR>
+			<TD valign="top">
+				<label binding="param"/><br/><br/>
+				<a href="#" onclick="configParams()" class="tssbutton small blue">配置</a>
+			</TD>
+			<TD colspan="7"><textarea binding="param" style="width:97%;height:100px" class="fullscreenable"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="displayUri"/></TD>
+			<TD colspan="3">
+				<input binding="displayUri" style="width:300px;margin-right:10px;"/>
+				<a href="#" onclick="selectTL()" class="tssbutton small blue" style="margin-right:10px;">选择页面</a>
+				<a href="#" onclick="uploadTL()" class="tssbutton small blue">上传页面</a>
+			</TD>
+			<TD><label binding="paramUri"/></TD>
+			<TD colspan="3"><input binding="paramUri" style="width:240px;"/></TD>
+		</TR>
+		<TR>
+			<TD valign="top"><label binding="remark"/></TD>
+			<TD colspan="7"><textarea binding="remark" style="width:97%;height:40px" class="fullscreenable"/></TD>
+		</TR>
+	</layout>
+	<data/>
+</xform>

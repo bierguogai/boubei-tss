@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xform>
+	<declare>
+		<column name="authMethod" caption="认证方式" mode="combo" values="com.boubei.tss.um.sso.UMPasswordIdentifier" texts="UM本地" empty="false"/>
+	</declare>
+	<layout>
+		<TR>
+			<TD width="50"><label binding="authMethod"/></TD>
+			<TD><input binding="authMethod"/></TD>
+		</TR>
+	</layout>
+	<data>				
+	</data>
+</xform>

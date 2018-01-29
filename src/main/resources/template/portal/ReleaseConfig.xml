@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xform>
+	<declare>
+		<column name="id" mode="hidden" />
+		<column name="name" caption="名称" mode="string" maxLength="50" empty="false"/>
+		<column name="visitUrl" caption="映射地址" mode="string" maxLength="50" inputReg="^[\u0000-\u00FF]*$" empty="false"/>
+		<column name="portal.id" mode="hidden"/>
+		<column name="portal.name" caption="对应门户" mode="function" empty="false" cmd="getPortal()"/>
+		<column name="theme.id" caption="主题" mode="combo" values="" texts=""/>
+		<column name="page.id" mode="hidden"/>
+		<column name="page.name" caption="页面内容" mode="function" cmd="getPage()"/>
+		<column name="remark" caption="说明" mode="string"/>
+	</declare>
+	<layout>
+		<TR>
+			<TD width="80"><label binding="name"/></TD>
+			<TD><input binding="name"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="visitUrl"/></TD>
+			<TD><input binding="visitUrl"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="portal.name"/></TD>
+			<TD><input binding="portal.name"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="theme.id"/></TD>
+			<TD><input binding="theme.id"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="page.name"/></TD>
+			<TD><input binding="page.name"/></TD>
+		</TR>
+		<TR>
+			<TD><label binding="remark"/></TD>
+			<TD><textarea binding="remark" style="width:88%;height:60px"/></TD>
+		</TR>
+	</layout>
+	<data>
+	</data>
+</xform>
