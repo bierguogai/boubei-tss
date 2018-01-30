@@ -1,12 +1,13 @@
 /* ==================================================================   
- * Created [2009-4-27 下午11:32:55] by Jon.King 
+ * Created [2009-7-7] by Jon.King 
  * ==================================================================  
  * TSS 
  * ================================================================== 
- * mailTo:jinpujun@gmail.com
- * Copyright (c) Jon.King, 2015-2018  
+ * mailTo:boubei@163.com
+ * Copyright (c) boubei.com, 2015-2018 
  * ================================================================== 
-*/
+ */
+
 package com.boubei.tss.framework.web.wrapper;
 
 import java.util.HashSet;

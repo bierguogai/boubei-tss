@@ -1,3 +1,13 @@
+/* ==================================================================   
+ * Created [2006-12-28] by Jon.King 
+ * ==================================================================  
+ * TSS 
+ * ================================================================== 
+ * mailTo:boubei@163.com
+ * Copyright (c) boubei.com, 2015-2018 
+ * ================================================================== 
+ */
+
 package com.boubei.tss.cms.entity;
 
 import java.io.Serializable;
@@ -135,6 +145,7 @@ public class Attachment implements IEntity, IGridNode {
         map.put("type", type);
         map.put("name", name);
         map.put("downloadUrl", this.getDownloadUrl());
+        map.put("relationUrl", this.getRelationUrl());
         map.put("hitCount", this.getHitCount());
         
         return map;

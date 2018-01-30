@@ -1,3 +1,13 @@
+/* ==================================================================   
+ * Created [2016-06-22] by Jon.King 
+ * ==================================================================  
+ * TSS 
+ * ================================================================== 
+ * mailTo:boubei@163.com
+ * Copyright (c) boubei.com, 2015-2018 
+ * ================================================================== 
+ */
+
 package com.boubei.tss.modules.log;
 
 import java.io.Serializable;
@@ -11,8 +21,6 @@ import com.boubei.tss.util.EasyUtils;
 
 /** 
  *　日志输出任务
- * 
- * @author Jon.King 2007-1-8
  */
 public class LogOutputTask extends Output2DBTask implements Serializable {
 

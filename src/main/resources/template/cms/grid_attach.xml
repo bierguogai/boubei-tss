@@ -8,6 +8,7 @@
 		
 		<column caption="文件名" name="name" mode="string" width="130px;"/>
 		<column caption="下载地址" name="downloadUrl" mode="string" width="270px;"/>
+		<column caption="相对地址" name="relationUrl" mode="string" display="none"/>
 		<column caption="存放路径" name="localPath" mode="string" width="170px;"/>
 		<column caption="下载次数" name="hitCount" mode="string" width="55px" />
 	</declare>

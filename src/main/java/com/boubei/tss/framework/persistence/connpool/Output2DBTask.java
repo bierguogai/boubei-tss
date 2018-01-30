@@ -3,10 +3,11 @@
  * ==================================================================  
  * TSS 
  * ================================================================== 
- * mailTo:jinpujun@gmail.com
- * Copyright (c) Jon.King, 2015-2018  
+ * mailTo:boubei@163.com
+ * Copyright (c) boubei.com, 2015-2018  
  * ================================================================== 
  */
+
 package com.boubei.tss.framework.persistence.connpool;
 
 import java.sql.Connection;
