@@ -2,12 +2,17 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-
-	<groupId>tss</groupId>
+	
+	<groupId>com.boubei</groupId>
 	<artifactId>tss</artifactId>
 	<packaging>war</packaging>
-	<version>2.0</version>
-	<name>TSS BI Project</name>
+	<version>4.4</version>
+	<name>BouBei TSS-BI Project</name>
+	
+	<organization>
+		<name>boubei software</name>
+		<url>http://www.boubei.com</url>
+	</organization>
 	<url>http://www.boubei.com</url>
 
 	<properties>
@@ -448,7 +453,28 @@
 					</dependency>
 				</dependencies>
 			</plugin>
-
+			
+			<!-- mvn clean compile assembly:single -->
+			<plugin>
+				<artifactId> maven-assembly-plugin </artifactId>
+				<version>2.4</version>
+				<configuration >
+					<descriptors>
+						<descriptor>src/main/assembly/tss-client-package.xml</descriptor>
+						<descriptor>src/main/assembly/tss-all-package.xml</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-jar</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin> 
+			
 		</plugins>
 	</build>
 	

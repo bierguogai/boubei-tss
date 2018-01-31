@@ -1,4 +1,4 @@
-# 登陆页保持不变
+# 以下文件在TSS-BI里保持不变
 # mv src/main/webapp/login.html src/main/webapp/login.htm
 mv src/main/webapp/WEB-INF/web.xml src/main/webapp/WEB-INF/web.xml0
 mv src/main/resources/META-INF/spring.xml src/main/resources/META-INF/spring.xml0
