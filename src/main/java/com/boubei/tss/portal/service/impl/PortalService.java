@@ -86,9 +86,11 @@ public class PortalService implements IPortalService {
         Structure portal = portalDao.getEntity(portalId);
         portalDao.evict(portal);
         
+        Theme useTheme = portal.getTheme();
         if( selectThemeId != null && selectThemeId > 0) {
-            portal.setTheme(new Theme(selectThemeId));
+        	useTheme = new Theme(selectThemeId);
         }
+        portal.setTheme(useTheme);
         
         // 如果是匿名访问, 则直接访问默认门户
         if(Context.getIdentityCard().isAnonymous()) {
@@ -96,10 +98,8 @@ public class PortalService implements IPortalService {
         }
         
         ThemePersonal personalTheme = portalDao.getPersonalTheme(portalId);
-        if(personalTheme != null) {
-            Long personalThemeId = personalTheme.getThemeId();
-            portal.setTheme(new Theme(personalThemeId));
-        }
+        useTheme = (Theme) EasyUtils.checkNull(personalTheme, useTheme);
+        portal.setTheme(useTheme);
         
         return getNormalPortal(portal);
     }
@@ -166,10 +166,7 @@ public class PortalService implements IPortalService {
 
         Object[] components = portalDao.getPortalComponents(portalId, themeId);
         PortalNode node = PortalGenerator.genPortalNode(root, structuresList, components);
-        
-        if(node == null) {
-            throw new BusinessException(" PortalGenerator.genPortalNode() error ");
-        }
+ 
         return node;
     }
 

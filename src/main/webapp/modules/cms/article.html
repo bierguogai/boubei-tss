@@ -281,6 +281,9 @@
 		var form = $1("uploadForm");
 		form.action = url;
 		form.submit();
+
+		// 清空file input，防止重复上传
+    	tssJS("#sourceFile").value("");
 	}
 
 	function addAttachments(seqNo, fileName, fileExt, oldfileName, downloadUrl) {

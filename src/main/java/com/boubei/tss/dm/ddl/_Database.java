@@ -67,6 +67,10 @@ public abstract class _Database {
 	public List<String> fieldWidths;
 	public List<String> fieldRole2s;
 	
+	public Map<String, String> cnm = new HashMap<String, String>();
+	public Map<String, String> ctm = new HashMap<String, String>();
+	public Map<String, String> crm = new HashMap<String, String>();
+	
 	public String toString() {
 		return "【" + this.datasource + "." + this.recordName + "】";
 	}
@@ -94,12 +98,20 @@ public abstract class _Database {
 		this.fieldWidths = new ArrayList<String>();
 		this.fieldRole2s = new ArrayList<String>();
 		for(Map<Object, Object> fDefs : this.fields) {
-			this.fieldCodes.add((String) fDefs.get("code"));
-			this.fieldTypes.add((String) fDefs.get("type"));
-			this.fieldNames.add((String) fDefs.get("label"));
+			String code = (String) fDefs.get("code");
+			this.fieldCodes.add(code);
+			String label = (String) fDefs.get("label");
+			this.fieldNames.add(label);
+			String type = (String) fDefs.get("type");
+			this.fieldTypes.add(type);
+			String role2 = (String) fDefs.get("role2");
+			this.fieldRole2s.add(role2);
 			this.fieldAligns.add( (String)EasyUtils.checkNull(fDefs.get("calign"), "") ); // 列对齐方式
 			this.fieldWidths.add( (String)EasyUtils.checkNull(fDefs.get("cwidth"), "") ); // 列宽度
-			this.fieldRole2s.add((String) fDefs.get("role2"));
+			
+			cnm.put(code, label);
+			ctm.put(code, type);
+			crm.put(code, role2);
 		}
 	}
 	
@@ -118,7 +130,7 @@ public abstract class _Database {
    	        	int index = i + 1;
    	        	
    				String code = (String) fDefs.get("code");
-   				code = (EasyUtils.isNullOrEmpty(code) ? "f" + index : code).toLowerCase().trim();
+   				code = (EasyUtils.isNullOrEmpty(code) ? _Filed.COLUMN + index : code).toLowerCase().trim();
    				fDefs.put("code", code);
    			}
    			return list;
@@ -128,7 +140,17 @@ public abstract class _Database {
    	    } 
 	}
 	
-	protected abstract Map<String, String> getDBFiledTypes(int length);
+	protected Map<String, String> getDBFiledTypes(int length) {
+		Map<String, String> m = new HashMap<String, String>();
+		m.put(_Filed.TYPE_NUMBER, "float");
+		m.put(_Filed.TYPE_INT, "int");
+		m.put(_Filed.TYPE_DATETIME, "datetime");
+		m.put(_Filed.TYPE_DATE, "date");
+		m.put(_Filed.TYPE_STRING, "varchar(" + length + ")");
+		m.put(_Filed.TYPE_FILE, "varchar(100)");
+		
+		return m;
+	}
 	
 	protected String getFiledDef(Map<Object, Object> fDef, boolean ignoreNullable) {
 		
@@ -450,6 +472,8 @@ public abstract class _Database {
 	}
 
 	public void delete(Long id) {
+		if(id == null) return;
+		
 		Map<String, Object> old = get(id);
 		
 		String updateSQL = "delete from " + this.table + " where id=" + id;
@@ -470,24 +494,36 @@ public abstract class _Database {
 	/**
 	 * 获取用户可见的字段列表
 	 */
-	public List<String> getVisiableFields(boolean needName) {
-		int index = 0;
+	public List<String> getVisiableFields(boolean needName, List<String> fieldCodes) {
 		List<String> result = new ArrayList<String>();
         for(String fieldCode : fieldCodes) {
-            String fieldRole2 = fieldRole2s.get(index);
-
+        	if( !this.fieldCodes.contains(fieldCode) ) { // 字段列不是录入表的，则无需判断权限
+        		result.add(fieldCode);
+        		continue;
+        	}
+        	
+            String fieldRole2 = crm.get(fieldCode);
             if( PermissionHelper.checkRole(fieldRole2) ) {
-            	result.add( needName ? fieldNames.get(index) : fieldCode);
+            	result.add( needName ? cnm.get(fieldCode) : fieldCode);
             }
-            index++;
         }
         return result;
+	}
+	
+	public List<String> getVisiableFields(boolean needName) {
+		return getVisiableFields(needName, this.fieldCodes);
 	}
 	
 	/**
 	 * 查询数据，同时进行权限控制。 <br>
 	 * 1、如果用户有浏览、维护数据权限，允许其查询其它人创建的记录；否则只能查询本人创建的记录 <br>
 	 * 2、加上 customizeTJ 里强制性的过滤条件 <br>
+	 * 
+	 * 以下参数可自由定义：
+	 * 1、fields               查询结果字段
+	 * 2、params + strictQuery 查询参数及匹配方式
+	 * 3、groupby              汇总维度字段
+	 * 4、sortField + sortType 排序结果 
 	 * 
 	 * @param page
 	 * @param pagesize
@@ -503,10 +539,13 @@ public abstract class _Database {
 		}
 		
 		String strictQuery = params.remove("strictQuery"); // 是否精确查询
-		String fields = params.remove("fields"); // eg: /tss/auth/xdata/price_list?fields=name,fee as value
-		String defaultFields = EasyUtils.list2Str( getVisiableFields(false) )+",createtime,creator,updatetime,updator,version,id";
-		fields = (String) EasyUtils.checkNull(fields, defaultFields);
+		String _fields = params.remove("fields"); // eg: /tss/auth/xdata/price_list?fields=name,fee as value
+		List<String> visiableFields = getVisiableFields(false);
+		String defaultFields = EasyUtils.list2Str( visiableFields )+",createtime,creator,updatetime,updator,version,id";
+		String fields = (String) EasyUtils.checkNull(_fields, defaultFields);
+		boolean noPointed = EasyUtils.isNullOrEmpty(_fields);
 		
+		// 对fields进行SQL注入检查
 		fields = DMUtil.checkSQLInject( fields );
 		
 		// 增加权限控制，针对有編輯权限的允許查看他人录入数据, '000' <> ? <==> 忽略创建人这个查询条件
@@ -586,35 +625,64 @@ public abstract class _Database {
 		condition += " and ( " + DMUtil.customizeParse(_customizeTJ + " or -1 = ${userId} ") + " ) ";
 		
 		// 设置排序方式
-		String sortField = params.get("sortField");
+		String _sortField = params.get("sortField");
 		String sortType  = params.get("sortType");
+		if( EasyUtils.isNullOrEmpty(sortType) ) {
+			sortType = "asc";
+		}
 		
-		String orderby = "order by ";
-		if( !EasyUtils.isNullOrEmpty(sortField) && 
-				(this.fieldCodes.contains(sortField) || "createtime,updatetime".indexOf(sortField) >= 0) ) { // 判断字段是否存在，无需再检查SQL注入
-			
-			if("onlynull".equals(sortType)) {
-				condition += " and " + sortField + " is null ";
-			}
-			else if("notnull".equals(sortType)) {
-				condition += " and " + sortField + " is not null ";
-			}
-			else {
-				orderby += sortField;
-				if( EasyUtils.isNullOrEmpty(sortType) ) {
-					sortType = "asc";
+		List<String> sortFieldList = new ArrayList<String>();
+		if( !EasyUtils.isNullOrEmpty(_sortField) ) {
+			String[] sortFields = _sortField.split(","); // 支持按多个字段排序
+			for(String sortField : sortFields) {
+				// 判断字段是否存在，无需再检查SQL注入
+				if( this.fieldCodes.contains(sortField) || "createtime,updatetime".indexOf(sortField) >= 0 ) { 
+					if("onlynull".equals(sortType)) {
+						condition += " and " + sortField + " is null ";
+					}
+					else if("notnull".equals(sortType)) {
+						condition += " and " + sortField + " is not null ";
+					}
+					else if( noPointed || _fields.indexOf(sortField) >= 0) {
+						sortFieldList.add( sortField + " " + sortType );
+					}
 				}
-				orderby += " " + sortType + ", ";
 			}
 		}
-		orderby += " id desc "; // 始终加上ID排序，保证查询结果排序方式唯一。 如果是Oracle，再传入的fields参数里最好加上 0 as id，否则可能报：不是selected表达式
+		if( noPointed ) {
+			sortFieldList.add( "id desc"); // 始终加上ID排序，保证查询结果排序方式唯一
+		}
 		
-		String selectSQL = "select " + fields + 
-					" from  " + this.table + 
-					" where " + condition + orderby;
+		String orderby = "";
+		if(sortFieldList.size() > 0) {
+			orderby = " order by " + EasyUtils.list2Str(sortFieldList);
+		}
+		
+		// 是否有group by
+		String groupby = EasyUtils.obj2String( params.remove("groupby") );
+		if( !EasyUtils.isNullOrEmpty(groupby) ) {
+			groupby = " group by " + groupby + " ";
+		}
+		
+		String selectSQL = "select " + fields 
+					+ " from  " + this.table
+					+ " where " + condition 
+					+ groupby
+					+ orderby;
 		
 		SQLExcutor ex = new SQLExcutor();
 		ex.excuteQuery(selectSQL, paramsMap, page, pagesize, this.datasource);
+		
+		// 对结果集里的字段进行权限过滤，过渡掉没有查看权限的字段
+		if( !noPointed ) {
+			for(Map<String, Object> item : ex.result) {
+	    		for(String field : ex.selectFields) {
+	    			if( this.fieldCodes.contains(field) && !visiableFields.contains(field) ) {
+	    				item.remove(field);
+	    			}
+	    		}
+	        }
+		}
 		
 		return ex;
 	}
@@ -624,7 +692,7 @@ public abstract class _Database {
         sb.append("<grid><declare sequence=\"true\" header=\"checkbox\">").append("\n");
         
         int index = 0; 
-        for(String filed : fieldNames) {
+        for(String fieldName : fieldNames) {
             String fieldCode = fieldCodes.get(index);
             String fieldAlign = (String) EasyUtils.checkNull(fieldAligns.get(index), "center");
             String fieldWidth = fieldWidths.get(index);
@@ -641,8 +709,10 @@ public abstract class _Database {
             	fieldWidth = " width=\"" + fieldWidth + "\" ";
             }
             
-            if( PermissionHelper.checkRole(fieldRole2) && !"hidden".equals(fieldTypes.get(index)) ) {
-            	sb.append("<column name=\"" + fieldCode + "\" mode=\"" + fieldType + "\" caption=\"" + filed 
+            boolean isHidden = "hidden".equals( fieldTypes.get(index) );
+            if( PermissionHelper.checkRole(fieldRole2) && !isHidden ) {
+            	
+            	sb.append("<column name=\"" + fieldCode + "\" mode=\"" + fieldType + "\" caption=\"" + fieldName 
 					+ "\" align=\"" + fieldAlign + "\" " + fieldWidth + " />").append("\n");
             }
             index++;

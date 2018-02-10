@@ -127,6 +127,7 @@ function getQuarterEndDate(year, season){
 
 
 function forbidTimeScope(delda, p1, p2) {
+    var $ = jQuery;
     $('#' + p1).datebox({
         onSelect: function(date){
             var day2 =  $("#" + p2).datebox("getValue");

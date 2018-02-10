@@ -481,7 +481,7 @@ public class ReportAction extends BaseActionSupport {
     		Matcher m = p.matcher(define);
         	if( m.find() ) {
         		String nodeName = dt.getName();
-        		String url = "/tss/auth/xdata/json/" + dt.getTable() + "/1";
+        		String url = "/tss/xdata/json/" + dt.getTable() + "/1";
         		try {
         			Record group = recordService.getRecord( dt.getParentId() );
         			nodeName += "(" +group.getName()+ ")";

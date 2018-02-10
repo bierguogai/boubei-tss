@@ -10,13 +10,16 @@
 
 package com.boubei.tss.portal.engine.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.dom4j.Document;
+import org.dom4j.Element;
 
 import com.boubei.tss.portal.entity.Component;
+import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.XMLDocUtil;
 
 /**
@@ -72,10 +75,7 @@ public abstract class AbstractElementNode extends AbstractSubNode {
     	if(parametersOnPs != null) {
     	    Document paramsDoc = XMLDocUtil.dataXml2Doc(parametersOnPs);
             org.dom4j.Element paramsNode = (org.dom4j.Element) paramsDoc.selectSingleNode("//" + element.getComponentType());
-        	Map<String, String> configParamsMap = XMLDocUtil.dataNode2Map(paramsNode);
-            if(configParamsMap != null) {
-                getParameters().putAll(configParamsMap);
-            }
+            getParameters().putAll( XMLDocUtil.dataNode2Map(paramsNode) );
     	}
     }
     
@@ -93,7 +93,8 @@ public abstract class AbstractElementNode extends AbstractSubNode {
         parse(element.getDefinition(), element.getComponentType());
     }
 
-    protected Document parse(String definition, String elementName) {
+    @SuppressWarnings("unchecked")
+	protected Document parse(String definition, String elementName) {
         Document doc = XMLDocUtil.dataXml2Doc(definition);
         
         org.dom4j.Node htmlNode    = doc.selectSingleNode("/" + elementName + "/html");
@@ -105,18 +106,19 @@ public abstract class AbstractElementNode extends AbstractSubNode {
         this.style  = XMLDocUtil.getNodeText(styleNode);
         
         List<org.dom4j.Element> eventNodes = XMLDocUtil.selectNodes(doc, "/" + elementName + "/events/attach");
-        if(eventNodes != null){
-            for( org.dom4j.Element eventNode : eventNodes ){
-                this.events.put(eventNode.attributeValue("event"), eventNode.attributeValue("onevent"));
-            }   
-        }
+        eventNodes = (List<Element>) EasyUtils.checkNull(eventNodes, new ArrayList<org.dom4j.Element>());
+        for( org.dom4j.Element eventNode : eventNodes ){
+            this.events.put(eventNode.attributeValue("event"), eventNode.attributeValue("onevent"));
+        }   
         
         List<org.dom4j.Element> paramNodes = XMLDocUtil.selectNodes(doc, "/" + elementName + "/parameters/param");
-        if(paramNodes != null){
-            for( org.dom4j.Element paramNode : paramNodes ){
-                getParameters().put(paramNode.attributeValue("name"), paramNode.attributeValue("defaultValue"));
-            } 
-        } 
+        paramNodes = (List<Element>) EasyUtils.checkNull(paramNodes, new ArrayList<org.dom4j.Element>());
+        for( org.dom4j.Element paramNode : paramNodes ){
+            String attrName = paramNode.attributeValue("name");
+			String defaultVal = paramNode.attributeValue("defaultValue");
+			getParameters().put(attrName, defaultVal);
+        }
+        
         return doc;
     }
  

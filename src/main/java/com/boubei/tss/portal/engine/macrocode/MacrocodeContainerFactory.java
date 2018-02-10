@@ -68,15 +68,13 @@ public class MacrocodeContainerFactory {
      * @return
      */
     public static AbstractMacrocodeContainer newInstance(String code, AbstractElementNode node){
-        if(node instanceof DecoratorNode)
+        if(node instanceof DecoratorNode) {
             return new DecoratorMacrocodeContainer(code, (DecoratorNode) node);
-        
-        if(node instanceof LayoutNode)
+        }
+        else if(node instanceof LayoutNode) {
             return new LayoutMacrocodeContainer(code, (LayoutNode) node);
+    	}
         
-        if(node instanceof PortletNode)
-            return new PortletMacrocodeContainer(code, (PortletNode) node);
-        
-        return null;
+        return new PortletMacrocodeContainer(code, (PortletNode) node);
     }
 }

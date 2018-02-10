@@ -15,6 +15,7 @@
 		<column caption="应用系统ID" name="applicationId" display="none"/>
 		<column caption="对应系统用户ID" name="fromUserId" display="none"/>
 		<column caption="创建时间" name="createTime" width="90px"/>
+		<column caption="登录次数" name="logonCount" display="none"/>
 	</declare>
 	<data>
 	</data>

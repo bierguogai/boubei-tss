@@ -38,6 +38,8 @@ $(function() {
 
 	$.getJSON(URL_ROLE_LIST, {}, function(data) {
 		var el1 = $1("_role1"), el2 = $1("_role2");
+		data.push({});
+		data.reverse();
 		data.each(function(i, role) {
 			el1.options[i] = $.createOption(role, 1, 1);
 			el2.options[i] = $.createOption(role, 1, 1);
@@ -398,7 +400,17 @@ function batchImport() {
 var fieldTree, count = 0;
 function configDefine() {
 	var rform = $.F("recordForm");
-	var _define = $.parseJSON(rform.getData("define")) || [];
+	var defVal = rform.getData("define");
+
+	if(defVal && defVal.indexOf('{') < 0) {  // 根据Excel表头快速定义的录入表，eg: 仓库 货主 库位 货品 包装 数量
+		var columns = defVal.split(" ");
+		defVal = [];
+		columns.each(function(i, column) {
+			defVal.push( " {'label':'" +column.trim()+ "', 'code':'c" +(i+1)+ "'}" );
+		});
+		defVal = "[" + defVal.join(", \n") + "]";
+	}
+	var _define = $.parseJSON( defVal ) || [];
 
 	var fieldNodes = [];
 	_define.each(function(index, item){
@@ -492,12 +504,7 @@ function editFieldConfig() {
 
 		if(field === 'type') {
 			fieldValue = fieldValue.toLowerCase();
-			if(fieldValue == "date" || fieldValue == "datetime") {
-				$(".selectRelation").hide();
-			}
-			else {
-				$(".selectRelation").show();
-			}
+			checkType(fieldValue);
 		}
 
 		if( field === 'options' ) {
@@ -529,6 +536,47 @@ function editFieldConfig() {
 			}
 		} else {
 			fieldEl.value = fieldValue;
+		}
+
+		if( field == 'onchange' ) {
+			$(".ld>input").value("");
+			if( fieldValue ) {
+				if(fieldValue.indexOf("getNextLevelOption(") >= 0) {
+					var c = fieldValue.replace(/\^/g, "");
+					c = c.substr(c.indexOf("(")+1, c.indexOf(")")-c.indexOf("(")-1).split(",");
+					if(c.length == 3) {
+						$("#ldField").value( c[0].trim() );
+						$("#ldService").value( c[1].trim() );
+						$("#ldParam").value( c[2].trim() );
+					}
+				}
+				else {
+					$("#ldField").value("");
+					$("#ldService").value( fieldValue.trim() );
+					$("#ldParam").value("");
+				}
+			}
+
+			$1("ldField").onblur = $1("ldService").onblur = $1("ldParam").onblur = function() {
+				var v,
+					v1 = ($("#ldField").value()||"").trim(),
+					v2 = ($("#ldService").value()||"").trim(),
+					v3 = ($("#ldParam").value()||"").trim();
+
+				if(v1 && v2 && v3) {
+					v = "getNextLevelOption(^" +v1+ "^, ^" +v2+ "^, ^" +v3+ "^)";
+				} else {
+					v = v2;
+				}
+
+				$("#_onchange").value(v);
+				if(v) {
+					valuesMap['onchange'] = v;
+				} else {
+					delete valuesMap['onchange'];
+				}
+				activeNode.setAttribute("value", JSON.stringify(valuesMap));
+			};
 		}
 		
     	fieldEl.onblur = function() {
@@ -590,19 +638,29 @@ function editFieldConfig() {
     		} 
 
     		if(field === 'type') {
-    			if(newValue == "date" || newValue == "datetime" || newValue == "hidden") {
-    				if(newValue != "hidden") {
-    					$1("_defaultValue").setAttribute("placeholder", "示例：today-3");
-    				}
-					$(".selectRelation").hide();
-    			}
-				else {
-					$(".selectRelation").show();
+    			var tip = "";
+    			if(newValue == "date" || newValue == "datetime") {
+					tip = "示例：today-3";
 				}
+				$1("_defaultValue").setAttribute("placeholder", tip);
+    			checkType(newValue);
     		}
     		activeNode.setAttribute("value", JSON.stringify(valuesMap));
     	}
     });
+}
+
+function checkType(type) {
+	if(type == "date" || type == "datetime" || type == "hidden" || type == "file") {
+		$(".optionCfg").hide();
+	}
+	else {
+		$(".optionCfg").show();
+	}
+
+	if(type == "file") { $(".nofile").hide(); } else { $(".nofile").show(); }
+	if(type == "hidden") { $(".nohidden").hide(); } else { $(".nohidden").show(); }
+	if(type == "number") { $(".nonumber").hide(); } else { $(".nonumber").show(); }
 }
 
 function saveDefine() {

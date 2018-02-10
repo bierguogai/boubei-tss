@@ -176,12 +176,18 @@ hr { height: 4px; border: none; border-top: 1px dashed #95B8E7; }
 					
 			<hr>
 			<label>下拉列表：</label>
-			<input type="text" id="_options" placeholder="例: A|B 或 /tss/data/json/13" style="width: 175px;"/>
+			<input type="text" id="_options" placeholder="选项一|选项二 或 数据服务" style="width: 175px;"/>
 			&nbsp;<button class="tssbutton small blue" onclick="checkDataService()">数据服务</button>
 			<label style="margin-left: 10px;">是否多选：</label>
 			<input name="_multiple" id="_multiple" type="checkbox" value="true">
 			<br>
-			<label>字段联动：</label><input type="text" id="_onchange" style="width: 300px" />
+			<label>联动参数：</label>
+			<span class="ld">
+				<input type="text" id="ldField" style="width: 65px;" placeholder="参数序号"/>
+				<input type="text" id="ldService" style="width: 200px;" placeholder="数据服务地址, 例:/tss/data/json/13"/>
+				<input type="text" id="ldParam" style="width: 65px;" placeholder="服务参数"/>
+			</span>
+			<input type="hidden" id="_onchange" style="width: 345px;margin-top:1px;"/>
 		</div>
 
 		<input type="hidden" id="_isMacrocode" />

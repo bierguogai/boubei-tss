@@ -41,7 +41,12 @@ var Field = function(info) {
 		if(this.jsonUrl) {
 			this.mode = "combotree";
 		} else if(this.options && this.options.codes && this.options.codes.length) {
-			this.mode = "combo";
+			// this.mode = this.multiple ? "combotree" : "combo";
+			this.mode = "combotree";
+		}
+		if(this.type == "file") {
+			this.mode = "combotree";
+			this.multiple = true;
 		}
 		switch(this.mode) {
 			case "number":
@@ -160,15 +165,13 @@ var Field = function(info) {
 		str[str.length] = "</xform>";
 		
 		var tssForm = $.F(formId, $.XML.toNode(str.join("")));
+
 		fields.each(function(i, field){
 			if( !field.jsonUrl ) return;
-			$.ajax({
-				url : field.jsonUrl,
-				method: "GET",
-				type : "json",
-				ondata : function() { 
-					var result = this.getResponseJSON();
-					if( result && result.length ) {
+
+			function loadList() {
+				$.getJSON(field.jsonUrl, 
+					function(result) { 
 						var values = [], texts = [];
 						result.each(function(i, item){
 							values.push( $.vt(item).value );
@@ -181,9 +184,21 @@ var Field = function(info) {
 
 						// 列表数据加载后刷新下显示值（form生成时，因列表数据还没取到，没法显示下拉控件的值）
 						field.defaultValue && tssForm.updateDataExternal(field.name, field.defaultValue); 
-					}			
-				}
-			});
+					}, 
+					"GET"
+				);
+			}
+
+			loadList();
+
+			var tdNode = tssJS("#" + field.name)[0].parentNode;
+            var refreshBT = tssJS.createElement('img');
+            refreshBT.src = "images/icon_refresh.gif";
+            refreshBT.title = "刷新下拉列表";
+            tssJS(refreshBT).css("margin-left", "4px").click( function() {      
+                loadList();
+            } );  
+            tdNode.appendChild(refreshBT);
 		});
 
 		return tssForm;
@@ -196,13 +211,8 @@ var Field = function(info) {
 		var params = {};
 		params[currLevel] = currLevelValue;
  
-		$.ajax({
-			url : service,
-			method: "POST",
-			params : params,
-			type : "json",
-			ondata : function() { 
-				var result = this.getResponseJSON();
+		$.getJSON(service, params, 
+			function(result) { 
 				if( result && result.length ) {
 					var values = [], texts = [];
 					result.each(function(i, item){
@@ -218,7 +228,7 @@ var Field = function(info) {
 					 ]);
 				}				
 			}
-		});
+		);
 	};
 
 	/* 判断方法是否相等 */
@@ -246,8 +256,8 @@ var Field = function(info) {
 
 	$.vt = function(item, text, value) {
 		var result = {};
-		result.value = item[value] || item.value || item.name || item.id    || item[0] || '';
-		result.text  = item[text]  || item.name  || item.text || item.value || item[2] || item[1] || item[0] || '';
+		result.value = item[value] || item.value || item.name || item.code  || item.id   || item[0] || '';
+		result.text  = item[text]  || item.name  || item.text || item.value || item.code || item[2] || item[1] || item[0] || '';
 		return result;
 	};
 

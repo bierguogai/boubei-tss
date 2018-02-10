@@ -22,7 +22,10 @@ public class _Filed {
 	public static String TYPE_INT      = "int";
 	public static String TYPE_DATE     = "date";
 	public static String TYPE_DATETIME = "datetime";
+	public static String TYPE_FILE 	   = "file";
 	public static String TYPE_HIDDEN   = "hidden";
+	
+	public static String COLUMN = "f";
 
 	/**
 	 * 字符串的类型字段的长度 = height/18 *255

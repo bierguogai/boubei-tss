@@ -21,6 +21,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.dom4j.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,6 +37,7 @@ import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.DataExport;
 import com.boubei.tss.dm.ddl._Database;
+import com.boubei.tss.dm.ddl._Filed;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.record.file.RecordAttach;
 import com.boubei.tss.dm.record.permission.RecordPermission;
@@ -58,7 +60,7 @@ import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
 
 @Controller
-@RequestMapping( {"/auth/xdata", "/xdata/api"})
+@RequestMapping( {"/auth/xdata", "/xdata/api", "/xdata"})
 public class _Recorder extends BaseActionSupport {
 	
 	public static final int PAGE_SIZE = 50;
@@ -121,14 +123,16 @@ public class _Recorder extends BaseActionSupport {
 			throw new BusinessException(EX.DM_10);
 		}
 		
-        return new Object[] { 
-        		getDB(recordId, Record.OPERATION_CDATA, Record.OPERATION_EDATA, Record.OPERATION_VDATA).getFields(), 
+        _Database _db = getDB(recordId, Record.OPERATION_CDATA, Record.OPERATION_EDATA, Record.OPERATION_VDATA);
+		return new Object[] { 
+        		_db.getFields(), 
         		_record.getCustomizeJS(), 
         		_record.getCustomizeGrid(),
         		_record.getNeedFile(),
         		_record.getBatchImp(),
         		_record.getName(),
-        		_record.getCustomizePage()
+        		_record.getCustomizePage(),
+        		_db.getVisiableFields(false)
         	};
     }
 	
@@ -157,34 +161,22 @@ public class _Recorder extends BaseActionSupport {
     	
     	Long recordId = getRecordId(record);
     	Map<String, String> requestMap = prepareParams(request, recordId);
-        _Database _db = getDB(recordId);
-        
-        SQLExcutor ex = _db.select(page, PAGE_SIZE, requestMap); // db.select 里已经包含权限控制
-        
-        // 读取记录的附件信息
-        Map<Object, Object> itemAttach = new HashMap<Object, Object>();
-        if(_db.needFile) {
-        	String sql = "select itemId item, count(*) num from dm_record_attach where recordId = ? group by itemId";
-			List<Map<String, Object>> attachResult = SQLExcutor.query(DMConstants.LOCAL_CONN_POOL, sql, recordId);
-        	for(Map<String, Object> temp : attachResult) {
-        		itemAttach.put(temp.get("item").toString(), temp.get("num"));
-        	}
-        }
-        
+    	boolean pointed = requestMap.containsKey("fields") ;
+    	_Database _db = getDB(recordId);
+    	
+        SQLExcutor ex = queryRecordData(_db, page, PAGE_SIZE, requestMap, pointed);
+ 
         List<IGridNode> temp = new ArrayList<IGridNode>();
 		for(Map<String, Object> item : ex.result) {
+			 
             DefaultGridNode gridNode = new DefaultGridNode();
             gridNode.getAttrs().putAll(item);
             
-            Object itemId = item.get("id").toString();
-            Object attachNum = itemAttach.get(itemId);
-            if(attachNum != null) {
-            	gridNode.getAttrs().put("fileNum", "<a href='javascript:void(0)' onclick='manageAttach(" + itemId + ")'>" + attachNum + "</a>");
-            }
-            
             temp.add(gridNode);
         }
-        GridDataEncoder gEncoder = new GridDataEncoder(temp, _db.getGridTemplate());
+		
+        Document gridTemplate = pointed ? ex.getGridTemplate(_db.cnm) : _db.getGridTemplate();
+		GridDataEncoder gEncoder = new GridDataEncoder(temp, gridTemplate);
         
         PageInfo pageInfo = new PageInfo();
         pageInfo.setPageSize(PAGE_SIZE);
@@ -192,6 +184,55 @@ public class _Recorder extends BaseActionSupport {
         pageInfo.setPageNum(page);
         
         print(new String[] {"RecordData", "PageInfo"}, new Object[] {gEncoder, pageInfo});
+    }
+    
+    private SQLExcutor queryRecordData(_Database _db, int page, int pagesize, Map<String, String> requestMap, boolean pointed) {
+    	
+    	SQLExcutor ex = _db.select(page, PAGE_SIZE, requestMap);
+    	if( pointed ) {
+    		return ex;
+    	}
+    	
+    	/* 读取记录的附件信息 */
+        Map<Object, Object> itemAttach = new HashMap<Object, Object>();
+        if(_db.needFile) {
+        	String sql = "select itemId item, count(*) num from dm_record_attach where recordId = ? group by itemId";
+			List<Map<String, Object>> attachResult = SQLExcutor.query(DMConstants.LOCAL_CONN_POOL, sql, _db.recordId);
+        	for(Map<String, Object> temp : attachResult) {
+        		itemAttach.put(temp.get("item").toString(), temp.get("num"));
+        	}
+        }
+		for(Map<String, Object> item : ex.result) {
+			// 把附件字段替换为链接
+            int index = 0;
+    		for(String field : _db.fieldCodes) {
+    			boolean isFileField = _Filed.TYPE_FILE.equals(_db.fieldTypes.get(index++));
+    			if( isFileField ) {
+    				String[] values = EasyUtils.obj2String(item.get(field)).split(",");
+    				String urls = "";
+    				for(String value : values) {
+    					int splitIndex = value.indexOf("#");
+        				if(splitIndex < 0) continue;
+        				
+        				String name = value.substring(0, splitIndex);
+        				String id = value.substring(splitIndex + 1);
+        				urls += "<a href='/tss/auth/xdata/attach/download/" +id+ "' target='_blank'>" +name+ "</a>&nbsp&nbsp";
+    				}
+
+    				item.put(field, urls);
+    			}
+    		}
+    		
+            Object itemId = item.get("id").toString();
+            Object attachNum = itemAttach.get(itemId);
+            if(attachNum != null) {
+            	item.put("fileNum", "<a href='javascript:void(0)' onclick='manageAttach(" + itemId + ")'>" + attachNum + "</a>");
+            }
+            
+            /* TODO 添加工作流信息 */
+        }
+		
+		return ex;
     }
     
     @RequestMapping("/json/{record}/{page}")
@@ -207,19 +248,21 @@ public class _Recorder extends BaseActionSupport {
     	Long recordId = getRecordId(record);
     	
     	Map<String, String> requestMap = prepareParams(request, recordId);
+    	boolean pointed = requestMap.containsKey("fields") ;
     	int _pagesize = getPageSize(requestMap, PAGE_SIZE*20);
     	
         _Database _db = getDB(recordId);
-        SQLExcutor excutor = _db.select( page, _pagesize, requestMap );
+        
+        SQLExcutor ex = queryRecordData(_db, page, _pagesize, requestMap, pointed);
         
         if( requestMap.containsKey("rows") ) { // for EasyUI
         	Map<String, Object> returlVal = new HashMap<String, Object>();
-        	returlVal.put("total", excutor.count);
-        	returlVal.put("rows", excutor.result);
+        	returlVal.put("total", ex.count);
+        	returlVal.put("rows", ex.result);
         	return returlVal;
         }
         
-		return excutor.result;
+		return ex.result;
     }
     
     @RequestMapping("/json/{record}")
@@ -246,6 +289,7 @@ public class _Recorder extends BaseActionSupport {
     	long start = System.currentTimeMillis();
     	
     	Map<String, String> requestMap = DMUtil.getRequestMap(request, true);  // GET Method Request
+    	boolean pointed = requestMap.containsKey("fields") ;
     	Long recordId = getRecordId(record);
     	_Database _db = getDB(recordId);
         
@@ -265,7 +309,7 @@ public class _Recorder extends BaseActionSupport {
         }
         
         // 过滤出用户可见的表头列
-		List<String> visiableFields = _db.getVisiableFields(true);
+		List<String> visiableFields = _db.getVisiableFields(true, pointed ? ex.selectFields : _db.fieldCodes);
 		String exportPath = DataExport.exportCSV(fileName, ex.result, visiableFields);
         DataExport.downloadFileByHttp(response, exportPath);
 
@@ -305,13 +349,27 @@ public class _Recorder extends BaseActionSupport {
     	
     	Long recordId = getRecordId(record);
     	Map<String, String> requestMap = prepareParams(request, recordId);
+    	Long _tempID = EasyUtils.obj2Long(requestMap.remove("_tempID"));
     	
     	_Database _db = getDB(recordId, Record.OPERATION_CDATA);
     	Long newID = null;
     	try {
     		newID = _db.insertRID( requestMap );
+    		
+    		File attachDir1 = new File(RecordAttach.getAttachDir(recordId, _tempID));
+    		if( attachDir1.exists() ) { // 将挂在临时记录ID下的附件挂到新生成的记录ID上
+    			Map<Integer, Object> paramsMap = new HashMap<Integer, Object>();
+    			paramsMap.put(1, newID);
+    			paramsMap.put(2, recordId);
+    			paramsMap.put(3, _tempID);
+				SQLExcutor.excute("update dm_record_attach set itemId=? where recordId=? and itemId=?", paramsMap, _db.datasource);
+				
+				File attachDir2 = new File(RecordAttach.getAttachDir(recordId, newID));
+				attachDir1.renameTo(attachDir2);
+    		}
     	}
     	catch(Exception e) {
+    		_db.delete(newID); // 回滚
     		throwEx(e, _db + " create ");
     	}
     	return newID;
@@ -424,7 +482,7 @@ public class _Recorder extends BaseActionSupport {
     	Map<String, String> requestMap = prepareParams(request, recordId);
     	String csv = requestMap.get("csv");
     	
-    	_Database _db = getDB(recordId, Record.OPERATION_CDATA);
+    	_Database _db = getDB(recordId, Record.OPERATION_CDATA, Record.OPERATION_EDATA);
     	
 		String[] rows = EasyUtils.split(csv, "\n");
 		List<Map<String, String>> insertList = new ArrayList<Map<String, String>>();
@@ -593,7 +651,10 @@ public class _Recorder extends BaseActionSupport {
 	 * 因db.select方法里对数据进行了权限过滤，所以能按ID查询出来的都是有权限查看的
 	 */
 	private boolean checkRowVisible(Long recordId, Long itemId) {
-		if( !SecurityUtil.isHardMode() || recordId < 0 ) return true;
+		if( !SecurityUtil.isHardMode() || recordId < 0 
+				|| itemId > 1510000000000L) { // 临时记录ID，新建时
+			return true;
+		}
 		
 		Map<String, String> requestMap = new HashMap<String, String>();
 		requestMap.put("id", EasyUtils.obj2String(itemId));

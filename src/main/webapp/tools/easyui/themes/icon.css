@@ -94,3 +94,66 @@
 .icon-large-chart{
 	background:url('icons/large_chart.png') no-repeat center center;
 }
+.icon-tss-copy{
+	background:url('icons/tss_copy.gif') no-repeat center center;
+}
+.icon-tss-define{
+	background:url('icons/tss_define.gif') no-repeat center center;
+}
+.icon-tss-del{
+	background:url('icons/tss_del.gif') no-repeat center center;
+}
+.icon-tss-down{
+	background:url('icons/tss_down.gif') no-repeat center center;
+}
+.icon-tss-edit{
+	background:url('icons/tss_edit.gif') no-repeat center center;
+}
+.icon-tss-export{
+	background:url('icons/tss_export.gif') no-repeat center center;
+}
+.icon-tss-folder{
+	background:url('icons/tss_folder.gif') no-repeat center center;
+}
+.icon-tss-folder-new{
+	background:url('icons/tss_folder_new.gif') no-repeat center center;
+}
+.icon-tss-import{
+	background:url('icons/tss_import.gif') no-repeat center center;
+}
+.icon-tss-move{
+	background:url('icons/tss_move.gif') no-repeat center center;
+}
+.icon-tss-record-0{
+	background:url('icons/tss_record_0.png') no-repeat center center;
+}
+.icon-tss-record-1{
+	background:url('icons/tss_record_1.png') no-repeat center center;
+}
+.icon-tss-report-0{
+	background:url('icons/tss_report_0.gif') no-repeat center center;
+}
+.icon-tss-report-1{
+	background:url('icons/tss_report_1.gif') no-repeat center center;
+}
+.icon-tss-reportGroup{
+	background:url('icons/tss_reportGroup.gif') no-repeat center center;
+}
+.icon-tss-schedule{
+	background:url('icons/tss_schedule.gif') no-repeat center center;
+}
+.icon-tss-service{
+	background:url('icons/tss_service.gif') no-repeat center center;
+}
+.icon-tss-start{
+	background:url('icons/tss_start.gif') no-repeat center center;
+}
+.icon-tss-stop{
+	background:url('icons/tss_stop.gif') no-repeat center center;
+}
+.icon-tss-up{
+	background:url('icons/tss_up.gif') no-repeat center center;
+}
+.icon-tss-view{
+	background:url('icons/tss_view.gif') no-repeat center center;
+}

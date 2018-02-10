@@ -163,7 +163,8 @@ public abstract class AbstractMacrocodeContainer {
         Map<String, String> paramsMap = node.getParameters();
         Map<String, Object> params = new HashMap<String, Object>();
     	for( Entry<String, String> entry : paramsMap.entrySet() ) {
-            params.put(MacrocodeCompiler.createVariable(entry.getKey()), entry.getValue());
+            String key = MacrocodeCompiler.createVariable(entry.getKey());
+			params.put(key, entry.getValue());
         }
         
         return params;

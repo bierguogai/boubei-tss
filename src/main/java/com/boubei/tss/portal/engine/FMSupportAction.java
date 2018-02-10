@@ -92,11 +92,11 @@ public abstract class FMSupportAction extends BaseActionSupport {
         if(portalId == null) return null;
         
         URL url = URLUtil.getWebFileUrl(PortalConstants.PORTAL_MODEL_DIR);
-        List<File> list = FileHelper.listSubDir(new File(url.getFile()));
-        for( File file : list ) {
+        List<File> dirList = FileHelper.listSubDir(new File(url.getFile()));
+        for( File dir : dirList ) {
             // 判断文件夹路径是否以 "_12"这样结尾，是的话表示是当前门户的资源文件夹
-            if(file.getName().endsWith("_" + portalId)) {
-                return file;
+            if(dir.getName().endsWith("_" + portalId)) {
+                return dir;
             }
         }
         return null;

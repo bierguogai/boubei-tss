@@ -257,9 +257,11 @@
             label:"删除",
             callback: function() { delelteUser(); },
             icon:ICON + "del.gif",
-            visible:function() { return getUserOperation("2"); }
+            visible:function() { return getUserOperation("2") && getUserAttr("logonCount") === '0'; }
         }
- 
+        /* 登录过的用户不能被删除，只能被停用。
+           防止域管理员把域下用户删除，导致删除用户创建的数据表记录无法被查询到，甚至会可能被其它域下后期注册的同名用户吸走了） */
+
         var menu1 = new $.Menu();
         menu1.addItem(item1);
         menu1.addItem(item2);
@@ -305,10 +307,12 @@
                 if(rootId == '-2') {
                     rootId = -7;
                 }
-                showUserList(defaultOpenId || rootId);
 
-                var selfRegisterNode = tree.getTreeNodeById(-7);
-                selfRegisterNode && getTreeOperation(selfRegisterNode); // 获取对此节点的权限信息
+                defaultOpenId = defaultOpenId || rootId;
+                showUserList(defaultOpenId);
+
+                var defaultOpenNode = tree.getTreeNodeById( defaultOpenId );
+                defaultOpenNode && getTreeOperation(defaultOpenNode); // 获取对此节点的权限信息
             }
 
             tree.onTreeNodeActived = function(ev){ onTreeNodeActived(ev); }
@@ -752,7 +756,11 @@
  
     /* 获取用户状态 */
     function getUserState(){
-        return $.G("grid").getColumnValue("disabled"); 
+        return getUserAttr("disabled"); 
+    }
+
+    function getUserAttr(attr){
+        return $.G("grid").getColumnValue(attr); 
     }
  
     function stopOrStartUser(state) {

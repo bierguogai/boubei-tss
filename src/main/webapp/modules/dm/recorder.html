@@ -30,7 +30,7 @@
 
     #page1Form { height: 85%; overflow: auto; }
     #page1Form td[width="88"]>label { display: inline-block; width: 88px; }
-    #searchFormDiv { max-width: 600px; max-height: 500px; left: 50px; display:none; }
+    #searchFormDiv { max-width: 600px; max-height: 500px; left: 200px; top: 50px; display:none; }
     #searchFormDiv .content { max-height: 480px; }
 
     #customizeBox { display: inline-block; }
@@ -39,6 +39,8 @@
     #uploadForm  { background-color: #E0ECFF; padding: 5px 5px 5px 10px; margin-top: -3px; }
     #attachGrid { height: 200px; background-color: #fff; }
     #attachFile { color: #fff; background-color: #323232; padding: 2px 0px 1px 0px; }
+
+    /*#btn_create { background-color: red; }*/
 
 </style>
 
@@ -76,7 +78,7 @@ if( IS_TEST ) {
 
 // 录入表定义信息
 var recordId=1, recordName="录入表", openItemId,
-    recordDefine, customizeJS, customizeGrid, needFile, batchImp;
+    recordDefine, customizeJS, customizeGrid, needFile, batchImp, visiableFields;
 
 // 用户权限信息
 var _operation = ['1','2','3','4','5'], 
@@ -99,7 +101,7 @@ var preListener, // 在表单保存前触发，如不通过，则终止保存
 // 缓存查询条件，增加删除修改后刷新Grid可以继续使用
 var params = {};   
 
-$(function() {
+tssJS(function() {
     
     var globalValiable = window.parent.globalValiable;
     if( globalValiable && globalValiable._operation ) {
@@ -112,12 +114,12 @@ $(function() {
         return;
     }
 
-    recordId = $.Query.get("id");
-    recordName = $.Query.get("name");
-    openItemId = $.Query.get("itemId");
+    recordId = tssJS.Query.get("id");
+    recordName = tssJS.Query.get("name");
+    openItemId = tssJS.Query.get("itemId");
 
     if(!recordId && recordName) {
-        $.post(URL_GET_RECORD_ID, {"name": decodeURI(recordName)}, function(result) {
+        tssJS.post(URL_GET_RECORD_ID, {"name": decodeURI(recordName)}, function(result) {
             recordId = result;
             getOperation();
         });
@@ -139,7 +141,7 @@ function init() {
     // 先取用户权限信息，Grid定制依赖具体权限
     var params = {};
 
-    $.ajax({
+    tssJS.ajax({
         url : URL_GET_USER_HAS,
         method : "GET",
         params: params,
@@ -154,7 +156,7 @@ function init() {
             userAssistGroups = result[5];
 
             // 获取表单定义信息
-            $.ajax({
+            tssJS.ajax({
                 url : URL_GET_DEFINES + recordId,
                 type : "json",
                 ondata: function() {
@@ -166,6 +168,7 @@ function init() {
                     batchImp      = (result[4] == 1);
                     recordName    = result[5];
                     customizePage = result[6];
+                    visiableFields= result[7];
 
                     // if has customize page
                     if( (customizePage||"").indexOf("html") > 0 ) {
@@ -187,7 +190,7 @@ function init() {
                      * 注：customizeGrid可用作全局js，customizeJS只有在录入Form打开后才加载。
                      */
                     if(customizeGrid) {
-                        $.createScript( customizeGrid );
+                        tssJS.createScript( customizeGrid );
                     }
                 }
             });
@@ -195,21 +198,26 @@ function init() {
     });
 }
 
+function refreshTable() {
+    params = {};
+    loadGridData(1);
+} 
+
 function initMenus() {
-    $("#rcTitle").html("【" + recordName + "】");
+    tssJS("#rcTitle").html("【<a href='javascript:void(0)' onclick='refreshTable()'> " +recordName+ "（刷新）</a>】");
 
     if( !_operation.contains("1") ) {
-        $("#btn_create").hide();
+        tssJS("#btn_create").hide();
     } 
     if( !_operation.contains("1") || !batchImp ) {
-        $("#btn_imp").hide();
-        $("#btn_tl").hide();
+        tssJS("#btn_imp").hide();
+        tssJS("#btn_tl").hide();
     }
     if( !_operation.contains("1") && !_operation.contains("4") && !_operation.contains("5")) {
-        $("#btn_search").hide();
+        tssJS("#btn_search").hide();
     }
     if( !_operation.contains("5") ) { // 只有维护数据权限的角色才能使用批量删除
-        $("#btn_batch_del").hide();
+        tssJS("#btn_batch_del").hide();
     }
 
     /* Grid菜单初始化  */
@@ -223,7 +231,7 @@ function initMenus() {
         label:"复制",
         callback: function() { showDetail("_copy") },
         icon: "images/icon_copy.gif",
-        visible:function() {return  _operation.contains("1");}
+        visible:function() {return  _operation.contains("1") && tssJS.G("grid").getColumnValue("id");}
     }
     var item3 = {
         label:"删除",
@@ -243,7 +251,7 @@ function initMenus() {
         visible:function() { return canEditRow(); }
     }
 
-    var menu = new $.Menu();
+    var menu = new tssJS.Menu();
     menu.addItem(item1);
     menu.addItem(item2);
     menu.addItem(item3);
@@ -260,42 +268,47 @@ function canEditRow(rowID) {
         return true;
     }
     else { // 编辑（本人及有维护数据权限的人能编辑）
-        var creator = $.G("grid").getColumnValue("creator");       
+        var creator = tssJS.G("grid").getColumnValue("creator");   
+        var id = tssJS.G("grid").getColumnValue("id");
+        if( !id )  {
+            return false; // 透析模式
+        }
         return (_operation.contains("1") && userCode == creator) || _operation.contains("5");
     }
 }
 
 /* grid加载数据  */
 function loadGridData(page) {
-    $.showGrid(URL_DATA_XML + recordId, XML_SOURCE_LIST, showDetail, "grid", page, params);
+    tssJS.showGrid(URL_DATA_XML + recordId, XML_SOURCE_LIST, showDetail, "grid", page, params);
 }
 
 /* 显示资源详细信息 */
 function showDetail(rowID) {    
-    var version;
     if(rowID) {
         if(rowID == '_copy') {
-            rowID = $.G("grid").getColumnValue("id") + '_copy';
+            rowID = tssJS.G("grid").getColumnValue("id") + '_copy';
         }
     }
     else {
-        rowID = $.G("grid").getColumnValue("id");
-        version = $.G("grid").getColumnValue("version");
+        rowID = tssJS.G("grid").getColumnValue("id");
+        if(!rowID) {
+            return; // 透析模式
+        }
     }
     var rowName = recordName + rowID;
 
     var callback = {};
     callback.onTabClose = function(eventObj){
         if( ws.noTabOpend() ) {
-            $("#ws").hide();
+            tssJS("#ws").hide();
         }            
-        delete $.cache.XmlDatas[rowID];  // 清除缓存的数据，可能已经做了修改。关闭意味着放弃修改内容
+        delete tssJS.cache.XmlDatas[rowID];  // 清除缓存的数据，可能已经做了修改。关闭意味着放弃修改内容
         detachReminder(rowID); // 解除提醒
     };
 
     callback.onTabChange = function() {
         setTimeout(function() {
-            loadDetailData(rowID, version);
+            loadDetailData(rowID);
 
         }, TIMEOUT_TAB_CHANGE);
     };
@@ -307,40 +320,90 @@ function showDetail(rowID) {
     inf.callback = callback;
     var tab = ws.open(inf);   
 
-    $("#ws").show(true);    
+    tssJS("#ws").show(true);    
 }
 
-var uniqueFlag = false, uniqueMsg;
+function isCreate(rowID) {
+    return rowID == '_new' || (rowID+"").indexOf('_copy') > 0;
+}
+
+var uniqueFlag = false, uniqueMsg, _tempID;
 function loadDetailData(rowID, version) {
-    var form, dataNode = $.cache.XmlDatas[rowID];
+    var form, dataNode = tssJS.cache.XmlDatas[rowID],
+        isCreateRow = isCreate(rowID);
+    _tempID = isCreateRow ? $.now() : rowID;
 
     function showInForm() {
-        xform = $.json2Form("page1Form", recordDefine, null, customizeJS);
-        xform.template.dataNode.id = rowID;
-        $.cache.XmlDatas[rowID] = xform.template.dataNode;
-        attachReminder(rowID, xform); // 离开提醒
+        xform = tssJS.json2Form("page1Form", recordDefine, null, customizeJS);
+        xform.template.dataNode.id = _tempID;
+        tssJS.cache.XmlDatas[rowID] = xform.template.dataNode;
+        attachReminder(_tempID, xform); // 离开提醒
 
         recordDefine.each(function(i, f){
             // 控制字段是否能被编辑和查看（按角色）
             f.role1 && forbid(f.code, f.role1);
             f.role2 && !checkRole(f.role2) && hideFiled(f.code);
 
+            // 为附件字段添加附件列表
+            if(f.type == 'file') {
+                // 选择框后面，增加一个上传按钮
+                var $el = tssJS("#" + f.code);
+                var tdNode = $el[0].parentNode;
+                var uploadBtn = tssJS.createElement('img');
+                uploadBtn.src = "images/icon_up.gif";
+                uploadBtn.title = "上传附件";
+                tssJS(uploadBtn).css("margin-left", "4px").click( function() {      
+                    manageAttach( _tempID, "form");
+                } );  
+                tdNode.appendChild(uploadBtn);
+
+                function loadList() {
+                    tssJS.getJSON("/tss/auth/xdata/attach/json/"+recordId+"/"+_tempID, function(result) {
+                        var values = [], texts = [];
+                        if( result && result.length ) {
+                            result.each(function(i, item){
+                                values.push( item.name +"#"+ item.id );
+                                texts.push( item.name );
+                            });
+                        } else {
+                            values.push(  );
+                            texts.push( "没有附件，请先上传" );
+                        }
+                        $el.css("height", "20px");
+                        xform.updateField(f.code, [
+                            {"name": "mode", "value": "combotree"},
+                            {"name": "texts", "value": texts.join('|')},
+                            {"name": "values", "value": values.join('|')}
+                         ]);
+                    });
+                }
+                loadList();
+
+                var refreshBT = tssJS.createElement('img');
+                refreshBT.src = "images/icon_refresh.gif";
+                refreshBT.title = "刷新附件下拉列表";
+                tssJS(refreshBT).css("margin-left", "6px").click( function() {      
+                    loadList();
+                } );  
+                tdNode.appendChild(refreshBT);
+            }
+
             // 为有唯一性约束要求的字段添加检查事件
             var code = f.code, unique = f.unique == 'true';
-            unique && $("#"+code).blur( function() {
-                var val = ($("#"+code).value()||'').trim();
+            unique && tssJS("#"+code).blur( function() {
+                var val = (tssJS("#"+code).value()||'').trim();
                 updateField(code, val);
                 var params = {"strictQuery": "true"};
                 params[code] = val;
 
-                val && $.getJSON("/tss/auth/xdata/json/"+recordId, params, 
+                val && tssJS.getJSON("/tss/auth/xdata/json/"+recordId, params, 
                     function(result) {
                         if( isNew() ) { uniqueFlag = result.length > 0; }
                         else { uniqueFlag = result.length > 1; }  // 修改行自身不算 
                 
                         if(uniqueFlag) {
                             uniqueMsg = f.label+"为【" +val+ "】的记录已存在，不能重复";
-                            $.alert(uniqueMsg);
+                            tssJS.alert(uniqueMsg);
                         }
                 }  );
             });
@@ -348,21 +411,21 @@ function loadDetailData(rowID, version) {
 
         // 设置保存/关闭按钮操作
         if( canEditRow(rowID) && (!disableSave || !disableSave())) {
-            $("#page1BtSave").show().click( function() { saveSource(rowID, version);  } );
+            tssJS("#page1BtSave").show().click( function() { saveSource(rowID, isCreateRow);  } );
         } else {
-            $("#page1BtSave").hide();
+            tssJS("#page1BtSave").hide();
         }
-        $("#page1BtCancel").click( function() { 
+        tssJS("#page1BtCancel").click( function() { 
             ws.closeActiveTab(); 
         } );
 
-        $('#btnViewAttach').remove();
-        if(needFile && rowID != '_new' && (rowID+"").indexOf('_copy') < 0) {
-            var newBtn = $.createElement('button', 'tssbutton small blue', 'btnViewAttach');
-            $(newBtn).html("管理附件").click( function() {      
-                manageAttach(rowID, "form");
+        tssJS('#btnViewAttach').remove();         
+        if(needFile) {
+            var newBtn = tssJS.createElement('button', 'tssbutton small blue', 'btnViewAttach');
+            tssJS(newBtn).html("管理附件").click( function() {      
+                manageAttach( _tempID, "form");
             } );  
-            $("WorkSpace\\:PageStep").appendChild(newBtn);
+            tssJS("WorkSpace\\:PageStep").appendChild(newBtn);
         }  
     }
 
@@ -372,7 +435,7 @@ function loadDetailData(rowID, version) {
         var nodes = dataNode.querySelectorAll("row *");
         for(var i = 0; i < nodes.length; i++) {
             var node = nodes[i];
-            kvMap[node.nodeName] = $.XML.getText(node);
+            kvMap[node.nodeName] = tssJS.XML.getText(node);
         }
 
         recordDefine.each(function(i, field){
@@ -385,16 +448,10 @@ function loadDetailData(rowID, version) {
                 field.defaultValue = field._defaultValue;
             });
         }
-        else { // 初次加载从后台获取（Grid上的值无法保留换行符）
-/*
-            var grid = $.G("grid");
-            recordDefine.each(function(i, field){
-                field.defaultValue = grid.getColumnValue(field.code);
-            }); 
-*/          
-            $.getJSON(URL_DATA_JSON + recordId + "/1", {"id": rowID}, function(data) {
+        else { // 初次加载从后台获取（Grid上的值无法保留换行符）    
+            tssJS.getJSON(URL_DATA_JSON + recordId + "/1", {"id": rowID}, function(data) {
                 if(!data.length) {
-                    return alert("该记录已经不存在，可能已被删除。");
+                    return alert("该记录不存在，可能已被其他人删除。");
                 }
                 var item = data[0];
                 recordDefine.each(function(i, field){
@@ -410,52 +467,54 @@ function loadDetailData(rowID, version) {
     showInForm();
 }
 
-function saveSource(rowID, version) {
-    var xform = $.F("page1Form");  
+function saveSource(rowID, isCreate) {
+    var xform = tssJS.F("page1Form");  
     if( !xform.checkForm() ) return;
 
     if(uniqueFlag) {
-        return $.alert(uniqueMsg);
+        return tssJS.alert(uniqueMsg);
     }
 
-    if( preListener && $.isFunction(preListener) ) {
+    if( preListener && tssJS.isFunction(preListener) ) {
         var result = preListener();
         if(!result) return;
     }
 
-    var request = new $.HttpRequest();
+    var request = new tssJS.HttpRequest();
     request.url = URL_SAVE_SOURCE + recordId;
     request.headers.noAlert = true;
     request.exEmpty = false; // 字段清空了也要传回后台，不然就无法清空字段了
 
-    var dataNode = $.cache.XmlDatas[rowID];
+    var dataNode = tssJS.cache.XmlDatas[rowID];
     request.setFormContent(dataNode);
-    version && request.addParam("_version", version);
+    request.addParam("_tempID", _tempID);
 
-    var isUpdate = (rowID != '_new' && (rowID + "").indexOf('_copy') < 0);
+    var isUpdate = !isCreate;
     if( isUpdate ) {
        request.url += "/" + rowID;
 
        // update操作，检查id是否和form里的一致，防止多个修改时发生串数据现象
        if( rowID != dataNode.id ) {
-            $.tssTip("本次修改的数据有异常，请刷新页面后重新编辑后保存。");
+            tssJS.tssTip("本次修改的数据有异常，请刷新页面后重新编辑后保存。");
             return;
        }
     }
 
     syncButton([$1("page1BtSave")], request); // 同步按钮状态
-    detachReminder(rowID); // 解除提醒
+    detachReminder(_tempID); // 解除提醒
 
     request.onsuccess = function(info) { 
         var itemID = isUpdate ? rowID : parseInt(info.msg);
-        $.alert( "保存成功" );
+        tssJS.alert( "保存成功" );
 
-        if( afterListener && $.isFunction(afterListener) ) {
+        if( afterListener && tssJS.isFunction(afterListener) ) {
             afterListener(itemID);
         }
-        delete $.cache.XmlDatas[rowID];
+        delete tssJS.cache.XmlDatas[rowID];
         ws.closeTab("viewRow_" + rowID);  
 
+        delete params.fields;
+        delete params.tjField;
         loadGridData( $1("GridPageList").value || 1 ); // 更新Grid       
     }
 
@@ -463,11 +522,11 @@ function saveSource(rowID, version) {
 }
 
 function remove()  { 
-    $.confirm("您确定要删除该行记录吗？", "删除确认", function(){
-        var grid = $.G("grid");
+    tssJS.confirm("您确定要删除该行记录吗？", "删除确认", function(){
+        var grid = tssJS.G("grid");
         var rowID  = grid.getColumnValue("id");
         if( rowID ) {
-            $.ajax({
+            tssJS.ajax({
                 url : URL_DELETE_SOURCE + recordId + "/" + rowID,
                 method : "DELETE",
                 onsuccess : function() { 
@@ -479,13 +538,13 @@ function remove()  {
 }
 
 function removeBatch() {
-    var grid = $.G("grid");
+    var grid = tssJS.G("grid");
     var ids  = grid.getCheckedRows();
     if(!ids) {
         return alert("你没有选中任何记录，请勾选后再进行批量删除。");
     }
-    $.confirm("您确定要批量删除选中记录吗？", "批量删除确认", function(){
-        $.ajax({
+    tssJS.confirm("您确定要批量删除选中记录吗？", "批量删除确认", function(){
+        tssJS.ajax({
             url : URL_DELETE_SOURCE + "batch/" + recordId,
             params: {"ids": ids},
             method : "DELETE",
@@ -497,12 +556,12 @@ function removeBatch() {
 }
 
 function showEditLog() {
-    var selectedLineId = $.G("grid").getColumnValue("id"); 
-    var operateTable = encodeURI(recordName),
-        operationCode = encodeURI(", " + selectedLineId);
+    var itemId = tssJS.G("grid").getColumnValue("id"); 
+    var operateTable  = encodeURI(recordName),
+        operationCode = encodeURI(", " + itemId);
 
-    $.openIframePanel("logPanel", "数据修改日志", 960, 500, "../_log/log.htm?operateTable="+operateTable+"&operationCode=" +operationCode);
-    $("#logPanel").css("zIndex", "10001");
+    tssJS.openIframePanel("logPanel", "数据修改日志", 960, 500, "../_log/log.htm?operateTable="+operateTable+"&operationCode=" +operationCode);
+    tssJS("#logPanel").css("zIndex", "10001");
 }
 
 function clone (obj) {
@@ -514,26 +573,37 @@ function clone (obj) {
 }
 
 function showQueryForm() {
-    if($.cache.XmlDatas["searchFormXML"]) {
-        $("#searchFormDiv").show(true);
+    if(tssJS.cache.XmlDatas["searchFormXML"]) {
+        tssJS("#searchFormDiv").show(true).css("zIndex", "101");
         return;
     }
 
-    var $panel = $("#searchFormDiv").show(true);
+    var $panel = tssJS("#searchFormDiv").show(true);
     var html = '<div id="searchForm"></div>';
-    $panel.html("").panel("查询【" + recordName + "】的录入数据", html);
+    $panel.html("").panel("查询【" + recordName + "】里的数据", html);
+    $panel.css("zIndex", "101");
 
     var buttonBox = [];
     buttonBox[buttonBox.length] = "<TR>";
     buttonBox[buttonBox.length] = "  <TD colspan='2' height='46'><div class='buttonBox'>";
-    buttonBox[buttonBox.length] = "     <a href='#' class='tssbutton small blue' id='btSearch'>查询</a>";
+    buttonBox[buttonBox.length] = "     <a href='#' class='tssbutton small blue' id='btSearch'>开始查询</a>";
     buttonBox[buttonBox.length] = "  </div></TD>";
     buttonBox[buttonBox.length] = "</TR>";
 
-    var paramsConfig = [], codes = [], names = [];
+    var paramsConfig = [], codes = [], names = [], _m = {}, dcodes = [], dnames = [];
     recordDefine.each(function(i, field){
+        // 没有查看权限的字段剔除
+        if( !visiableFields.contains(field.code) || field.type == 'file' ) return true;
+
+        _m[field.code] = field;
         codes.push(field.code);
         names.push(field.label);
+
+        if(field.type == 'int' || field.type == 'number' || field.type == 'date' || field.type == 'string' || !field.type){
+            dcodes.push(field.code);
+            dnames.push(field.label);
+        }
+
         if(field.isparam === 'true') {
             var copy = clone(field);
             copy.name = "p_" + (copy.name || copy.code);
@@ -561,7 +631,7 @@ function showQueryForm() {
                 for(var i=0, length = copy.onchange.length; i < length; i++) {
                     var ch = copy.onchange[i];
                     if(ch === '^') {
-                        if(count++ % 2 == 1) {
+                        if(count++ % 2 == 1) { // 找出第一个^符号，替换为^p_
                             ch = '^p_';
                         }
                     }
@@ -571,36 +641,42 @@ function showQueryForm() {
             }
         }
     });
-    paramsConfig.push({"label": "创建人", "name": "p_creator"});
-    paramsConfig.push({"label": "修改人", "name": "p_updator"});
+    paramsConfig.push({"label": "创建人", "name": "p_creator", "width": "150px"});
+    paramsConfig.push({"label": "修改人", "name": "p_updator", "width": "150px"});
+
+    paramsConfig.push({"label":"查询匹配方式", "name":"strictQuery", "width": "120px", "options": {"codes":"false|true", "names": "模糊查询|精确查询"}});
 
     // 添加排序字段
     codes.push("createtime");
     codes.push("updatetime");
     names.push("创建时间");
     names.push("更新时间");
-    var _sortObj = {"label":"按字段排序", "name":"sortField", "options": {"codes":codes.join("|"), "names":names.join("|")}};
-    _sortObj.defaultValue = "createtime";
+    var _sortObj = {"label":"按列", "name":"sortField", "width": "180px", "options": {"codes":codes.join("|"), "names":names.join("|")}, "multiple": "true"};
+    // _sortObj.defaultValue = "createtime";
     paramsConfig.push(_sortObj);
-    var _sortType = {"label":"排序方式", "name":"sortType", "options": {"codes":"asc|desc|onlynull|notnull", "names": "升序|降序|只取为空|只取不为空"}};
+
+    var _sortType = {"label":"排序查询结果", "name":"sortType", "width": "180px", "options": {"codes":"asc|desc|onlynull|notnull", "names": "从小到大|从大到小|只取列值为空记录|只取列值不为空记录"}};
     _sortType.defaultValue = "desc";
     paramsConfig.push(_sortType);
 
-    var searchForm = $.json2Form("searchForm", paramsConfig, buttonBox.join("")); 
-    $.cache.XmlDatas["searchFormXML"] = searchForm.template.sourceXML;
+    var _tjField = {"label":"统计数据", "name":"tjField", "width": "180px", "options": {"codes":dcodes.join("|"), "names":dnames.join("|")}, "multiple": "true"};
+    paramsConfig.push(_tjField);
+
+    var searchForm = tssJS.json2Form("searchForm", paramsConfig, buttonBox.join("")); 
+    tssJS.cache.XmlDatas["searchFormXML"] = searchForm.template.sourceXML;
     
     $1("btSearch").onclick = function () {
         if( searchForm.checkForm() ) {
-            $("#searchFormDiv").hide();
-            var searchFormXML = $.cache.XmlDatas["searchFormXML"];
+            tssJS("#searchFormDiv").hide();
+            var searchFormXML = tssJS.cache.XmlDatas["searchFormXML"];
             var dataNode = searchFormXML.querySelector("data");
         
             params = {};
             var nodes = dataNode.querySelectorAll("row *");
             for(var i = 0; i < nodes.length; i++) {
                 var node = nodes[i];
-                var value = $.XML.getText(node);
-                if( $.isNullOrEmpty(value) ) {
+                var value = tssJS.XML.getText(node);
+                if( tssJS.isNullOrEmpty(value) ) {
                     continue;
                 }
 
@@ -614,8 +690,29 @@ function showQueryForm() {
                 }               
             }
 
-            if(!params.sortField) params.sortField = "createtime";
-            if(!params.sortType) params.sortType = "desc";
+            // if(!params.sortType) params.sortType = "desc";
+
+            if( params.tjField ) {
+                params.fields  = params.sortField ? params.sortField : "'合计' as 合计";
+
+                var tjFields = params.tjField.split(",");
+                tjFields.each(function(i, code) {
+                    // 已经在汇总维度字段的，不再统计
+                    if( params.fields.split(",").contains(code) ) return true;
+
+                    var field = _m[code];
+                    if( field.type == 'int' || field.type == 'number' ){
+                        code = "sum(" + code + ") as " + code;
+                    } else {
+                        code = "count(distinct " + code + ") as " + field.label + "_数";
+                    }
+                    params.fields += "," + code
+                });
+                params.fields += ", count(*) 总行数"
+
+                params.groupby = params.sortField;
+            }
+
             loadGridData(1);
         }
     }
@@ -626,14 +723,14 @@ function backup( _params ) {
    if( _params ) {
         _params.page = 1; // $1("GridPageList").value
         _params.pagesize = EXP_PAGE_SIZE;
-        if( $("#GridPageList>option").length*50 > _params.pagesize ) {
-            return $.alert("单次导出不能超过" +Math.round(_params.pagesize/50)+ "页，请缩短查询条件后再导出");
+        if( tssJS("#GridPageList>option").length*50 > _params.pagesize ) {
+            return tssJS.alert("单次导出不能超过" +Math.round(_params.pagesize/50)+ "页，请缩短查询条件后再导出");
         }
     } else {
         _params = {};
     }
     var queryString = "?";
-    $.each(_params, function(key, value) {
+    tssJS.each(_params, function(key, value) {
         if( queryString.length > 1 ) {
             queryString += "&";
         }
@@ -641,11 +738,11 @@ function backup( _params ) {
     });
 
     var url = encodeURI(URL_DATA_CSV + recordId + queryString);
-    $("#downloadFrame").attr( "src", url);
+    tssJS("#downloadFrame").attr( "src", url);
 }
 
 function getImportTL() {
-    $("#downloadFrame").attr( "src", encodeURI(URL_RECORD_CSV_TL + recordId ) );
+    tssJS("#downloadFrame").attr( "src", encodeURI(URL_RECORD_CSV_TL + recordId ) );
 }
 
 function batchImport() {
@@ -656,7 +753,7 @@ function batchImport() {
     var url = URL_UPLOAD_FILE + "?afterUploadClass=com.boubei.tss.dm.record.file.ImportCSV";
     url += "&recordId=" + recordId;
     var importDiv = createImportDiv("请点击图标选择CSV文件导入", checkFileWrong, url);
-    $(importDiv).show();
+    tssJS(importDiv).show();
 }
 
 // ----------------------------------------- 录入表附件管理 -----------------------------------------
@@ -673,54 +770,57 @@ var selectedLineId;
 
 // tag: "form": form里【管理附件】按钮; "row": 右键记录行，右键菜单【管理附件】; "ot" : 顶部自定义按钮【上传附件】
 function manageAttach(lineId, tag) {   
-    selectedLineId = lineId || $.G("grid").getColumnValue("id"); 
+    selectedLineId = lineId || tssJS.G("grid").getColumnValue("id"); 
     
     selectedLineId && 
-    $.ajax({ 
+    tssJS.ajax({ 
         url: URL_ATTACH_LIST + recordId + "/" + selectedLineId, 
         method: "GET", 
         onresult: function(){
             var attachNode  = this.getNodeValue("RecordAttach");
 
-            $.showWaitingLayer();
-            $("#attach").show(true).center();
+            tssJS.showWaitingLayer();
+            tssJS("#attach").show(true).center();
 
             if( canEditRow(lineId) && (!checkFileOpt || checkFileOpt(tag)) ) {
-                $("#uploadForm span").show();               
+                tssJS("#uploadForm span").show();               
             }
             else {
-                $("#uploadForm span").hide();  // 隐藏上传附件操作
-                $("column[name='delOpt']", attachNode).attr("display", "none");  // 隐藏删除附件操作
+                tssJS("#uploadForm span").hide();  // 隐藏上传附件操作
+                tssJS("column[name='delOpt']", attachNode).attr("display", "none");  // 隐藏删除附件操作
             }
-            var grid = $.G("attachGrid", attachNode);
+            var grid = tssJS.G("attachGrid", attachNode);
             attachListerner && attachListerner(recordId, selectedLineId);
         } 
     });
 }
 
 function clostUpload() {
-    $("#attach").hide();
-    $.hideWaitingLayer();
+    tssJS("#attach").hide();
+    tssJS.hideWaitingLayer();
 }
 
 function uploadAttach() {       
-    var fileValue = $("#attachFile").value();
+    var fileValue = tssJS("#attachFile").value();
     if( !fileValue ) {
-         return $("#attachFile").notice("您还没有选择文件，请选择一个文件再点上传!");               
+         return tssJS("#attachFile").notice("您还没有选择文件，请选择一个文件再点上传!");               
     }
 
     if( checkUploadFile(fileValue) ) {
-        return $.tssTip("当前后缀类型的文件已被禁止上传。");
+        return tssJS.tssTip("当前后缀类型的文件已被禁止上传。");
     }
 
     var url = URL_UPLOAD_FILE + "?afterUploadClass=com.boubei.tss.dm.record.file.CreateAttach";
     url += "&recordId=" + recordId;  
     url += "&itemId=" + selectedLineId;
-    url += "&type=" + ($.radioValue("fileType") || 2);
+    url += "&type=" + (tssJS.radioValue("fileType") || 2);
     
     var form = $1("uploadForm");
     form.action = url;
     form.submit();
+
+    // 清空file input，防止重复上传
+    tssJS("#attachFile").value("");
 }
 
 function addAttach(id, type, name, url, uploadUser) {
@@ -732,21 +832,21 @@ function addAttach(id, type, name, url, uploadUser) {
         "_url": "<a href='" + url + "' target='_blank'>查看</a>", 
         "delOpt": "<a href='javascript:void(0)' onclick='delAttach(" + id + ")'>删除</a>", 
         "uploadUser": uploadUser,
-        "uploadDate": $.now(true),
+        "uploadDate": tssJS.now(true),
     };
-    $.G("attachGrid").insertRow(newAttach);
+    tssJS.G("attachGrid").insertRow(newAttach);
 }
 
 function delAttach() {
-    $.confirm("您确定要删除该附件吗？", "删除确认", function(){
-        var attachId = $.G("attachGrid").getColumnValue("id"); 
-        $.ajax({
+    tssJS.confirm("您确定要删除该附件吗？", "删除确认", function(){
+        var attachId = tssJS.G("attachGrid").getColumnValue("id"); 
+        tssJS.ajax({
             url: URL_ATTACH_DELETE + attachId + "?recordId=" + recordId,
             method: 'DELETE',
             waiting: true,
             onsuccess: function() {
-                $.G("attachGrid").deleteSelectedRow();
-                $.showWaitingLayer(); // 继续遮罩
+                tssJS.G("attachGrid").deleteSelectedRow();
+                tssJS.showWaitingLayer(); // 继续遮罩
             }
         });
     });
@@ -767,8 +867,8 @@ function delAttach() {
 <input type="button" class="tssbutton small blue" value="Excel模板" id="btn_tl" onclick="getImportTL()"/>
 <input type="button" class="tssbutton small blue" value="Excel导入" id="btn_imp" onclick="batchImport()"/>
 
-<input type="button" class="tssbutton small green" value="新 增" id="btn_create" onclick="showDetail('_new')"/>
-<input type="button" class="tssbutton small orange" value="批量删除" id="btn_batch_del" onclick="removeBatch()"/>
+<input type="button" class="tssbutton small blue" value="新 增" id="btn_create" onclick="showDetail('_new')"/>
+<input type="button" class="tssbutton small orange" value="删 除" id="btn_batch_del" onclick="removeBatch()"/>
 <input type="button" class="tssbutton small blue" value="查 询" id="btn_search" onclick="showQueryForm()"/>
 <input type="button" class="tssbutton small blue" value="导出数据" id="btn_ex" onclick="backup(params)"/>
 

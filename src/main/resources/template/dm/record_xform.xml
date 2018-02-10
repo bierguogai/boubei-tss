@@ -46,12 +46,18 @@
 			<TD><input binding="batchImp"/></TD>
 		</TR>
 		<TR>
+			<TD valign="top"><label binding="remark"/></TD>
+			<TD colspan="5"><textarea binding="remark" style="width:97%;height:30px" class="fullscreenable"/></TD>
+		</TR>
+		
+		<TR>
 			<TD valign="top">
 				<label binding="define"/><br/><br/>
 				<a href="#" onclick="configDefine()" class="tssbutton small blue">配置</a>
 			</TD>
 			<TD colspan="5"><textarea binding="define" style="width:97%;height:120px" class="fullscreenable"/></TD>
 		</TR>
+		
 		<TR>
 			<TD valign="top"><label binding="customizeJS"/></TD>
 			<TD colspan="5"><textarea binding="customizeJS" style="width:97%;height:100px" class="fullscreenable"/></TD>
@@ -64,10 +70,7 @@
 			<TD valign="top"><label binding="customizeGrid"/></TD>
 			<TD colspan="5"><textarea binding="customizeGrid" style="width:97%;height:100px" class="fullscreenable"/></TD>
 		</TR>
-		<TR>
-			<TD valign="top"><label binding="remark"/></TD>
-			<TD colspan="5"><textarea binding="remark" style="width:97%;height:30px" class="fullscreenable"/></TD>
-		</TR>
+
 	</layout>
 	<data/>
 </xform>

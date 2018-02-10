@@ -52,7 +52,7 @@ public abstract class AbstractNode implements Node {
         try {
             return super.clone();
         } catch (CloneNotSupportedException e) {
-            throw new BusinessException("clone " + this.getClass().getName() + "对象时失败", e);
+            throw new BusinessException("clone " + this.getClass().getName() + " object error", e);
         }
     }
 }

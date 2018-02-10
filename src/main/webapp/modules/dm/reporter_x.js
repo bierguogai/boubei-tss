@@ -129,19 +129,22 @@ function exportReport(reportId, params) {
  *  多级下拉选择联动  getNextLevelOption(2, 1090, 1)
  *  参数： nextIndex    下一级联动参数的序号（1->n）
         serviceID       下一级联动的service地址             
-        currParam       当前联动参数的序号
-        currParamValue  当前联动参数的值, 自动获取到填入(xform控件)
+        serviceParam    service接收的参数code
+        curParamVal     当前联动参数字段的值, 自动获取到填入(xform控件)
  */
-function getNextLevelOption(nextIndex, serviceID, currParam, currParamValue) {
-    if(nextIndex == null || serviceID == null || currParam == null || $.isNullOrEmpty(currParamValue)) return;
+function getNextLevelOption(nextIndex, serviceID, serviceParam, curParamVal) {
+    if(nextIndex == null || serviceID == null || serviceParam == null || $.isNullOrEmpty(curParamVal)) return;
 
-    var dreg = /^[1-9]+[0-9]*]*$/;
     var paramElementId = "param" + nextIndex;
  
-    var paramName = dreg.test(currParam) ? "param" + currParam : currParam;
+    var paramName = isInt(serviceParam) ? "param" + serviceParam : serviceParam;
     
     // serviceID maybe is ID of report, maybe a serviceUrl
-    var url = dreg.test(serviceID) ? '../../api/json/' + serviceID : serviceID;
+    var url = isInt(serviceID) ? '/tss/data/json/' + serviceID : serviceID;
 
-    $.getNextLevelOption($.F("searchForm"), paramName, currParamValue, url, paramElementId);
+    $.getNextLevelOption($.F("searchForm"), paramName, curParamVal, url, paramElementId);
+}
+
+function isInt(x) {
+    return /^-?[1-9]+[0-9]*]*$/.test(x)
 }

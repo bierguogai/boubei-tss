@@ -9,7 +9,6 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
@@ -23,9 +22,9 @@ import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.persistence.ICommonService;
 import com.boubei.tss.framework.sso.context.RequestContext;
  
-@WebFilter(filterName = "SnapshotFilter",
-	urlPatterns = {"/data/json/*", "/data/jsonp/*", "/api/json/*"}
-)
+//@WebFilter(filterName = "SnapshotFilter",
+//	urlPatterns = {"/data/json/*", "/data/jsonp/*", "/api/json/*"}
+//)
 public class SnapshotFilter implements Filter {
     
     private static final Log log = LogFactory.getLog(SnapshotFilter.class);

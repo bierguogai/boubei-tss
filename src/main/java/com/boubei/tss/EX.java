@@ -88,6 +88,7 @@ public class EX {
 	public static String DM_21 = "点击链接可以看到更详细的图表：";
 	public static String DM_22 = "报表【${x1}】的内容详细请参见附件。";
 	public static String DM_23 = "数据异常，位置第${x1}行。请用文本编辑器（记事本等）打开导入文件，检查此行字段内容里是否存在换行符。";
+	public static String DM_24 = "没有查询到数据";
 	
 	public static String F_01 = "【${x1}】参数有误，第 ${x2} 个参数值为Null！";
 	public static String F_02 = "排序节点和目标节点不属于同一层的节点（父节点不一致），不能排序。";
@@ -136,7 +137,8 @@ public class EX {
 	public static String U_29 = "账号已被注册,请更换账号.";
 	public static String U_30 = "邮箱已被注册,请更换邮箱.";
 	public static String U_31 = "手机号码已被注册,请更换手机号码.";
-	public static String U_32 = "当前用户正在使用中，无法自我删除！";
+	public static String U_32 = "当前用户无法删除，可以尝试停用！";
+	public static String U_321= "您无法自己停（启）用您自己，请联系管理员！";
 	public static String U_33 = "初始化密码不能为空";
 	public static String U_34 = "修改密码时找不到用户ID=${x1}用户，请联系管理员";
 	public static String U_35 = "旧密码输入不正确";
@@ -156,8 +158,7 @@ public class EX {
 	public static String P_03 = "节点不能移动到自身节点下";
 	public static String P_04 = "没有设定一个默认的修饰器！";
 	public static String P_05 = "没有设定一个默认的布局器！";
-	public static String P_06 = "门户节点【${x1}】找不到父节点，数据有误，组成门户树失败!";
-	public static String P_07 = "主装门户时根节点必须是portal根节点， 【${x1}】不是根节点!";
+	public static String P_07 = "组装门户时根节点必须是portal根节点， 【${x1}】不是根节点!";
 	public static String P_08 = "导入XML文件不是规范的门户组件，根节点名称不匹配！";
 	public static String P_09 = "导入文件不是规范的门户组件";
 	public static String P_10 = "您对当前门户【${x1}】没有浏览访问权限！";

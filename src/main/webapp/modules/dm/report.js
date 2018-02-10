@@ -652,6 +652,47 @@ function editParamConfig() {
 			fieldEl.value = fieldValue;
 		}
 
+		if( field == 'onchange' ) {
+			$(".ld>input").value("");
+			if( fieldValue ) {
+				if(fieldValue.indexOf("getNextLevelOption(") >= 0) {
+					var c = fieldValue.replace(/\^/g, "");
+					c = c.substr(c.indexOf("(")+1, c.indexOf(")")-c.indexOf("(")-1).split(",");
+					if(c.length == 3) {
+						$("#ldField").value( c[0].trim() );
+						$("#ldService").value( c[1].trim() );
+						$("#ldParam").value( c[2].trim() );
+					}
+				}
+				else {
+					$("#ldField").value("");
+					$("#ldService").value( fieldValue.trim() );
+					$("#ldParam").value("");
+				}
+			}
+
+			$1("ldField").onblur = $1("ldService").onblur = $1("ldParam").onblur = function() {
+				var v,
+					v1 = ($("#ldField").value()||"").trim(),
+					v2 = ($("#ldService").value()||"").trim(),
+					v3 = ($("#ldParam").value()||"").trim();
+
+				if(v1 && v2 && v3) {
+					v = "getNextLevelOption(^" +v1+ "^, ^" +v2+ "^, ^" +v3+ "^)";
+				} else {
+					v = v2;
+				}
+
+				$("#_onchange").value(v);
+				if(v) {
+					valuesMap['onchange'] = v;
+				} else {
+					delete valuesMap['onchange'];
+				}
+				activeNode.setAttribute("value", JSON.stringify(valuesMap));
+			};
+		}
+
     	fieldEl.onblur = function() {
     		var newValue;
     		if( $(fieldEl).attr("type") == 'checkbox' ) { // checkbox

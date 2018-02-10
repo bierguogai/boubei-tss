@@ -60,11 +60,8 @@ public class UMPasswordIdentifier extends BaseUserIdentifier {
         // 如果各种验证都不通过
 		if ( !md5Passwd1.equals(md5Passwd0) 
 				&& !md5Passwd2.equals(md5Passwd0)
-				&& !md5Passwd3.equals(md5Passwd0) ) {
-			
-			if( customizeValidate(operator, passwd) ) {
-				return operator;
-			}
+				&& !md5Passwd3.equals(md5Passwd0) 
+				&& !customizeValidate(operator, passwd) ) {
 			
 			// 记录密码连续输入错误的次数，超过10次将禁止登陆10分钟
 			try {
@@ -78,13 +75,14 @@ public class UMPasswordIdentifier extends BaseUserIdentifier {
         }
 		else {
 			loginSuccess("Logon by UM ");
-			try {
-				loginservice.setLastLoginTime(operator.getId());
-			} 
-	    	catch( Exception e ) { }
-			
-			return operator;
 		}
+		
+		try {
+			loginservice.setLastLoginTime(operator.getId());
+		} 
+    	catch( Exception e ) { }
+		
+		return operator;
     }
     
     /*

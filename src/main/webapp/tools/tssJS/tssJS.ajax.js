@@ -48,11 +48,18 @@ CONTEXTPATH = "tss";
     $.Ajax = $.AJAX = $.ajax;
 
     $.getJson = $.getJSON = function(url, params, callback, method, waiting) {
+        var _params = params;
+        if (tssJS.isFunction(params)) { // no params
+            _params = {};
+            waiting = method;
+            method = callback;
+            callback = params;
+        }
         $.ajax({
             url : url,
             type : "json",
             method : method || "POST",
-            params : params,
+            params : _params,
             waiting : waiting || true, 
             ondata : function() { 
                 var data = this.getResponseJSON();
@@ -73,6 +80,10 @@ CONTEXTPATH = "tss";
                 callback && callback(data);
             }
         });
+    };
+
+    $.delete = function(url, params, callback) {
+        $.post(url, params, callback, "DELETE");
     };
 
     $.getXml = $.getXML = function(url, params, callback, method, waiting) {

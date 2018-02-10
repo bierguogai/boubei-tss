@@ -10,7 +10,6 @@
 
 package com.boubei.tss.dm.ddl;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import com.boubei.tss.dm.dml.SQLExcutor;
@@ -23,12 +22,10 @@ public class _PostgreSQL extends _Database {
 	}
 	
 	protected Map<String, String> getDBFiledTypes(int length) {
-		Map<String, String> m = new HashMap<String, String>();
+		Map<String, String> m = super.getDBFiledTypes(length);
 		m.put(_Filed.TYPE_NUMBER, "numeric(19,3)");
 		m.put(_Filed.TYPE_INT, "integer");
 		m.put(_Filed.TYPE_DATETIME, "timestamp");
-		m.put(_Filed.TYPE_DATE, "date");
-		m.put(_Filed.TYPE_STRING, "varchar(" + length + ")");
 		
 		return m;
 	}

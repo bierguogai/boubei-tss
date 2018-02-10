@@ -56,15 +56,20 @@ public class SQLExcutor {
     }
     
     public Document getGridTemplate() {
+    	return getGridTemplate(new HashMap<String, String>());
+    }
+    
+    public Document getGridTemplate(Map<String, String> m) {
     	StringBuffer sb = new StringBuffer();
         sb.append("<grid><declare sequence=\"true\">");
         if(selectFields.size() > 0) {
-            for(String filed : selectFields) {
-                sb.append("<column name=\"" + filed + "\" mode=\"string\" caption=\"" + filed + "\" />");
+            for(String field : selectFields) {
+            	Object caption = EasyUtils.checkNull( m.get(field), field);
+                sb.append("<column name=\"" + field + "\" mode=\"string\" caption=\"" + caption + "\" />");
             }
         }
         else {
-        	sb.append("<column name=\"没有查询到数据\" mode=\"string\" caption=\"没有查询到数据\" />");
+        	sb.append("<column name=\"" +EX.DM_24+ "\" mode=\"string\" caption=\"" +EX.DM_24+ "\" />");
         }
 
         sb.append("</declare><data></data></grid>");

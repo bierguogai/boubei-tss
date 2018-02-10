@@ -111,17 +111,20 @@
 					<option value="int">数字(整数)</option>
 					<option value="date">日期</option>
 					<option value="datetime">日期时间</option>
+					<option value="file">附件</option>
 		            <option value="hidden">隐藏</option>
 				</select> 	
 			</td>
 			<td>是否必填：</td>
 			<td>
 				<input name="_nullable" id="_nullable" type="checkbox" value="true" style="margin-right:20px">
-				唯一性约束：
-				<input name="_unique" id="_unique" type="checkbox" value="true">
+				<span class="nonumber nofile nohidden">
+					唯一性约束：
+					<input name="_unique" id="_unique" type="checkbox" value="true">
+				</span>
 			</td>
 		</tr>
-		<tr>
+		<tr class="nofile">
 			<td>默认值：</td>
 			<td>
 				<input type="text" id="_defaultValue" placeholder="添加一个默认值"/>
@@ -131,11 +134,11 @@
 				<input name="_isparam" id="_isparam" type="checkbox" value="true">
 			</td>
 		</tr>
-		<tr>
+		<tr class="nohidden">
 			<td>谁能编辑：</td> <td> <select id="_role1" style="width: 140px;"></select> </td>
 			<td>谁能查看：</td> <td> <select id="_role2" style="width: 140px;"></select> </td>
 		</tr>
-		<tr>
+		<tr class="nohidden">
 			<td>列对齐：</td>
 			<td>
 				<select id="_calign" style="width: 100px;">
@@ -150,7 +153,7 @@
 			</td>
 		</tr>
 
-		<tr class="selectRelation">
+		<tr class="optionCfg">
 			<td>输入框宽：</td> 
 			<td> 
 				<input type="range" id="_width" min="60" max="350" value="200" step="10"/><span id="_width_">200</span>px 
@@ -160,24 +163,29 @@
 				<input type="range" id="_height" min="18" max="180" value="18" step="1"/><span id="_height_">18</span>px
 			</td>
 		</tr>
-		<tr class="selectRelation">
+		<tr class="optionCfg">
 			<td>校验正则：</td> <td> <input type="text" id="_checkReg"/> </td>
 			<td>出错提示：</td> <td> <input type="text" id="_errorMsg"/> </td>
 		</tr>
-		<tr class="selectRelation">
+		<tr class="optionCfg">
 			<td>选项列表：</td> 
 			<td colspan="2"> 
-				<input type="text" id="_options" placeholder="例: A|B 或 /tss/data/json/13" style="width: 175px;"/>&nbsp;
-				<button class="tssbutton small blue" onclick="checkDataService()">接口</button>
+				<input type="text" id="_options" placeholder="选项一|选项二 或 数据服务" style="width: 165px;"/>&nbsp;
+				<button class="tssbutton small blue" style="padding: .15em .2em .2em" onclick="checkDataService()">数据服务</button>
 			</td>
 			<td style="width: 120px; text-align: center;">
 				是否多选：<input name="_multiple" id="_multiple" type="checkbox" value="true">
 			</td>
 		</tr>
-		<tr class="selectRelation">		
-			<td>字段联动：</td> 
+		<tr class="optionCfg">		
+			<td>联动字段：</td> 
 			<td colspan="3"> 
-				<input type="text" id="_onchange" style="width: 360px;"/>
+				<span class="ld">
+					<input type="text" id="ldField" style="width: 65px;" placeholder="字段编码"/>
+					<input type="text" id="ldService" style="width: 200px;" placeholder="数据服务ID|URL, 或独立Function"/>
+					<input type="text" id="ldParam" style="width: 65px;" placeholder="服务参数"/>
+				</span>
+				<input type="hidden" id="_onchange" style="width: 345px;margin-top:1px;"/>
 			</td>
 		</tr>
 	</table>

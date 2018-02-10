@@ -157,11 +157,10 @@ public class ComponentHelper {
         File eXMLFilePath = new File(desDir + "/" + tempDir.getName() + "/" + eXMLFile);
         component = importXml(service, component, eXMLFilePath);
 
-        File newFile = new File(desDir + "/" + component.getCode());
-        if(newFile.exists()) {
-            FileHelper.deleteFile(newFile);
-        }
-        tempDir.renameTo(newFile);
+        File newDir = new File(desDir + "/" + component.getCode());
+        FileHelper.deleteFile(newDir);
+        
+        tempDir.renameTo(newDir);
     }
     
     /**
@@ -172,7 +171,7 @@ public class ComponentHelper {
      */
     public static void exportComponent(String modelPath, Component component, String eXMLFile) {
         String elementName = EasyUtils.toUtf8String(component.getName());
-        String exportFileName;
+        String exportFileName = elementName + ".xml";;
         String outPath; // 导出zip或xml文件路径
         
         Document doc = XMLDocUtil.dataXml2Doc(component.getDefinition());
@@ -187,12 +186,11 @@ public class ComponentHelper {
             // 写回原来的文件
             FileHelper.writeXMLDoc(doc, filePath + "/" + eXMLFile); 
             
-            //导出成zip文件,并获得zip文件的路径
+            // 导出成zip文件,并获得zip文件的路径
             outPath = FileHelper.exportZip(modelPath, filePath); 
         }
         else {
-            //如果model/layout(docorator、portlet)文件夹下没有导出的xml文件，则先将文件内容写到一个临时xml文件，再导出该临时文件
-            exportFileName = elementName + ".xml";
+            // 如果model/layout(docorator、portlet)文件夹下没有导出的xml文件，则先将文件内容写到一个临时xml文件，再导出该临时文件
             FileHelper.writeXMLDoc(doc, outPath = modelPath + "/" + System.currentTimeMillis() + ".xml");
         }
         

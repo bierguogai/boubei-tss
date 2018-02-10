@@ -19,7 +19,7 @@ function isNew() {
  * @example updateField("applier", "Jack");
  */
 function updateField(field, value) {
-    var xform = $.F("page1Form");
+    var xform = tssJS.F("page1Form");
     if(!xform) return; // queryForm触发
 
     xform.updateDataExternal(field, value);    
@@ -79,7 +79,7 @@ function checkGroup(groups) {
  * @example permit("f1,f2", "true")
  */
 function permit(field, tag) {
-    var xform = $.F("page1Form");
+    var xform = tssJS.F("page1Form");
     var fields = (field || '').split(",");
     fields.each(function(i, _field) {
         xform.setFieldEditable(_field, tag || "false"); 
@@ -112,11 +112,11 @@ function check(field, users) {
 /** 
  * 在输入框显示提示气泡
  *
- * @example $("money").notice("请输入金额");
+ * @example tssJS("money").notice("请输入金额");
  */
 function notice(field, msg) {
-    $("#" + field).click(function(){  
-        $(this).notice(msg); 
+    tssJS("#" + field).click(function(){  
+        tssJS(this).notice(msg); 
     });
 }
 
@@ -131,8 +131,8 @@ function hideDelButton() {
  * 禁止编辑录入表单
  */
 function disableForm() {
-    $("#page1BtSave").hide(); 
-    $.F("page1Form").setEditable("false");
+    tssJS("#page1BtSave").hide(); 
+    tssJS.F("page1Form").setEditable("false");
 }
 
 /** 
@@ -144,8 +144,8 @@ function disableForm() {
 function hideField(field) {
     var fields = (field || '').split(",");
     fields.each(function(i, fID) {
-        $("*", $1(fID).parentNode).hide();
-        $("#label_" + fID).hide();
+        tssJS("*", $1(fID).parentNode).hide();
+        tssJS("#label_" + fID).hide();
     });
 }
 
@@ -160,8 +160,8 @@ var hideFiled = hideField; /* 曾用拼写错误名，需保留 */
 function showFiled(field) {
     var fields = (field || '').split(",");
     fields.each(function(i, fID) {
-        $("#" + fID).show();
-        $("#label_" + fID).show();
+        tssJS("#" + fID).show();
+        tssJS("#label_" + fID).show();
     });
 }
 
@@ -180,9 +180,9 @@ function addOptBtn(name, fn, roles, groups) {
         return;
     } 
 
-    var batchOpBtn = $.createElement('button', 'tssbutton small blue');
-    $(batchOpBtn).html(name).click( fn );  
-    $('#customizeBox').appendChild(batchOpBtn);
+    var batchOpBtn = tssJS.createElement('button', 'tssbutton small blue');
+    tssJS(batchOpBtn).html(name).click( fn );  
+    tssJS('#customizeBox').appendChild(batchOpBtn);
 }
 
 /** 
@@ -203,14 +203,14 @@ function batchOpt(name, field, value, roles, groups) {
 
 // 批量更新选中行某一列的值
 function batchUpdate(field, value) {
-    var ids = $.G("grid").getCheckedRows();
+    var ids = tssJS.G("grid").getCheckedRows();
     if(!ids) {
         return alert("你没有选中任何记录，请勾选后再进行批量操作。");
     }
     if(ids.split(",").length >= 1000) {
         return alert("单次批量操作行数不能超过999行。")
     }
-    $.ajax({
+    tssJS.ajax({
         url: URL_BATCH_OPERATE + recordId,
         params: {"ids": ids, "field": field, "value": value},
         onsuccess: function() { 
@@ -222,7 +222,7 @@ function batchUpdate(field, value) {
 // ----------------------------------------------- 非常用方法 start------------------------------------------------
 // 针对指定的字段，检查Grid中选中行该字段的值是否和预期的值一致，如不一致，弹框提醒
 function checkBatch(field, expectVal, msg) {
-    var values = $.G("grid").getCheckedRowsValue(field);
+    var values = tssJS.G("grid").getCheckedRowsValue(field);
     var flag = true;
     values.each(function(i, val) {
         if(val != expectVal) {
@@ -230,7 +230,7 @@ function checkBatch(field, expectVal, msg) {
         }
     });
 
-    !flag && msg && $.alert(msg);
+    !flag && msg && tssJS.alert(msg);
     return flag;
 }
 
@@ -238,13 +238,13 @@ function checkBatch(field, expectVal, msg) {
  *   {"春":"三月|四月|五月", "夏":"六月|七月|八月", "秋":"九月|十月|十一月", "冬":"十二月|一月|二月"});
  */
 function nextLevel(current, next, map) {
-    var currentVal = $("#" + current).value();
+    var currentVal = tssJS("#" + current).value();
     var nextOpts = map[currentVal];
     if(!nextOpts) {
         return;
     }
 
-    var xform = $.F("page1Form");
+    var xform = tssJS.F("page1Form");
     xform.updateField(next, [
         {"name": "texts", "value": nextOpts},
         {"name": "values", "value": nextOpts}
@@ -254,7 +254,7 @@ function nextLevel(current, next, map) {
 function calculateSum(totalField, fields) {
     forbid(totalField); 
     fields.each(function(i, field){
-        $("#" + field).blur(function(){
+        tssJS("#" + field).blur(function(){
             var value = 0;
             fields.each(function(j, f){
                 value += getFloatValue(f);
@@ -265,14 +265,14 @@ function calculateSum(totalField, fields) {
 }
 
 function getFloatValue(field) {
-    return parseFloat($("#" + field).value() || '0');
+    return parseFloat(tssJS("#" + field).value() || '0');
 }
 
 // onlyOne(["udf1", "udf2", "udf3"]);  只有一个可编辑
 function onlyOne( fields ) {
-    var xform = $.F("page1Form"); 
+    var xform = tssJS.F("page1Form"); 
     fields.each(function(i, field){  
-        $("#" + field).blur(function(){
+        tssJS("#" + field).blur(function(){
             var value = this.value;
             
             fields.each(function(j, f){ 
@@ -284,7 +284,7 @@ function onlyOne( fields ) {
             xform.updateData(this);
         });
 
-        var tempV = $("#" + field).value(); 
+        var tempV = tssJS("#" + field).value(); 
         if(tempV) {
             fields.each(function(j, f){
                 if(field !== f) {
@@ -307,35 +307,34 @@ function before(day, delta) {
 /*
  *  多级下拉选择联动，录入表单和查询表单都使用本方法
  *
- *  参数： nextL    下一级联动参数的序号
+ *  参数： nextL    下一级联动字段的code
         serviceID       下一级联动的service地址             
-        currParam       当前联动参数的序号
-        currParamValue  当前联动参数的值
+        serviceParam    service接收的参数code
+        curFiledVal     当前联动字段的值
  */
-function getNextLevelOption(nextL, serviceID, currParam, currParamValue) {
-    if( !nextL || !serviceID || !currParam || $.isNullOrEmpty(currParamValue)) return;
+function getNextLevelOption(nextL, serviceID, serviceParam, curFiledVal) {
+    if( !nextL || !serviceID || !serviceParam || tssJS.isNullOrEmpty(curFiledVal)) return;
 
-    nextL = isInt(nextL) ? "f" + nextL : nextL;
-    if( $("#" + nextL).length == 0 ) return; 
+    if( tssJS("#" + nextL).length == 0 ) return; 
 
     // serviceID maybe is ID of record, maybe a serviceUrl
-    var url = isInt(serviceID) ? '../../data/json/' + serviceID : serviceID;
+    var url = isInt(serviceID) ? '/tss/data/json/' + serviceID : serviceID;
     
     var xform;
-    if( (currParam+"").indexOf('p_') >= 0 || url.indexOf('p_') >= 0) { // 查询表单的级联下拉
-        currParam = currParam.replace('p_', '')
+    if( (serviceParam+"").indexOf('p_') >= 0 || url.indexOf('p_') >= 0) { // 查询表单的级联下拉
+        serviceParam = serviceParam.replace('p_', '')
         url = url.replace('p_', '');
-        xform = $.F("searchForm");
+        xform = tssJS.F("searchForm");
     } 
     else {
-        xform = $.F("page1Form");
+        xform = tssJS.F("page1Form");
     }
 
-    if( isInt(currParam) ) { // 数字
-        currParam = "param" + currParam;
+    if( isInt(serviceParam) ) { // 数字
+        serviceParam = "param" + serviceParam;
     }
     
-    $.getNextLevelOption(xform, currParam, currParamValue, url, nextL);
+    tssJS.getNextLevelOption(xform, serviceParam, curFiledVal, url, nextL);
 }
 
 /* 示例：
@@ -350,18 +349,18 @@ function getNextLevelOption(nextL, serviceID, currParam, currParamValue) {
   });
  */
 function loadRemoteAttach(recordId, itemId, appUrl, appCode, callback) {
-    $.ajax({ 
+    tssJS.ajax({ 
         url: URL_ATTACH_LIST + recordId + "/" + itemId + "?anonymous=true", 
         method: "POST", 
         headers: {"anonymous": "true", "appCode": appCode},
         onresult: function(){
             var attachNode  = this.getNodeValue("RecordAttach");
-            $("column[name='delOpt']", attachNode).attr("display", "none");  // 隐藏删除附件操作
-            $.G("attachGrid", attachNode);   
+            tssJS("column[name='delOpt']", attachNode).attr("display", "none");  // 隐藏删除附件操作
+            tssJS.G("attachGrid", attachNode);   
 
             tssJS("#attachGrid td>a").each(function(i, item){
-                if( $(item).text() == '查看' ) {
-                    $(item).attr('href', appUrl + $(item).attr('href') + '?anonymous=true');
+                if( tssJS(item).text() == '查看' ) {
+                    tssJS(item).attr('href', appUrl + tssJS(item).attr('href') + '?anonymous=true');
                 }
             });
             callback && callback();
@@ -371,14 +370,14 @@ function loadRemoteAttach(recordId, itemId, appUrl, appCode, callback) {
 
 /* 表单里控制字段值的唯一性：
 var uniqueFlag = false;
-$("#name").blur( function() {
-     $.getJSON("/tss/auth/xdata/json/xxx", {"name": $("#name").value(), "strictQuery": "true"}, function(result) {
+tssJS("#name").blur( function() {
+     tssJS.getJSON("/tss/auth/xdata/json/xxx", {"name": tssJS("#name").value(), "strictQuery": "true"}, function(result) {
             if( isNew() ) { uniqueFlag = result.length > 0; }
             else { uniqueFlag = result.length > 1; }  // 修改行自身不算 
     
-            if(uniqueFlag) $.alert("同名记录已经存在，请更换名称");
+            if(uniqueFlag) tssJS.alert("同名记录已经存在，请更换名称");
      }  );
 });
 
-preListener = function() {  if(uniqueFlag) $.alert("同名记录已经存在，请更换名称"); return flag; }
+preListener = function() {  if(uniqueFlag) tssJS.alert("同名记录已经存在，请更换名称"); return flag; }
  */

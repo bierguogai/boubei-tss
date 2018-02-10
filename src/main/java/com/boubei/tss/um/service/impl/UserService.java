@@ -72,7 +72,12 @@ public class UserService implements IUserService{
 	@Autowired private RecordService recordService;
 
 	public void deleteUser(Long groupId, Long userId) {
-        if(Environment.getUserId().equals(userId)) {
+		/* 
+		 * 登录过的用户不能被删除，只能被停用。
+		 * 防止域管理员把域下用户删除，导致删除用户创建的数据表记录无法被查询到，甚至会可能被其它域下后期注册的同名用户吸走了） 
+         */
+		User entity = userDao.getEntity(userId);
+        if(Environment.getUserId().equals(userId) || entity.getLogonCount() > 0) {
             throw new BusinessException(EX.U_32);
         }
         
@@ -81,7 +86,6 @@ public class UserService implements IUserService{
         	groupDao.delete(userDao.getGroup2User(groupId, userId));
         } 
         else {
-        	User entity = userDao.getEntity(userId);
         	userDao.removeUser(entity);	
         	
         	// 判断用户是否为开发者，是的话删除其开发目录、角色组、及其发布的模块
@@ -281,6 +285,10 @@ public class UserService implements IUserService{
     }
 	
 	public void startOrStopUser(Long userId, Integer disabled, Long groupId) {
+		if(Environment.getUserId().equals(userId)) {
+            throw new BusinessException(EX.U_321);
+        }
+		
 		User user = userDao.getEntity(userId);
 		if ( ParamConstants.FALSE.equals(disabled) ) { // 启用用户
             if( isOverdue(userId) ) {

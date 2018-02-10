@@ -10,7 +10,6 @@
 
 package com.boubei.tss.dm.ddl;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import com.boubei.tss.dm.dml.SQLExcutor;
@@ -24,12 +23,8 @@ public class _Oracle extends _Database {
 	}
 	
 	protected Map<String, String> getDBFiledTypes(int length) {
-		Map<String, String> m = new HashMap<String, String>();
-		m.put(_Filed.TYPE_NUMBER, "float");
-		m.put(_Filed.TYPE_INT, "int");
+		Map<String, String> m = super.getDBFiledTypes(length);
 		m.put(_Filed.TYPE_DATETIME, "date");
-		m.put(_Filed.TYPE_DATE, "date");
-		m.put(_Filed.TYPE_STRING, "varchar(" + length + ")");
 		
 		return m;
 	}

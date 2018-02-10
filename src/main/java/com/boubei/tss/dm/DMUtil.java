@@ -329,7 +329,7 @@ public class DMUtil {
 	public static String checkSQLInject(String paramValue) {
 		String _pVal = (paramValue+"").toLowerCase();
 		
-		String sqlKeyword = "exec|alter|drop|create|insert|select|delete|update|from|count|like|master|truncate|declare"; // and|or|chr|mid|char|
+		String sqlKeyword = "exec|alter|drop|create|insert|select|delete|update|from|like|master|truncate|declare"; // and|or|chr|mid|char|
 		String[] sqlKeywords = sqlKeyword.split("\\|");
 		for (String keyword : sqlKeywords) {
 			if (_pVal.indexOf(keyword + " ") >=0 || _pVal.indexOf(" " + keyword) >=0 ) {
@@ -342,9 +342,10 @@ public class DMUtil {
 		}
 		
 		// ' * % ; = - + > < ( )
-		return paramValue.replaceAll("\'|=|;|>|<", " "); 
+		return paramValue.replaceAll("=|;|>|<", " "); 
 		/* - + %号可能做为连接符存在字段值里：2016-10-12, today-1, today+1, %m-%d 
 		 * |\\(|\\) : 东风重卡(17.5), 此类查询条件可能含有括号，先放开
+		 * ' '合计' as 合计
 		 * */
 	}
 	

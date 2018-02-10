@@ -10,7 +10,6 @@
 
 package com.boubei.tss.dm.ddl;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import com.boubei.tss.dm.dml.SQLExcutor;
@@ -20,17 +19,6 @@ public class _SQLServer extends _Database {
 	
 	public _SQLServer(Record record) {
 		super(record);
-	}
-	
-	protected Map<String, String> getDBFiledTypes(int length) {
-		Map<String, String> m = new HashMap<String, String>();
-		m.put(_Filed.TYPE_NUMBER, "float");
-		m.put(_Filed.TYPE_INT, "int");
-		m.put(_Filed.TYPE_DATETIME, "datetime");
-		m.put(_Filed.TYPE_DATE, "date");
-		m.put(_Filed.TYPE_STRING, "varchar(" + length + ")");
-		
-		return m;
 	}
 
 	public void createTable() {		

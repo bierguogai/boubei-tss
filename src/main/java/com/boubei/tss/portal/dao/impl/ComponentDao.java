@@ -56,7 +56,7 @@ public class ComponentDao extends TreeSupportDao<Component> implements IComponen
     public Component getDefaultLayout(){
         List<?> list = getEntities("from Component o where o.type = ? and o.isDefault = 1", Component.LAYOUT_TYPE);
         if(list.isEmpty()) {
-        	throw new BusinessException(EX.P_04);
+        	throw new BusinessException(EX.P_05);
         }
         return (Component) list.get(0);
     }

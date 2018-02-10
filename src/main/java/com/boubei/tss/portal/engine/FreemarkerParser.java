@@ -73,16 +73,15 @@ public class FreemarkerParser {
         try {
             cfg.setDefaultEncoding("UTF-8");
             cfg.setDirectoryForTemplateLoading(templatePath);
+            
+            cfg.clearTemplateCache();
+            List<String> files = FileHelper.listFilesByType(".ftl", templatePath);
+            for( String fileName : files ){
+                cfg.addAutoImport(fileName.substring(0, fileName.length() - 4), fileName); // 截去后缀'.ftl'， 以文件自身名字命名
+            }
         } 
         catch (IOException e) {
-            log.error(" 读取FM模板文件" +templatePath +"时IO异常，装载不成功(" +templatePath.exists()+ ")", e);
-            return;
-        }
-        
-        cfg.clearTemplateCache();
-        List<String> files = FileHelper.listFilesByType(".ftl", templatePath);
-        for( String fileName : files ){
-            cfg.addAutoImport(fileName.substring(0, fileName.length() - 4), fileName); // 截去后缀'.ftl'， 以文件自身名字命名
+            log.error(" load Freemarker template:" +templatePath +" io exception (" +templatePath.exists()+ ")", e);
         }
     }
     

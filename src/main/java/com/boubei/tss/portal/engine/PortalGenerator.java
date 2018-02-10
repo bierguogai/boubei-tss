@@ -60,7 +60,7 @@ public class PortalGenerator {
      * 			 Node树根节点,PortalNode
      */
     public static PortalNode genPortalNode(Structure root, List<Structure> list, Object[] elements){
-        if( !root.getType().equals(Structure.TYPE_PORTAL) ) {
+        if( Structure.TYPE_PORTAL != root.getType() ) {
             throw new BusinessException(EX.parse(EX.P_07, root.getName()));
         }
         
@@ -113,9 +113,6 @@ public class PortalGenerator {
         
         for ( Structure entity : list ) {
             Structure parent = map.get(entity.getParentId());
-            if(parent == null) {
-                throw new BusinessException(EX.parse(EX.P_06, entity.getName()));
-            }
             
             if (root.getType().equals(parent.getType())) {
                 root.addChild(entity);
@@ -144,7 +141,6 @@ public class PortalGenerator {
 	        	newNode = genSectionNode(ps, parent);
 	        	break;
 	        case Structure.TYPE_PORTLET_INSTANCE:
-	        default:
 	        	newNode = genPortletInstanceNode(ps, parent); 
 	        	break;
         }

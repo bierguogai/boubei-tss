@@ -77,11 +77,5 @@ public abstract class ARecordTable implements IEntity {
 	public void setVersion(int version) {
 		this.version = version;
 	}	
-	
-	protected String buildTableDef() {
-		String defJson = "[";
-		
-		return defJson + "]";
-	}
 }
 
