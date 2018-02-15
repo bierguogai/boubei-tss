@@ -312,8 +312,8 @@
 	
 	var phases = [];
 	phases[0] = {page:"page1", label:"基本信息"};
-	phases[1] = {page:"page4", label:"用户列表"};
-	phases[2] = {page:"page2", label:"用户组织"};
+	phases[1] = {page:"page4", label:"授予用户"};
+	phases[2] = {page:"page2", label:"授予用户组"};
 	
 	function addNewRole() {
         var treeNode = $.T("tree").getActiveTreeNode();

@@ -236,7 +236,8 @@ while(index--) {
     }
 }
 
-var globalValiable = {}, report_info_url; // 用来存放传递给iframe页面的信息
+var globalValiable = {},  // 用来存放传递给iframe页面的信息
+    report_info_url; 
 
 // 用户&权限信息
 var userHas,
@@ -299,11 +300,12 @@ function init() {
             globalValiable.remark = defines[5];
             globalValiable.reportId = reportId;
 
-            // if recorder.html， 如果需要录入表也展示右侧栏的简介、收藏等功能，则注释掉下面代码
+            /* if recorder.html， 如果需要录入表也展示右侧栏的简介、收藏等功能，则注释掉下面代码
             if( (globalValiable._url||"").indexOf("dm/recorder.html?id=") >= 0 ) {
                 location.href = globalValiable._url;
                 return;
-            }
+            } */
+
             // 是否允许订阅
             if( defines[4] == 1) {
                 $("#x6").show(true);

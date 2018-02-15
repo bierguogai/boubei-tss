@@ -264,7 +264,7 @@ function canEditRow(rowID) {
     if(rowID === '_new') { // 新增
         return _operation.contains("1");
     }
-    else if( (rowID + '').indexOf('_copy') >= 0 ) { // 复制新增
+    else if( (rowID+'').indexOf('_copy') >= 0 ) { // 复制新增
         return true;
     }
     else { // 编辑（本人及有维护数据权限的人能编辑）
@@ -353,7 +353,7 @@ function loadDetailData(rowID, version) {
                 uploadBtn.src = "images/icon_up.gif";
                 uploadBtn.title = "上传附件";
                 tssJS(uploadBtn).css("margin-left", "4px").click( function() {      
-                    manageAttach( _tempID, "form");
+                    manageAttach( _tempID, "form", isCreateRow);
                 } );  
                 tdNode.appendChild(uploadBtn);
 
@@ -423,7 +423,7 @@ function loadDetailData(rowID, version) {
         if(needFile) {
             var newBtn = tssJS.createElement('button', 'tssbutton small blue', 'btnViewAttach');
             tssJS(newBtn).html("管理附件").click( function() {      
-                manageAttach( _tempID, "form");
+                manageAttach( _tempID, "form", isCreateRow);
             } );  
             tssJS("WorkSpace\\:PageStep").appendChild(newBtn);
         }  
@@ -769,7 +769,7 @@ if( IS_TEST ) {
 var selectedLineId;
 
 // tag: "form": form里【管理附件】按钮; "row": 右键记录行，右键菜单【管理附件】; "ot" : 顶部自定义按钮【上传附件】
-function manageAttach(lineId, tag) {   
+function manageAttach(lineId, tag, isCreateRow) {   
     selectedLineId = lineId || tssJS.G("grid").getColumnValue("id"); 
     
     selectedLineId && 
@@ -782,7 +782,7 @@ function manageAttach(lineId, tag) {
             tssJS.showWaitingLayer();
             tssJS("#attach").show(true).center();
 
-            if( canEditRow(lineId) && (!checkFileOpt || checkFileOpt(tag)) ) {
+            if( isCreateRow || (canEditRow(lineId) && (!checkFileOpt||checkFileOpt(tag)) ) ) {
                 tssJS("#uploadForm span").show();               
             }
             else {

@@ -384,8 +384,10 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
 				<version>2.1.1</version>
+				
+				<!--将Java源码类编译文件打成jar包-->
 				<configuration>
-                    <archiveClasses>true</archiveClasses> <!--将Java源码类编译文件打成jar包-->
+                    <archiveClasses>true</archiveClasses> 
                     <webResources>
 			            <resource>
 			                <directory>target/classes</directory>
@@ -539,9 +541,9 @@
 				<security.level>6</security.level>
 				<job.enable>true</job.enable>
 				<log.level>info</log.level>
-				<db.username>tssbiu1</db.username>
-				<db.password>www.boubei.com</db.password>
-				<db.url>boubei.com:3306/ebi</db.url>
+				<db.username>root</db.username>
+				<db.password>boubei@com</db.password>
+				<db.url>127.0.0.1:3306/tssbi</db.url>
 				<tomcat.url>127.0.0.1:8080</tomcat.url>
 			</properties>
 		</profile>

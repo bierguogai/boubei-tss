@@ -245,6 +245,18 @@ function loadRecordDetail(isCreate, type, readonly) {
 			$.cache.XmlDatas[treeNodeID] = sourceInfoNode;
 			
 			var xform = $.F("recordForm", sourceInfoNode);
+
+			if(type == "1") {
+				for( var i = 7; i <= 9; i++) {
+					$("#recordForm tr:nth-child(" +i+ ")").hide();
+				}
+				$("#recordForm td>a").addClass("tssbutton").addClass("small").addClass("blue")
+						.attr("href", "javascript:void(0);");
+
+				defContainer().appendChild($(".template")[0].cloneNode(true));
+				defContainer().find("table").attr("id", "t12").hide();
+				if( !isCreate ) preview();
+			}
 		
 			// 设置保存/关闭按钮操作
 			$1("closeRecordForm").onclick = function() {
@@ -406,7 +418,8 @@ function configDefine() {
 		var columns = defVal.split(" ");
 		defVal = [];
 		columns.each(function(i, column) {
-			defVal.push( " {'label':'" +column.trim()+ "', 'code':'c" +(i+1)+ "'}" );
+			column = column.trim();
+			column && defVal.push( " {'label':'" +column.trim()+ "', 'code':'c" +(i+1)+ "'}" );
 		});
 		defVal = "[" + defVal.join(", \n") + "]";
 	}
@@ -451,7 +464,10 @@ function configDefine() {
     		$("#_" + field).value('');
     	});
     	createNewField();
-	}	
+	}
+
+	defContainer().css("overflow-y", "inherit").find("div").show();
+	$("#t12").hide();
 }
 
 function initFieldTreeMenus() {
@@ -676,3 +692,63 @@ function saveDefine() {
 
 	closeDefine();
 }
+
+function tab(index) {
+	$("#tabmenu li").removeClass("selected");
+	$("#tabmenu li:nth-child(" +(index-5)+ ")").addClass("selected");
+	for( var i = 6; i <= 9; i++) {
+		$("#recordForm tr:nth-child(" +i+ ")").hide();
+	}
+	$("#recordForm tr:nth-child(" +index+ ")").show();
+}
+
+function readme(articleId) {
+	console.log(this);
+	window.open("http://www.boubei.com/tss/article.portal?articleId=" + articleId);
+}
+
+function defContainer() {
+	return $("#recordForm tr:nth-child(6)>td>div");
+}
+function preview() {
+	defContainer().css("overflow-y", "auto").find("div").hide();
+	$("#t12").show();
+	$("#t12 tbody").html("");
+
+	var defVal = $.F("recordForm").getData("define");
+	var _define = $.parseJSON( defVal ) || [];
+
+	var n;
+	_define.each(function(i, item) {
+		var row = tssJS.createElement("tr");
+		tssJS(row).html("<td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/>");
+		tssJS("td:nth-child(1)", row).html( item.label );
+		tssJS("td:nth-child(2)", row).html( item.code||"" );
+		tssJS("td:nth-child(3)", row).html( TYPES[item.type||"string"] );
+		tssJS("td:nth-child(4)", row).html( item.defaultValue||"" );
+		tssJS("td:nth-child(5)", row).html( item.nullable == 'false' ? "是" : "" );
+		tssJS("td:nth-child(6)", row).html( item.unique == 'true' ? "是" : "" );
+		tssJS("td:nth-child(7)", row).html( item.isparam == 'true' ? "是" : "" );
+		tssJS("td:nth-child(8)", row).html( item.cwidth||"" );
+		tssJS("td:nth-child(9)", row).html( item.calign||"居中" );
+		tssJS("td:nth-child(10)", row).html( item.role2||"" );
+		tssJS("td:nth-child(11)", row).html( item.role1||"" );
+ 
+		tssJS("#t12 tbody").appendChild(row);
+		n = i;
+	});
+
+	for(;n < 10; n++) {
+		var row = tssJS.createElement("tr");
+		tssJS(row).html("<td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/>");
+		tssJS("#t12 tbody").appendChild(row);
+	}
+}
+var TYPES = {};
+TYPES.string = "字符串";
+TYPES.number = "数字（小数）";
+TYPES.int = "数字（整数）";
+TYPES.date = "日期";
+TYPES.datetime = "日期时间";
+TYPES.file = "附件";
+TYPES.hidden = "隐藏";

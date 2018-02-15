@@ -270,8 +270,9 @@ public class GroupService implements IGroupService {
     }
 
     public void deleteGroup(Long groupId) {
-        if(groupDao.isOperatorInGroup(groupId, Environment.getUserId()))
+        if( groupDao.isOperatorInGroup(groupId, Environment.getUserId()) ) {
             throw new BusinessException(EX.U_20);
+        }
         
         Group group = groupDao.getEntity(groupId);
         String operationId = UMConstants.GROUP_EDIT_OPERRATION;

@@ -69,13 +69,19 @@ var report_portlet_url = "../modules/dm/report_portlet.html?leftBar=true&id=",
 	onlyOpenTitle = "默认首页",
 	_menus;
 
-var id = tssJS.Query.get("id"),
+var group = tssJS.Query.get("group"),
     _default = tssJS.Query.get("_default");
+
 if( _default ) {
-	_default = report_portlet_url + _default;
+	_default = resourceUrl(_default);
 } 
 else {
-	_default = (id == "-1" ? "" : "x/domain.html");
+	_default = (group == "-1" ? "" : "x/domain.html");
+}
+
+function resourceUrl(resource) {
+	resource = parseInt(resource);
+	return (resource > 0 ? record_portlet_url : report_portlet_url) + Math.abs(resource);
 }
 
 $(function(){
@@ -124,7 +130,7 @@ function initMenu() {
 
 		var tabTitle = $(this).children('.nav').text();
 		var reportId = $(this).attr("ref");
-		var url = report_portlet_url + reportId;
+		var url = resourceUrl(reportId);
 		
 		setTimeout( function() {
 			addTab(tabTitle, url);

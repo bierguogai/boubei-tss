@@ -46,7 +46,13 @@ public class RecordAction extends BaseActionSupport {
     @Autowired private RecordService recordService;
     
     @RequestMapping("/all")
-    public void getAllRecord(HttpServletResponse response) {
+    public void getAllRecordTree(HttpServletResponse response) {
+    	List<Record> result = getPermitedRecords();
+        TreeEncoder treeEncoder = new TreeEncoder(result, new LevelTreeParser());
+        print("SourceTree", treeEncoder);
+    }
+ 
+    private List<Record> getPermitedRecords() {
     	List<Record> result = new ArrayList<Record>();
     	List<Record> all = recordService.getAllRecords();
         List<Record> list1 = recordService.getRecordables(); 
@@ -59,8 +65,22 @@ public class RecordAction extends BaseActionSupport {
         	}
         }
         
-        TreeEncoder treeEncoder = new TreeEncoder(result, new LevelTreeParser());
-        print("SourceTree", treeEncoder);
+        return result;
+    }
+    
+    @RequestMapping("/all/json")
+    @ResponseBody
+    public List<Object> getAllRecords(HttpServletResponse response) {
+    	List<Record> list = getPermitedRecords();
+    	List<Object> result = new ArrayList<Object>();
+    	for(Record report : list) {
+			Long id = report.getId();
+    		String name = report.getName();
+			Long parentId = report.getParentId();
+			result.add(new Object[] { id, name, parentId, report.getType(), "record" });
+    	}
+    	
+    	return result;
     }
     
     @RequestMapping("/groups")

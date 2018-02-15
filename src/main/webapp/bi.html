@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html> 
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>它山石BI</title>
+<link rel="shortcut icon" href="images/tss.ico">
+<link rel="Bookmark" href="images/tss.ico">
+
+<link href="tools/tssJS/css/boubei.css" rel="stylesheet">
+
+<script src="tools/tssJS/tssJS.all.js"></script>
+<script src="tools/portlet.js"></script>
+
+<style>
+
+html, body { height: 100%; overflow: hidden; }
+.tssIFrame { position: absolute; top: 33px; width: 100%; border-top: 1px solid rgb(35,60,99); }
+.hidden { display: none; }
+
+.top { height: 33px; background-color: rgb(35,60,99); box-sizing: border-box; border-bottom: 1px solid #fff; }
+.top .logo { 
+    display: inline-block; position: absolute; left: 0; top: 0;
+    width: 346px; height: 32px; 
+    background: url(images/logo.png) no-repeat center;
+}
+
+.menu { position: absolute; top:1px; right: 0; font-size: 1.1em;  z-index: 10001; } 
+.menu a { background-color: rgb(35,60,99); color: #b7bac1; }
+.menu a:hover { background-color: #444; color: #fff; text-decoration: none; }
+
+.menu ul { list-style-type: none; } 
+.menu ul li { float:left; position:relative; width: 90px; text-align:center;  } 
+.menu>ul>li { border-right: 1px solid rgba(204,204,204,0.2); }
+.menu ul li a, 
+.menu ul li a:visited { display: block; height: 30px; line-height: 30px; 
+    overflow: hidden; text-overflow: ellipsis; word-break: break-all; white-space: nowrap; 
+} 
+.menu ul li ul { display: none; }  
+.menu ul li:hover ul { display: block; position: absolute; top: 30px; left:0; width: 85px; } 
+.menu ul li:hover a { border-bottom: 1px solid rgba(204,204,204,0.2); }
+
+li.r9,li.r8,li.ra { display: none; }
+
+#notice {
+    position: fixed; top: 5px; left: 200px; color: red;   
+    width: 40%; min-width: 360px; height: 24px; overflow: hidden;
+}
+#notice .container { float: left; width: 1000%; }
+#notice .container>div { float: left; }
+#notice .container>div>a {
+    display: inline-block; float: left; width: 400px; line-height: 20px; 
+    margin: 2px 30px; color: #fff; cursor:pointer; 
+    overflow: hidden; text-overflow: ellipsis; word-break: break-all; white-space: nowrap; 
+}
+#notice .container>div>a:link { color: #f0f0f0; }
+#notice .container>div>a:visited { color: #ccc; text-decoration:none; }
+#notice .container>div>a:hover { color: #FEF7A9; text-decoration:none; }
+#notice .container>div>a:active { color: #ff7f24; }
+#noticePanel .title { background-color: rgb(35,60,99); }
+span.max, span.min { display: none; }
+
+</style>
+
+<script type="text/javascript">
+
+/* 用户信息初始化  */
+var roles = [], userHas, isSelfDomain = false;
+$(function(){
+    initUserInfo(function() {
+        resizeIFrame();
+
+        tssJS.getJSON("/tss/auth/user/has", {}, 
+            function(info) {
+                userHas = info;
+                if( info && info[1] ) {
+                    roles = info[1], isSelfDomain = (info[0].length && info[0][0][0] == -7);                   
+                    roles.contains(-9) && $("li.r9").show(true) && $("li.r8").hide();  // 开发者
+                    roles.contains(-8) && !isSelfDomain && $("li.r8").show(true);  // 域管理员(非自注册域)
+                    roles.contains(-1) && $("li.r9,li.r8,li.ra").show(true);  // Admin
+                }
+            }, 
+        "GET");
+
+        dbsx();
+        getBIMenu();
+    });
+});
+
+window.onresize = resizeIFrame;
+var resizeIFrame = function resizeIFrame() {
+    $(".tssIFrame").css("height", (document.body.offsetHeight - 33) + "px"); 
+}
+
+// ----------------------------------- 获取BI报表、数据表一级菜单 -----------------------------------
+function getBIMenu() {
+    var reports, records;
+    tssJS.getJSON( "/tss/auth/rp/my/" + rootId, {},
+        function(data) {
+            reports = data;
+            reports && records && buildMenu(reports, records);
+        }
+    );
+
+    tssJS.getJSON( "/tss/auth/rc/all/json", {},
+        function(data) {
+            records = data;
+            reports && records && buildMenu(reports, records);
+        }
+    );
+}
+
+var rootId = 0,   // 取”全部“节点
+    globalValiable = {},
+    level_2_menus = {}, 
+    menusMap = {}, 
+    fisrtGroup;
+
+// 合并录入表和报表，同时要防止彼此ID重复
+function buildMenu(reports, records) {
+    if( !reports.length && !records.length ) {
+        return openMsgPage();
+    }
+
+    var data = [];
+    records.each( function(i, item) {
+        if( item[2] == rootId && item[1].indexOf("系统功能") >=0 ) return true;
+
+        data.push(item);
+    });
+    reports.each( function(i, item) {
+        if( item[2] == rootId && item[1].indexOf("系统报表") >=0 ) return true;
+
+        item[0] = -1 * item[0];
+        item[2] = -1 * item[2];
+        data.push(item);
+    });
+
+    data.each( function(i, item) {
+        var id = item[0], pid = item[2], name = item[1], isResource = item[3];
+        menusMap[id] = item;
+
+        if( Math.abs(pid) == rootId ) { // 一级目录
+            var li = tssJS.createElement("li");
+            $(li).html("<a onclick='openLevelOne(" +id+ ")'>" +name+ "</a>");
+            $("#_bi>ul").appendChild(li);
+
+            level_2_menus[id] = [];
+            fisrtGroup = fisrtGroup || id;
+        }
+        else if( !isResource ) { 
+            var brothers = level_2_menus[pid];
+            if(brothers) {
+                brothers.push(item); // 二级目录
+            }
+            else { // 三级目录，直接升级为二级，方便开发者定义多模块
+                var parent = menusMap[pid];
+                if(parent) {
+                    var uncles = level_2_menus[parent[2]];
+                    uncles && uncles.push(item);
+                }
+            }
+        }
+        else if( isResource ) {  // 报表
+            var parent = menusMap[pid];
+            if(parent) {
+                if( !parent.children ) {
+                    parent.children = []; // 没有任何报表的二级目录将被过滤掉
+                }
+                parent.children.push(item);
+            } 
+        }
+    } );
+
+    openLevelOne(fisrtGroup, true); // 默认打开第一个报表
+}
+
+function openLevelOne(group, firstTime) {
+    var fisrtResource;
+    globalValiable.list = level_2_menus[group];
+    globalValiable.list.each( function(i, _item) {
+        (_item.children||[]).each(function(i, item){
+            if(item[3]) { // isReport|Record = true
+                fisrtResource = item[0];
+                return false;
+            }
+        });
+        if(fisrtResource) return false;
+    } );
+
+    // 域管理员/开发者 初次默认打开引导页， 普通用户不需要
+    if( firstTime && (roles.contains(-8) || roles.contains(-9) || isSelfDomain) ) {
+        openUrl('more/bi_nav.html?group=' + group);
+    }
+    else {
+        openUrl('more/bi_nav.html?group=' + group + (fisrtResource ? "&_default="+fisrtResource : "") );
+    }
+}
+
+</script>
+
+</head>
+
+<body>
+ 
+<div class="top">
+    <div class="logo"></div>
+    <div class="menu"> 
+        <ul> 
+            <li id="_bi">
+                <a onclick="location.reload()">数据管理</a>
+                <ul></ul>
+            </li>           
+            <li class="r8"><a onclick="openUrl('modules/um/group.html')">用户管理</a></li>
+            <li class="r8"><a onclick="openUrl('modules/cms/channel.html')">栏目公告</a></li>
+            <li class="r9">
+                <a>开发管理</a> 
+                <ul>                    
+                    <li><a onclick="openUrl('modules/um/role.html')">设置角色</a> </li>
+                    <li><a onclick="openUrl('modules/dm/datasource.html')">数据源</a></li>
+                    <li><a onclick="openUrl('modules/dm/record.html')">数据表</a></li> 
+                    <li><a onclick="openUrl('modules/dm/report.html')">服务&报表</a></li>
+                    <li><a onclick="releaseModule()">功能发布</a> </li>
+                    <li><a onclick="manageJob()">定时Job</a> </li>
+                    <li><a onclick="manageETLTask()">ETL任务</a> </li> 
+                    <li class="ra"><a onclick="manageToken()">令牌管理</a> </li>                  
+                    <li><a onclick="openUrl('modules/_log/log.htm')">系统日志</a></li>
+                    <li><a onclick="openUrl('modules/_cache/cache.htm')">缓存监控</a></li> 
+                    <li class="r9"><a onclick="openUrl('more/x/xn.html')">量能监控</a> </li>
+                    <li class="ra"><a onclick="openUrl('modules/um/online.html')">在线用户</a></li>
+                </ul>
+            </li>  
+            <li style="width: 100px;">
+                <a onclick='fixUserInfo()' id="userInfo">个人信息</a>
+                <ul>
+                    <li><a onclick="logout()">注销登陆</a></li>
+                    <li><a onclick='changePasswd()'>修改密码</a></li>                    
+                    <li><a onclick="openMsgPage()">站内消息</a></li> 
+                    <li><a onclick="feedback()">问题建议</a></li>
+                    <li class="ra"><a onclick="openUrl('more/x/feedback.html')">查看反馈</a></li>
+                    <li><a href='http://www.boubei.com' target="_blank">卜贝官网</a></li>
+                    <li><a href='http://bbs.boubei.com' target="_blank">卜贝社区</a></li>
+                    <li class="ra"><a href='index.html' target="_blank">Admin</a></li>
+                </ul>
+            </li>            
+        </ul>  
+    </div> 
+</div>
+
+<!-- 跑马灯公告 -->
+<div id="notice">
+    <div class="container">
+        <div id="s1"></div>
+        <div id="s2"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(".top li>a[onclick]").attr("href", "javascript:void(0)");
+</script>
+ 
+</body>
+</html>

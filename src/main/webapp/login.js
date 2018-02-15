@@ -117,7 +117,7 @@ var doLogin = function(accountEl, passwdEl) {
     });
 }
 
-var indexPage = "tssbi.html";    /* 登录成功后跳转到的页面 */
+var indexPage = "bi.html";    /* 登录成功后跳转到的页面 */
 
 function gotoIndex(loginName) {
     if(window.parent && window.parent != window.self) {

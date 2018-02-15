@@ -12,8 +12,6 @@ package com.boubei.tss.dm.report;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +32,6 @@ import com.boubei.tss.EX;
 import com.boubei.tss.PX;
 import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DMUtil;
-import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.record.Record;
 import com.boubei.tss.dm.record.RecordService;
 import com.boubei.tss.dm.report.permission.ReportPermission;
@@ -55,11 +52,8 @@ import com.boubei.tss.modules.param.ParamConstants;
 import com.boubei.tss.modules.param.ParamManager;
 import com.boubei.tss.modules.param.ParamService;
 import com.boubei.tss.um.permission.PermissionHelper;
-import com.boubei.tss.util.BeanUtil;
-import com.boubei.tss.util.DateUtil;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
-import com.boubei.tss.util.StringUtil;
 import com.boubei.tss.util.URLUtil;
 
 /**
@@ -90,43 +84,30 @@ public class ReportAction extends BaseActionSupport {
     @RequestMapping("/my/{groupId}")
 	@ResponseBody
     public List<Object> getReportsByGroup(@PathVariable Long groupId) {
+    	
+    	List<Object> result = new ArrayList<Object>();
+    	
     	List<Report> list;
     	if(Report.DEFAULT_PARENT_ID.equals(groupId)) {
     		list = reportService.getAllReport();
     	} else {
     		list = reportService.getReportsByGroup(groupId, Environment.getUserId());
     	}
-    	List<Report> tempList = new ArrayList<Report>();
-    	List<Object> result = new ArrayList<Object>();
-	    
+    	
     	for(Report report : list) {
 			if( report.isActive() ) {
-				tempList.add(report);
+				Long id = report.getId();
+	    		String name = report.getName();
+				Long pid = report.getParentId();
+				result.add(new Object[] { id, name, pid, report.getType(), "report" });
 			}
-    	}
-    	
-    	List<String> topSelf = getTops(true);
-	    		
-	    if(topSelf.size() > 0) {
-	    	Report tg1 = new Report(-1L, "您最近访问", groupId);
-	    	Report tg2 = new Report(-2L, "您最近访问", tg1.getId());
-			tempList.add(tg1);
-			tempList.add(tg2);
-	    	tempList.addAll( cloneTops(tg2.getId(), topSelf, list) );
-	    }
-    	
-    	for(Report report : tempList) {
-    		Long reportId = report.getId();
-    		String name = report.getName();
-			Long parentId = report.getParentId();
-			result.add(new Object[] { reportId, name, parentId, report.getType() });
     	}
     	
 		return result;
     }
     
     /**
-     * 如果指定了分组，则只取该分组下的报表
+     * 如果指定了分组，则只取该分组下的报表。XML
      */
     @RequestMapping("/my")
     public void getMyReports(HttpServletResponse response, Long groupId) {
@@ -137,106 +118,13 @@ public class ReportAction extends BaseActionSupport {
 	    	list = reportService.getAllReport();
 	    }
 	    
-	    // 查出过去100天个人和整站访问Top10的报表名称
-	    List<String> topSelf = getTops(true);
-	    List<String> topX = getTops(false);
-	    Long selfGroupId = -2L, topGroupId = -3L, newGroupId = -4L;
-	    		
-	    List<Report> result = new ArrayList<Report>();
-    	result.add(new Report(selfGroupId, "您最近访问报表", null));
-    	result.addAll( cloneTops(selfGroupId, topSelf, list) );
-
-    	result.add(new Report(topGroupId, "近期热门报表", null));
-    	result.addAll( cloneTops(topGroupId, topX, list) );
+	    List<Report> result = ReportQuery.getMyReports(list, groupId);
 	    
-	    result.add(new Report(newGroupId, "近期新出报表", null));
-	    List<Report> lastest = new ArrayList<Report>();
-    	for(Report report : list) {
-    		if( !report.isActive()  || report.getId().equals(groupId) )  continue;
- 
-    		if( !report.isGroup() 
-    				&& report.getCreateTime().after(DateUtil.subDays(DateUtil.today(), 10))
-    				&& StringUtil.hasCNChar(report.getName())) {
-    			
-    			lastest.add(cloneReport(newGroupId, report));
-    		}
-    		
-    		result.add(report); // 此处将list里的所有report及分组放入到result里
-    	}
-    	sortLastest(result, lastest);
-       
         TreeEncoder treeEncoder = new TreeEncoder(result, new LevelTreeParser());
         treeEncoder.setNeedRootNode(false);
         print("SourceTree", treeEncoder);
     }
 
-	void sortLastest(List<Report> result, List<Report> lastest) {
-		Collections.sort(lastest, new Comparator<Report>() {
-            public int compare(Report r1, Report r2) {
-                return r2.getId().intValue() - r1.getId().intValue();
-            }
-        });
-    	result.addAll(lastest.size() > 3 ? lastest.subList(0, 3) : lastest);
-	}
-    
-    private List<Report> cloneTops(Long topGroupId, List<String> topX, List<Report> list) {
-    	List<Report> result = new ArrayList<Report>();
-    	for(String cn : topX) {
-    		for(Report rp : list) {
-	    		if(cn.endsWith("-" + rp.getId()) && rp.isActive() && !rp.isGroup()) {
-	        		result.add( cloneReport(topGroupId, rp) );
-	        		break;
-	    		}
-	    	}
-    	}
-    	
-    	return result;
-    }
-
-	private Report cloneReport(Long topGroupId, Report report) {
-		Report clone = new Report();
-		BeanUtil.copy(clone, report);
-		clone.setParentId(topGroupId);
-		return clone;
-	}
- 
-    private List<String> getTops(boolean onlySelf) {
-    	String sql = "select className name, count(*) value, max(l.accessTime) lastTime, max(methodCnName) cn " +
-	    		" from dm_access_log l " +
-	    		" where l.accessTime >= ? " + (onlySelf ? " and l.userId = ?" : "") +
-	    		" group by className " +
-	    		" order by " + (onlySelf ? "lastTime" : "value")  + " desc";
-    	
-	    Map<Integer, Object> params = new HashMap<Integer, Object>();
-	    
-	    // 日志量大的，不宜取太多天; 默认取3天
-	    int historyDays = 3;
-		try {
-			historyDays = EasyUtils.obj2Int( ParamManager.getValue(PX.TOP_REPORT_LOG_DAYS, "3") ); 
-		} catch (Exception e) {}
-	    params.put(1, DateUtil.subDays(DateUtil.today(), historyDays));
-	    
-	    if(onlySelf) {
-	    	params.put(2, Environment.getUserId());
-	    }
-	    
-	    SQLExcutor ex = new SQLExcutor();
-		ex.excuteQuery(sql, params , DMConstants.LOCAL_CONN_POOL);
-	    
-	    List<String> tops = new ArrayList<String>();
-	    int max = onlySelf ? 5 : 3;
-	    for( Map<String, Object> row : ex.result){
-	    	if(tops.size() < max) {
-	    		String reportName = (String) row.get("name");
-	    		String reportCnName = (String) row.get("cn");
-	    	    if(StringUtil.hasCNChar(reportCnName)) {
-	    	    	tops.add(reportName);
-	    	    }
-	    	}
-	    }
-	    return tops;
-    }
-	
     @RequestMapping("/template")
     public void getReportTLs(HttpServletResponse response) {
     	StringBuffer sb = new StringBuffer("<actionSet>"); 

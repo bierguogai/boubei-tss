@@ -69,8 +69,9 @@ public class Filter0Security implements Filter {
     	List<String> crossDomainIgnores = new ArrayList<String>();
     	crossDomainIgnores.add("report_portlet.html"); // 同时需加入到白名单里
     	crossDomainIgnores.add("404.html");
+    	crossDomainIgnores.add(".portal");
     	for(String url : crossDomainIgnores) {
-    		if(servletPath.indexOf( url) >= 0) {
+    		if(servletPath.indexOf(url) >= 0) {
     			referer = null;
     		}
     	}

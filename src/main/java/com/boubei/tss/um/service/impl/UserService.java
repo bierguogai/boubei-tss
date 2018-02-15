@@ -78,7 +78,7 @@ public class UserService implements IUserService{
          */
 		User entity = userDao.getEntity(userId);
         if(Environment.getUserId().equals(userId) || entity.getLogonCount() > 0) {
-            throw new BusinessException(EX.U_32);
+            throw new BusinessException( EX.parse(EX.U_32, entity.getLoginName()) );
         }
         
         Group group = groupDao.getEntity(groupId);

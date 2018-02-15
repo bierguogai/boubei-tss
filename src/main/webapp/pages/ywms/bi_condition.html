@@ -211,8 +211,7 @@ function clearTimeCondition(keys) {
 
 function initParams(getCookie) {
 
-    // $('#_day1').datebox('setValue', getFirstDayOfMonth( subDate(now, 1) ) );
-    $('#_day1').datebox('setValue', subDateS(now, 365) );
+    $('#_day1').datebox('setValue', getFirstDayOfMonth( subDate(now, 1) ) );
     $('#_day2').datebox('setValue', cday);
 
     var weeks = [], months = [], seasons = [], years = [];
@@ -250,6 +249,8 @@ function initParams(getCookie) {
         /* 从Cookie获取历史查询条件*/ 
         getCookie && updateParams(false);
     } );
+
+    $('#_day1').datebox('setValue', '2017-01-01' );
 }
 
 function changeTime (item) {
@@ -314,8 +315,8 @@ function initGroupParams(callback) {
 	            panelHeight: '150px',
                 editable: false,
                 multiple: false,
-	            url: '/tss/data/json/loc_list',
-	            queryParams: {"param1": newV}
+	            url: '/tss/xdata/json/y_location?fields=name as text, name as value',
+	            queryParams: {"warehouse": newV}
 	        });
         }
     });
@@ -331,8 +332,8 @@ function initGroupParams(callback) {
                 panelHeight: '150px',
                 editable: false,
                 multiple: false,
-                url: '/tss/data/json/sku_list',
-                queryParams: {"param1": newV}
+                url: '/tss/xdata/json/y_sku?fields=name as text, name as value',
+                queryParams: {"manufacturer": newV}
             });
         }
     });

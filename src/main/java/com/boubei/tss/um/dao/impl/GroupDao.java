@@ -19,7 +19,9 @@ import java.util.Set;
 
 import org.springframework.stereotype.Repository;
 
+import com.boubei.tss.EX;
 import com.boubei.tss.PX;
+import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.persistence.TreeSupportDao;
 import com.boubei.tss.framework.persistence.pagequery.PageInfo;
 import com.boubei.tss.framework.persistence.pagequery.PaginationQueryByHQL;
@@ -54,10 +56,12 @@ public class GroupDao extends TreeSupportDao<Group> implements IGroupDao {
  
 	public Group removeGroup(Group group) {
         List<?> groups = getChildrenById(group.getId()); //列表中包含了Group本身
-        List<?> users = getUsersByGroupIdDeeply(group.getId());
+        List<User> users = getUsersByGroupIdDeeply(group.getId());
         
-        for(Iterator<?> it = users.iterator(); it.hasNext();){
-            User user = (User) it.next();
+        for(User user : users) {
+            if(user.getLogonCount() > 0) {
+                throw new BusinessException( EX.parse(EX.U_322, group.getName()) );
+            }
             deleteAll(getEntities("from GroupUser gu where gu.userId = ?", new Object[]{user.getId()}));
             deleteAll(getEntities("from RoleUser ru where ru.id.userId = ? and ru.strategyId is null", new Object[]{user.getId()}));
         }
