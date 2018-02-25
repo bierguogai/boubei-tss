@@ -247,7 +247,7 @@ function loadRecordDetail(isCreate, type, readonly) {
 			var xform = $.F("recordForm", sourceInfoNode);
 
 			if(type == "1") {
-				for( var i = 7; i <= 9; i++) {
+				for( var i = 7; i <= 10; i++) {
 					$("#recordForm tr:nth-child(" +i+ ")").hide();
 				}
 				$("#recordForm td>a").addClass("tssbutton").addClass("small").addClass("blue")
@@ -415,11 +415,11 @@ function configDefine() {
 	var defVal = rform.getData("define");
 
 	if(defVal && defVal.indexOf('{') < 0) {  // 根据Excel表头快速定义的录入表，eg: 仓库 货主 库位 货品 包装 数量
-		var columns = defVal.split(" ");
+		var columns = defVal.replace(/\t/g, " ").split(" ");  // 替换掉tab
 		defVal = [];
 		columns.each(function(i, column) {
 			column = column.trim();
-			column && defVal.push( " {'label':'" +column.trim()+ "', 'code':'c" +(i+1)+ "'}" );
+			column && defVal.push( " {'label':'" +column.trim()+ "', 'code':'c" +(defVal.length+1)+ "'}" );
 		});
 		defVal = "[" + defVal.join(", \n") + "]";
 	}
@@ -696,7 +696,7 @@ function saveDefine() {
 function tab(index) {
 	$("#tabmenu li").removeClass("selected");
 	$("#tabmenu li:nth-child(" +(index-5)+ ")").addClass("selected");
-	for( var i = 6; i <= 9; i++) {
+	for( var i = 6; i <= 10; i++) {
 		$("#recordForm tr:nth-child(" +i+ ")").hide();
 	}
 	$("#recordForm tr:nth-child(" +index+ ")").show();

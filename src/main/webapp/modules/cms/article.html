@@ -78,6 +78,9 @@
 
 				var name = $('td[name=name]', row).attr('value');
 				var url  = NO_AUTH_PATH + $('td[name=relationUrl]', row).attr('value');
+				if(articleId > 1000000000) { // 文章新建未保存
+					url += "&channelId=" + channelId;
+				}
 				var type = $('td[name=type]', row).attr('value');
 				html.push('<option value="' + (type + "," + url + ", " + name) + '">' + $('td[name=name]', row).attr('value') + '</option>');
 			});
@@ -286,7 +289,7 @@
     	tssJS("#sourceFile").value("");
 	}
 
-	function addAttachments(seqNo, fileName, fileExt, oldfileName, downloadUrl) {
+	function addAttachments(seqNo, fileName, fileExt, oldfileName, downloadUrl, relationUrl) {
 		var type = $1("fileType").value;
 		var map = {
 			"seqNo": seqNo, 
@@ -294,10 +297,9 @@
 			"type": type, 
 			"name": oldfileName, 
 			"downloadUrl": downloadUrl, 
+			"relationUrl": relationUrl,
 			"fileName": fileName, 
 			"fileExt": fileExt
-
-			
 		};
 		$.G("attachGrid").insertRow(map);
 	}

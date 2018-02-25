@@ -289,19 +289,26 @@ public class RemoteArticleService implements IRemoteArticleService {
         return "<Response><ArticleList>" + channelElement.asXML() + "</ArticleList></Response>";
     }
  
-    public AttachmentDTO getAttachmentInfo(Long articleId, int seqNo) {
+    public AttachmentDTO getAttachmentInfo(Long articleId, int seqNo, Object channelId) {
         Attachment attach = articleDao.getAttachment(articleId, seqNo);
         if (attach == null) {
             log.error("数据库中没有相应的附件信息！文章ID：" + articleId + ", 序号：" + seqNo);
             return null;
         }
         
-        // 添加文章附件点击率;
-        HitRateManager.getInstanse("cms_attachment").output(attach.getId());
+        Channel channel;
+        if( channelId != null ) { // 新建文件未保存时上传的附件
+        	channel = channelDao.getEntity( EasyUtils.obj2Long(channelId) );
+        }
+        else {
+        	// 添加文章附件点击率;
+            HitRateManager.getInstanse("cms_attachment").output(attach.getId());
+            
+            // 通过文章id获取栏目id
+            Article article = attach.getArticle();        
+    		channel = article.getChannel();
+        }
         
-        // 通过文章id获取栏目id
-        Article article = attach.getArticle();        
-		Channel channel = article.getChannel();
 		Channel site = channel.getSite(); 
         
         AttachmentDTO dto = new AttachmentDTO(attach.getType(), attach.getName(), attach.getFileName(), attach.getFileExt(),

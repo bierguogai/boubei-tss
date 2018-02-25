@@ -51,6 +51,7 @@ public class ImportCSV implements AfterUpload {
 		// 解析附件数据
 		File targetFile = new File(filepath);
 		String dataStr = FileHelper.readFile(targetFile, DataExport.CSV_CHAR_SET);
+		dataStr = dataStr.replaceAll(";", ","); // mac os 下excel另存为csv是用分号;分隔的
 		String[] rows = EasyUtils.split(dataStr, "\n");
 		
 		List<Map<String, String>> valuesMaps = new ArrayList<Map<String, String>>();
@@ -64,11 +65,16 @@ public class ImportCSV implements AfterUpload {
 			}
 			
 			Map<String, String> valuesMap = new HashMap<String, String>();
+			String sb = "";
 			for(int j = 0; j < fieldVals.length; j++) {
     			String value = fieldVals[j].trim();
     			value = value.replaceAll("，", ","); // 导出时英文逗号替换成了中文逗号，导入时替换回来
 				valuesMap.put(_db.fieldCodes.get(j), value);
+				sb += value;
         	}
+			if( EasyUtils.isNullOrEmpty(sb) ) { // 判断是否每个字段都没有数据，是的话为空行
+				continue;
+			}
 			
 			valuesMaps.add(valuesMap);
 			

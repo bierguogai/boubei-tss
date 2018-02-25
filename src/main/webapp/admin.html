@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html> 
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>    
+<meta charset="UTF-8">
+<title>它山石-后台管理</title>
+<link rel="shortcut icon" href="images/tss.ico">
+<link rel="Bookmark" href="images/tss.ico">
+
+<link href="tools/tssJS/css/boubei.css" rel="stylesheet">
+
+<script src="tools/tssJS/tssJS.all.js"></script>
+<script src="tools/portlet.js"></script>
+
+<style>
+
+html, body { height: 100%; overflow: hidden; }
+.tssIFrame { position: absolute; top: 30px; width: 100%; }
+.hidden { display: none; }
+
+/* 顶部 背景色：#323232，隔条：rgba(204,204,204,0.2)，字体色：#b7bac1 */
+.top { height: 30px; box-sizing: border-box; 
+    background: #323232;
+    background: linear-gradient(180deg, #323232 0px, #555 100%) repeat-x; 
+}
+.top .logo { 
+    display: inline-block; position: absolute; left: 0; height: 30px; width: 241px;
+    background-image: url(images/tss.jpg)
+}
+
+.menu { position: absolute; top:0; right: 0; font-size: 1.1em; z-index: 10001; } 
+.menu a { background-color: #323232; color: #b7bac1; 
+    background: linear-gradient(180deg, #323232 0px, #555 100%) repeat-x;
+}
+.menu a:hover { background-color: #444; color:#fff; text-decoration: none; }
+
+.menu ul { list-style-type: none; } 
+.menu ul li { float:left; position:relative; width: 85px; text-align:center;  } 
+.menu>ul>li { border-right: 1px solid rgba(204,204,204,0.2); }
+.menu ul li a, 
+.menu ul li a:visited { display: block; height: 30px; line-height: 30px; 
+    overflow: hidden; text-overflow: ellipsis; word-break: break-all; white-space: nowrap; 
+} 
+.menu ul li ul { display: none; }  
+.menu ul li:hover ul { display: block; position: absolute; top: 30px; left:0; width: 85px; } 
+
+#iframeSrc { position: absolute; top: 30px; }
+
+#notice {
+    position: fixed; top: 5px; left: 220px; color: red;   
+    width: 400px; height: 24px; overflow: hidden;
+}
+#notice .container { float: left; width: 1000%; }
+#notice .container>div { float: left; }
+#notice .container>div>a {
+    display: inline-block; float: left; width: 400px; line-height: 20px; 
+    margin: 2px 30px; color: #fff; cursor:pointer; 
+    overflow: hidden; text-overflow: ellipsis; word-break: break-all; white-space: nowrap; 
+}
+#notice .container>div>a:link { color: #f0f0f0; }
+#notice .container>div>a:visited { color: #ccc; text-decoration:none; }
+#notice .container>div>a:hover { color: #FEF7A9; text-decoration:none; }
+#notice .container>div>a:active { color: #ff7f24; }
+
+</style>
+
+<script type="text/javascript">
+
+/* 用户信息初始化  */
+window.onload = function() {
+    initUserInfo(function() {
+        resizeIFrame();
+        openMsgPage();
+
+        dbsx();
+
+        $.getJSON("/tss/si/version", {}, function(result) {
+            if(result[1].indexOf("demo") >= 0) {
+                $("li.other").hide();
+            }
+        }, "GET")
+    });
+
+    /* 禁止鼠标右键 */
+    document.oncontextmenu = function(ev) {
+        ev = ev || window.event;
+        $.Event.cancel(ev); 
+    }
+}
+
+window.onresize = resizeIFrame;
+var resizeIFrame = function resizeIFrame() {
+    $(".tssIFrame").css("height", (document.body.offsetHeight - 30) + "px");
+}
+
+</script>
+
+</head>
+
+<body>
+ 
+<div class="top">
+    <div class="logo"></div>
+    <div class="menu"> 
+        <ul> 
+            <li><a onclick="openMsgPage()">站内消息</a></li> 
+            <li><a>数据管理</a>    
+                <ul> 
+                    <li><a onclick="openUrl('modules/dm/record.html')">数据表</a> </li>
+                    <li><a onclick="openUrl('modules/dm/report.html')">数据报表</a></li>
+                    <li><a onclick="openUrl('modules/cms/channel.html')">栏目文章</a></li>
+                </ul> 
+            </li>  
+            <li><a>用户权限</a>    
+                <ul> 
+                    <li><a onclick="openUrl('modules/um/group.html')">用户管理</a></li> 
+                    <li><a onclick="openUrl('modules/um/role.html')">设置角色</a></li> 
+                    <li class="other"><a onclick="openUrl('modules/um/subauth.html')">权限转授</a></li> 
+                    <li class="other"><a onclick="openUrl('modules/um/resource.html')">应用资源</a></li>  
+                    <li><a onclick="openUrl('modules/um/online.html')">在线用户</a></li>
+                </ul> 
+            </li> 
+            <li class="other"><a>门户管理</a>    
+                <ul> 
+                    <li><a onclick="openUrl('modules/portal/structure.html')">门户结构</a></li> 
+                    <li><a onclick="openUrl('modules/portal/component.html')">门户组件</a></li> 
+                    <li><a onclick="openUrl('modules/portal/release.html')">门户发布</a> </li>
+                    <li><a onclick="openUrl('modules/portal/navigator.html')">导航菜单</a></li> 
+                </ul>
+            </li> 
+            <li><a>系统辅助</a>    
+                <ul> 
+                    <li><a onclick="openUrl('modules/_log/log.htm')">系统日志</a></li> 
+                    <li><a onclick="openUrl('modules/_param/param.htm')">系统参数</a></li> 
+                    <li><a onclick="openUrl('modules/_cache/cache.htm')">缓存监控</a></li> 
+                    <li><a onclick="openUrl('more/x/xn.html')">量能监控</a> </li>
+                    <li><a onclick="openUrl('modules/dm/datasource.html')">数据源</a></li>
+                    <li><a onclick="manageJob()">定时Job</a> </li>
+                    <li><a onclick="manageETLTask()">ETL任务</a> </li>
+                    <li><a onclick="manageToken()">令牌管理</a> </li>
+                    <li><a onclick="releaseModule()">功能发布</a> </li>
+                    <li><a onclick="openUrl('more/x/feedback.html')">查看反馈</a></li>
+                </ul>
+            </li>
+            <li>
+                <a onclick='fixUserInfo()' id="userInfo">个人信息</a>
+                <ul>
+                    <li><a onclick='changePasswd()'>修改密码</a></li>
+                    <li><a onclick="logout()"> 注销登陆</a></li> 
+                    <li><a href='bi.html' target="_self">进入BI</a></li>
+                    <li><a href='http://www.boubei.com' target="_blank">卜贝官网</a></li>
+                    <li><a href='http://bbs.boubei.com' target="_blank">卜贝社区</a></li>
+                </ul>
+            </li>
+        </ul>  
+    </div> 
+</div>
+
+<div id="notice">
+    <div class="container">
+        <div id="s1"></div>
+        <div id="s2"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(".top li>a[onclick]").attr("href", "javascript:void(0)");
+</script>
+ 
+</body>
+</html>

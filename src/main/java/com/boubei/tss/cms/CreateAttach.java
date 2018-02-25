@@ -39,12 +39,13 @@ public class CreateAttach implements AfterUpload {
 		Attachment attachObj = articleService.processFile(targetFile, articleId, channelId, type, orignFileName);
 
 		// 向前台返回成功信息
-		String downloadUrl = attachObj.getRelationUrl();
+		String relationUrl = attachObj.getRelationUrl();
+		String downloadUrl = attachObj.getDownloadUrl();
 		Integer seqNo = attachObj.getSeqNo();
 		String fileName = attachObj.getFileName();
 		String fileExt = attachObj.getFileExt();
 		
 		return "parent.addAttachments(" + seqNo + ", '" + fileName + "', '" 
-				+ fileExt + "', '" + orignFileName + "', '" + downloadUrl + "')";
+				+ fileExt + "', '" + orignFileName + "', '" + downloadUrl + "', '" + relationUrl + "')";
 	}
 }

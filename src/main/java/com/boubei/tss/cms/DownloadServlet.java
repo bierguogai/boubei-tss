@@ -45,16 +45,18 @@ public class DownloadServlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         Long articleId;
         Integer seqNo;
+        String channelId;
         try{
     	    articleId = new Long(request.getParameter("id"));
     	    seqNo = new Integer(request.getParameter("seqNo"));
+    	    channelId = request.getParameter("channelId");
         } 
         catch(Exception e) {
         	log.debug("下载附件时参数值有误: " + e.getMessage());
         	return;
         }
         
-	    AttachmentDTO attach = service.getAttachmentInfo(articleId, seqNo);
+	    AttachmentDTO attach = service.getAttachmentInfo(articleId, seqNo, channelId);
         if(attach == null){
         	log.error("附件不存在.");
             return;

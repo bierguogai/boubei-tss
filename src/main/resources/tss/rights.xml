@@ -2,7 +2,7 @@
 
 <rightConfig url_404="/tss/_404.html">
 
-	<servlet right="-1,Admin" name="/index.html"/>
+	<servlet right="-1,Admin" name="/admin.html"/>
 	
 	<servlet right="-1,Admin" name="/modules/portal/structure.html" />
 	<servlet right="-1,Admin" name="/modules/portal/component.html"/>

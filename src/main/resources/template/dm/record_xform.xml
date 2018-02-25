@@ -57,6 +57,7 @@
 		            <li onclick="tab(7)"> 表单控制脚本 </li>
 		            <li onclick="tab(8)"> 页面控制脚本 </li>
 		            <li onclick="tab(9)"> 数据过滤条件 </li>
+		            <li onclick="tab(10)"> 流程设计 </li>
 		        </ul>
 			</TD>
 		</TR>
@@ -66,8 +67,8 @@
 				<a onclick="configDefine()"  style="margin: 4px 0 0 2%;">配 置</a>
 				<a onclick="preview()"  style="margin:4px 10px 0 10px;">预 览</a>
 				<p style="display: inline-block; height:18px;">
-					<a href="http://www.boubei.com/tss/article.portal?articleId=28" target="_blank">《详细说明》</a>
-					<a href="http://www.boubei.com/tss/article.portal?articleId=28" target="_blank" style="margin-left:12px;">《如何快速导入Excel》</a>
+					<a href="http://www.boubei.com/tss/article.portal?articleId=36" target="_blank">《详细说明》</a>
+					<a href="http://www.boubei.com/tss/article.portal?articleId=101" target="_blank" style="margin-left:12px;">《如何快速导入Excel》</a>
 				</p>
 			</TD>
 		</TR>
@@ -95,6 +96,13 @@
 				<p>
 					注：此处可依据登录用户的组织、角色等信息，定制数据过滤条件。
 					<a href="http://www.boubei.com/tss/article.portal?articleId=61" target="_blank">详细说明</a>
+				</p>
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan="6">
+				<p>
+					功能开发中......
 				</p>
 			</TD>
 		</TR>

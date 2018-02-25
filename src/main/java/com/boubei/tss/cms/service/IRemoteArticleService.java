@@ -186,9 +186,10 @@ public interface IRemoteArticleService {
      * 获取附件信息。附件下载时候使用，由DownloadServlet调用。
      * @param articleId
      * @param seqNo
+     * @param channelId
      * @return
      */
-    AttachmentDTO getAttachmentInfo(Long articleId, int seqNo);
+    AttachmentDTO getAttachmentInfo(Long articleId, int seqNo, Object channelId);
     
     /**
      * 根据栏目和日期来获取文章列表。
