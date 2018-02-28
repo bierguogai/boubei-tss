@@ -188,7 +188,7 @@ public class _Recorder extends BaseActionSupport {
     
     private SQLExcutor queryRecordData(_Database _db, int page, int pagesize, Map<String, String> requestMap, boolean pointed) {
     	
-    	SQLExcutor ex = _db.select(page, PAGE_SIZE, requestMap);
+    	SQLExcutor ex = _db.select(page, pagesize, requestMap);
     	if( pointed || requestMap.containsKey("id")) {
     		return ex;
     	}

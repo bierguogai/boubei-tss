@@ -55,6 +55,7 @@
 	<entity class="com.boubei.tss.dm.record.file.RecordAttach"/>
 	<entity class="com.boubei.tss.dm.record.permission.RecordPermission"/>
 	<entity class="com.boubei.tss.dm.record.permission.RecordResource"/>
+	<entity class="com.boubei.tss.dm.ext.EmptyRecord"/>
 	
 	<!-- cms -->	
 	<entity class="com.boubei.tss.cms.entity.Channel"/>

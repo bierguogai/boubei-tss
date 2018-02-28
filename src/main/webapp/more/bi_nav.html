@@ -99,7 +99,8 @@ function initMenu() {
 	var selectedPanelname = '', index = 0;
 	$.each(_menus, function(i, menu1) {
 		var menu1Name = "&nbsp;&nbsp;" + menu1[1];
-		if( (!menu1.children || menu1.children.length == 0) && menu1Name.indexOf("开发目录") >= 0) {
+		// 没有任何报表的二级目录将被过滤掉
+		if( !menu1.children || menu1.children.length == 0 ) {
 			return true;
 		}
 

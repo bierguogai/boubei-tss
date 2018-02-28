@@ -125,6 +125,7 @@ function buildMenu(reports, records) {
     var data = [];
     records.each( function(i, item) {
         if( item[2] == rootId && item[1].indexOf("系统功能") >=0 ) return true;
+        if( item[1].indexOf("$") == 0 ) return true;  // $打头的节点约定为不显示，不直接开放用户访问
 
         data.push(item);
     });

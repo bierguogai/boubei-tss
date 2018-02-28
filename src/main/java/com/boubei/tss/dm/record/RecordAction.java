@@ -60,7 +60,7 @@ public class RecordAction extends BaseActionSupport {
         
         // 过滤权限，有录入权限且状态为启用 或 有浏览权限
         for(Record record : all) {
-        	if( (list1.contains(record) && record.isActive()) || list2.contains(record) ){
+        	if( list2.contains(record) || (list1.contains(record) && record.isActive()) ){
         		result.add(record);
         	}
         }
@@ -71,13 +71,16 @@ public class RecordAction extends BaseActionSupport {
     @RequestMapping("/all/json")
     @ResponseBody
     public List<Object> getAllRecords(HttpServletResponse response) {
-    	List<Record> list = getPermitedRecords();
     	List<Object> result = new ArrayList<Object>();
-    	for(Record report : list) {
-			Long id = report.getId();
-    		String name = report.getName();
-			Long parentId = report.getParentId();
-			result.add(new Object[] { id, name, parentId, report.getType(), "record" });
+    	
+    	List<Record> list = getPermitedRecords();
+    	for(Record record : list) {
+    		if( !record.isActive() ) continue;
+    		
+			Long id = record.getId();
+    		String name = record.getName();
+			Long parentId = record.getParentId();
+			result.add(new Object[] { id, name, parentId, record.getType(), "record" });
     	}
     	
     	return result;
