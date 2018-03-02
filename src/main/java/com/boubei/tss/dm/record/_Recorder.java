@@ -362,7 +362,7 @@ public class _Recorder extends BaseActionSupport {
     			paramsMap.put(1, newID);
     			paramsMap.put(2, recordId);
     			paramsMap.put(3, _tempID);
-				SQLExcutor.excute("update dm_record_attach set itemId=? where recordId=? and itemId=?", paramsMap, _db.datasource);
+				SQLExcutor.excute("update dm_record_attach set itemId=? where recordId=? and itemId=?", paramsMap, DMConstants.LOCAL_CONN_POOL);
 				
 				File attachDir2 = new File(RecordAttach.getAttachDir(recordId, newID));
 				attachDir1.renameTo(attachDir2);

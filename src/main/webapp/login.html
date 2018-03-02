@@ -148,6 +148,8 @@ h2.tip { padding: 10px 10px 0 10px; color: red; font-size: 13px; }
 
 <script type="text/javascript">
 
+  window.history.forward(1);  // 产生一个“前进”的动作，以抵消浏览器后退功能
+
   if(document.body.offsetWidth < 768 || $.isMobile ) {
     location.href = "mobile/login.html";
   }

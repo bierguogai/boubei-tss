@@ -5,6 +5,8 @@ CONTEXTPATH = APPLICATION + "/";
 
 var notice_channel = 2;  // 顶部通知跑马灯 boubei.com = 2
 
+window.history.forward(1);  // 产生一个“前进”的动作，以抵消浏览器后退功能
+
 function initUserInfo(callback) {
 	$.ajax({
 		url : "/tss/auth/user/operatorInfo",

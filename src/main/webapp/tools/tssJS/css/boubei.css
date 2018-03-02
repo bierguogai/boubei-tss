@@ -1070,6 +1070,20 @@ WorkSpace\:Box WorkSpace\:PageStep .tssbutton {
 .red:active {
   color: #e8e8e8;
 }
+.white {
+  color: #333;
+  border: solid 1px #fff;
+  background: #fff;
+  cursor: pointer;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+  border: solid 1px #ccc;
+}
+.white:hover {
+  background-color: #e0e0e0;
+}
+.white:active {
+  color: #1c1c1c;
+}
 .tss-panel {
   position: absolute;
   vertical-align: top;

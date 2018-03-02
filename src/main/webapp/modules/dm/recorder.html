@@ -41,7 +41,27 @@
     #attachFile { color: #fff; background-color: #323232; padding: 2px 0px 1px 0px; }
 
     /*#btn_create { background-color: red; }*/
-
+    #btSearch { line-height: 20px; height: 24px; }
+    .small { 
+        color: #333;
+        height: 16px;
+        border: 1px solid #ccc;
+        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+    }
+    #gridTitle .small { 
+        background: inherit;
+        margin: 0px 1px;
+        border-top: 0px;
+        border-bottom: 0px;
+    }
+    #gridTitle .small:hover {
+        background-color: #eee;
+    }
+    .small:hover {
+        background-color: inherit;
+        border-left: 1px solid #999;
+        border-right: 1px solid #999;
+    }
 </style>
 
 <SCRIPT type="text/javascript">
@@ -421,7 +441,7 @@ function loadDetailData(rowID, version) {
 
         tssJS('#btnViewAttach').remove();         
         if(needFile) {
-            var newBtn = tssJS.createElement('button', 'tssbutton small blue', 'btnViewAttach');
+            var newBtn = tssJS.createElement('button', 'tssbutton small white', 'btnViewAttach');
             tssJS(newBtn).html("管理附件").click( function() {      
                 manageAttach( _tempID, "form", isCreateRow);
             } );  
@@ -586,7 +606,7 @@ function showQueryForm() {
     var buttonBox = [];
     buttonBox[buttonBox.length] = "<TR>";
     buttonBox[buttonBox.length] = "  <TD colspan='2' height='46'><div class='buttonBox'>";
-    buttonBox[buttonBox.length] = "     <a href='#' class='tssbutton small blue' id='btSearch'>开始查询</a>";
+    buttonBox[buttonBox.length] = "     <a href='#' class='tssbutton small white' id='btSearch'>开始查询</a>";
     buttonBox[buttonBox.length] = "  </div></TD>";
     buttonBox[buttonBox.length] = "</TR>";
 
@@ -863,14 +883,14 @@ function delAttach() {
         <tr>
           <td id="gridTitle">
 <span class="icon"></span><span id="rcTitle">资源列表</span>
-<!-- <input type="button" class="tssbutton small blue" value="备 份" id="btn_bk" onclick="backup()"/> -->
-<input type="button" class="tssbutton small blue" value="Excel模板" id="btn_tl" onclick="getImportTL()"/>
-<input type="button" class="tssbutton small blue" value="Excel导入" id="btn_imp" onclick="batchImport()"/>
 
-<input type="button" class="tssbutton small blue" value="新 增" id="btn_create" onclick="showDetail('_new')"/>
-<input type="button" class="tssbutton small orange" value="删 除" id="btn_batch_del" onclick="removeBatch()"/>
-<input type="button" class="tssbutton small blue" value="查 询" id="btn_search" onclick="showQueryForm()"/>
-<input type="button" class="tssbutton small blue" value="导出数据" id="btn_ex" onclick="backup(params)"/>
+<input type="button" class="tssbutton small white" value="新 增" id="btn_create" onclick="showDetail('_new')"/>
+<input type="button" class="tssbutton small white" value="删 除" id="btn_batch_del" onclick="removeBatch()"/>
+<input type="button" class="tssbutton small white" value="查 询" id="btn_search" onclick="showQueryForm()"/>
+<input type="button" class="tssbutton small white" value="导出数据" id="btn_ex" onclick="backup(params)"/>
+<!-- <input type="button" class="tssbutton small white" value="备 份" id="btn_bk" onclick="backup()"/> -->
+<input type="button" class="tssbutton small white" value="Excel模板" id="btn_tl" onclick="getImportTL()"/>
+<input type="button" class="tssbutton small white" value="Excel导入" id="btn_imp" onclick="batchImport()"/>
 
 <span id="customizeBox"></span>
 <span class="buttonBox" id="gridToolBar"></span>
@@ -885,8 +905,8 @@ function delAttach() {
         <WorkSpace:Page id="page1">
             <div id="page1Form" editable="true"></div>
             <WorkSpace:PageStep>
-                <input type="button" class="tssbutton small blue" value="保 存" id="page1BtSave"/>&nbsp;
-                <input type="button" class="tssbutton small blue" value="关 闭" id="page1BtCancel"/>&nbsp;
+                <input type="button" class="tssbutton small white" value="保 存" id="page1BtSave"/>&nbsp;
+                <input type="button" class="tssbutton small white" value="关 闭" id="page1BtCancel"/>&nbsp;
             </WorkSpace:PageStep>
         </WorkSpace:Page>
     </WorkSpace:Box>
@@ -902,10 +922,10 @@ function delAttach() {
                 <label><input name="fileType" type="radio" value="1"/> 图片 </label> 
                 <label><input name="fileType" type="radio" value="2" checked="checked"/> 文档 </label> 
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <input type="button" class="tssbutton small blue" onclick="uploadAttach()" value="上传附件" />
+                <input type="button" class="tssbutton small white" onclick="uploadAttach()" value="上传附件" />
                 <b>&nbsp;单个附件大小不宜超过2M</b>
             </span>
-            <input type="button" class="tssbutton small blue" onclick="clostUpload()" value="关闭" style="margin-left:30px"/>
+            <input type="button" class="tssbutton small white" onclick="clostUpload()" value="关闭" style="margin-left:30px"/>
         </form>
         <iframe name='fileUpload' style='display:none;'></iframe>
     </div>

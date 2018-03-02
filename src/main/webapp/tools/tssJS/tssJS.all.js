@@ -712,14 +712,11 @@
 
         value: function() {
             if ( this.length > 0 ) {
+                var el = this[0];
                 if (arguments.length == 0) {
-                    return this[0].value;
+                    return el.value;
                 }
-                else {
-                    for (var i = 0; i < this.length; i++) {
-                        this[i].value = arguments[0];
-                    }
-                }
+                el.value = arguments[0];
             }
             return this;
         }
