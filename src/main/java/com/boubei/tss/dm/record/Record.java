@@ -148,11 +148,23 @@ public class Record extends OperateInfo implements IXForm, IDecodable, IResource
        
         map.put("parentId", parentId);
         map.put("type", type);
+        String icon;
         if(TYPE1 == type) {
             map.put("customizePage", customizePage);
             map.put("define", define);
+            
+            if(DMConstants.RECORD_EMPTY_TABLE.equals(this.table)) {
+            	icon = "page_" + getDisabled() + ".gif";
+            } else {
+            	icon = "record_" + getDisabled() + ".png";
+            }
+        } 
+        else {
+        	icon = "folder.gif";
         }
-        map.put("icon", "images/" + (TYPE0 == type ? "folder.gif" : "record_" + getDisabled() + ".png") );
+        map.put("icon", "images/" + icon );
+        
+        
         map.put("disabled", getDisabled());
         map.put("batchImp", this.batchImp);
         map.put("_open", String.valueOf( (this.remark+"").indexOf("open") >= 0) );

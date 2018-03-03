@@ -95,12 +95,20 @@ function initMenus() {
 		},
 		visible:function() { return isRecord() && getOperation("2"); }
 	}
-	var item3 = {
+	var item31 = {
 		label:"新增数据表",
 		callback: function() {
 			loadRecordDetail(true, "1");
 		},
 		icon: ICON + "record_0.png",
+		visible:function() {return (isRecordGroup() || isTreeRoot()) && getOperation("2");}
+	}
+	var item32 = {
+		label:"新增功能页",
+		callback: function() {
+			loadRecordDetail(true, "1", false, true);
+		},
+		icon: ICON + "page_0.gif",
 		visible:function() {return (isRecordGroup() || isTreeRoot()) && getOperation("2");}
 	}
 	var item4 = {
@@ -165,7 +173,8 @@ function initMenus() {
 	menu.addItem(item7);
 	menu.addItem(item8);
 	menu.addSeparator();
-	menu.addItem(item3);
+	menu.addItem(item31);
+	menu.addItem(item32);
 	menu.addItem(item4);
 	menu.addItem(item21);
 	menu.addItem(item22);
@@ -221,7 +230,7 @@ function loadInitData() {
 	$.ajax({url : URL_SOURCE_TREE, onresult : onresult});
 }
 
-function loadRecordDetail(isCreate, type, readonly) { 
+function loadRecordDetail(isCreate, type, readonly, isPage) { 
 	var treeNode = $.T("tree").getActiveTreeNode();
 	var treeNodeID = treeNode.id;
 	type = type || treeNode.getAttribute("type") ;
@@ -256,6 +265,13 @@ function loadRecordDetail(isCreate, type, readonly) {
 				defContainer().appendChild($(".template")[0].cloneNode(true));
 				defContainer().find("table").attr("id", "t12").hide();
 				if( !isCreate ) preview();
+			}
+
+			if(isPage) { // 链接综合功能页
+				xform.updateDataExternal("table", "dm_empty"); 
+				xform.updateDataExternal("define", "[{'label':'x','code':'x'}]"); 
+				xform.setFieldEditable("table", "false"); 
+				xform.setFieldEditable("define", "false"); 
 			}
 		
 			// 设置保存/关闭按钮操作

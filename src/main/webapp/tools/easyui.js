@@ -13,15 +13,18 @@ function jsonp_url(id, appCode) { return BASE_JSONP_URL + id + (appCode ? "?appC
 
 
 BASE_RECORD_URL= TOMCAT_URL + '/auth/xdata/';
-function record_urls(recordTableId) {   // 一个录入表所拥有的增、删、改、查等接口
+function record_urls(tableId) {   // 一个录入表所拥有的增、删、改、查等接口
     var result = {};
-    result.CREATE = BASE_RECORD_URL + recordTableId;
-    result.UPDATE = BASE_RECORD_URL + recordTableId+ '/';  //{id}
-    result.DELETE = BASE_RECORD_URL + recordTableId+ '/';  //{id}
-    result.GET    = BASE_RECORD_URL + recordTableId+ '/';  //{id}
-    result.QUERY  = BASE_RECORD_URL + 'json/' +recordTableId;
-    result.CUD    = BASE_RECORD_URL + 'cud/'  +recordTableId;
-    result.ATTACH = BASE_RECORD_URL + 'attach/json/' +recordTableId+ '/';
+    result.CREATE = BASE_RECORD_URL + tableId;
+    result.UPDATE = BASE_RECORD_URL + tableId+ '/';  //{id}
+    result.DELETE = BASE_RECORD_URL + tableId+ '/';  //{id}
+    result.GET    = BASE_RECORD_URL + tableId+ '/';  //{id}
+    result.QUERY  = BASE_RECORD_URL + 'json/' +tableId;
+    result.CUD    = BASE_RECORD_URL + 'cud/'  +tableId;
+    result.ATTACH = BASE_RECORD_URL + 'attach/json/' +tableId+ '/';
+    result.CSV_EXP= BASE_RECORD_URL + "export/" +tableId;
+    result.CSV_TL = BASE_RECORD_URL + "import/tl/" +tableId;
+    result.CSV_IMP= "/tss/auth/file/upload?afterUploadClass=com.boubei.tss.dm.record.file.ImportCSV&recordId=" +tableId;
 
     return result; 
 }

@@ -24,6 +24,7 @@ public final class DMConstants {
 	public final static String FROM_USER_ID = "fromUserId";
 	
 	public final static String RECORD_TABLE_LIST = "_TABLE_LIST";
+	public final static String RECORD_EMPTY_TABLE = "dm_empty";
 	
 	// 常用宏
 	public final static String FILTER_BY_DOMAIN = "filterByDomain";
