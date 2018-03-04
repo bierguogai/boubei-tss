@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+	<meta charset="utf-8">
+	<title>回单v1.0</title>
+	<meta name="author" content="陈荣沙；20180205"/>
+	<meta name="keywords" content="xxx"/>
+	<meta name="description" content="xxx"/>
+	<meta name="application" content="xxxx"/>
+	<meta name="datasource" content="xxxx"/>
+	<meta name="version" content="1.0 20180112"/>
+	<meta name="viewport" content="width=device-width"/>
+	<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+	<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+	<link rel="stylesheet" href="../../css/easyui.css">
+	<script src="../../tools/tssJS/tssJS.all.js"></script>
+	<script src="../../tools/easyui/jquery.min.js"></script>
+	<script src="../../tools/easyui/jquery.easyui.min.js"></script>
+	<script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+	<script src="../../tools/easyui/datagrid-filter.js"></script>
+	<script src="../../tools/easyui.js"></script>
+	<script src="truck.js"></script>
+</head>
+
+<style type="text/css">
+	.floatLeft{
+		float: left;
+		height:100%;
+	}
+	.floatBigDiv{
+		width: 40%;
+	}
+	.floatSmallDiv{
+		width: 20%;
+		background-color: #eee;
+		position:relative;
+	}
+
+	.op_bnt_r {
+		margin: 8%;
+		width:90%;
+		position: absolute;
+		top: 40%;
+		transform: translateY(-50%);
+	}
+
+	.op_bnt_l {
+		margin: 8%;
+		width:90%;
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+	}
+
+	.op_bnt_s {
+		margin: 8%;
+		width:90%;
+		position: absolute;
+		top: 60%;
+		transform: translateY(-50%);
+	}
+</style>
+
+<script type="text/javascript">
+
+var BASEURL = 'http://t.boubei.com',
+	FIELDURL = record_urls('t_field_code'),
+	REPORTURL = record_urls('t_report_format'),
+	GD = [
+		{id:0,reportId:121,reportName:'运单回单管理',uri:'/tss/data/json/'},//需要回单的运单数据
+		{id:1,recordId:98,recordName:'t_truck_job',uri:'/tss/auth/xdata/json/'},//运单表
+		{id:2,recordId:132,recordName:'t_oil_card_event',uri:'tss/auth/xdata/json/'},//油卡事件录入
+		{id:3,recordId:144,recordName:'t_report_format',uri:'tss/auth/xdata/json/'},//展示格式后台表
+	],
+	USER,FIELDDATA;
+$(function() {
+	$("#pstart_s").datetimebox('setValue', getCurrentMonthFirst().format('yyyy-MM-dd'));
+	$("#pstart_e").datetimebox('setValue', new Date().format('yyyy-MM-dd 23:59'));
+	loginInfo(function(data) {
+		USER = data.login_code; //当前登录人信息
+		GetField(FIELDURL.QUERY, {
+			table_code: GD[1].reportName
+		}, 'field,title', function(AD) { //获取allfield
+			FIELDDATA = cloneObj(AD);
+			GetField(REPORTURL.QUERY, {
+				table_name: GD[1].reportName,
+				user: USER,//使用人
+				showtable: '回单'//应用场景
+			}, 'field,title', function(SD) { //获取showfield
+				if (SD.length == 0) { //当前没有可展示的格式，展示全部字段
+					drawFieldTable(AD, '#allfield');
+					drawFieldTable(SD, '#showfield');
+					queryJob(function(sdata) {
+						sdata && drawTable(sdata, manageCol(FIELDDATA, SD));
+					})
+				} else {
+					for (var i = 0; i < AD.length; i++) {
+						for (var j = 0; j < SD.length; j++) {
+							if (SD[j].field == AD[i].field) {
+								AD.splice(i, 1)
+							}
+						}
+					}
+					drawFieldTable(AD, '#allfield');
+					drawFieldTable(SD, '#showfield');
+					queryJob(function(sdata) {
+						sdata && drawTable(sdata, manageCol(FIELDDATA, SD));
+					})
+				}
+			})
+		})
+	})
+})
+// 画报表展示前后的格式
+function drawFieldTable(data, id) {
+	$(id).datagrid({
+		data: data,
+		columns: [
+			[{
+				field: 'field',
+				title: 'code',
+				align: 'center',
+				hidden: true
+			}, {
+				field: 'title',
+				title: '字段名',
+				align: 'center',
+				width:'100%'
+			}]
+		],
+		fit: true
+	})
+}
+// 处理报表的format、width、align等属性
+function manageCol(ad, sd) {
+	if (sd.length != 0) {
+		var str = '';
+		for (var i = 0; i < sd.length; i++) {
+			str += sd[i].field + ','
+		}
+		for (var i = 0; i < ad.length; i++) {
+			for (var j = 0; j < sd.length; j++) {
+				if (sd[j].field != ad[i].field && str.indexOf(ad[i].field + ',') == -1) {
+					ad[i].hidden = true
+				} else {
+					ad[i].hidden = false
+				}
+			}
+		}
+	}
+	for (var i = 0; i < ad.length; i++) {
+		ad[i].align = 'center';
+		ad[i].width = '120px';
+	}
+	return ad
+}
+// 获取运单数据
+function queryJob(callback) {
+	var a, b, queryParams;
+	a = new Date($("#pstart_s").datetimebox("getValue").replace('-', '/')).format('yyyy-MM-dd hh:mm');
+	b = new Date($("#pstart_e").datetimebox("getValue").replace('-', '/')).format('yyyy-MM-dd hh:mm');
+	parmas = {
+		param1: a,
+		param2: b,
+		param3: $("#jobcode").textbox("getValue"),
+		param4: $("#licenseplate").textbox("getValue"),
+		param5: $("#planroute").textbox("getValue"),
+		param6: $("#adjustroute").textbox("getValue")
+	};
+	tssJS.getJSON(BASEURL + GD[0].uri + GD[0].reportId, parmas, function(data) {
+		callback && callback(data)
+	})
+}
+// 画表
+function drawTable(data, COL) {
+	$("#dg").datagrid({
+		data: data,
+		frozenColumns: [[{field: 'ck', checkbox: true}]],
+		columns: [COL],
+		fit: true,
+		rownumbers: true,
+		singleSelect: true
+	});
+}
+//查询运单数据
+function getJobData(){
+	var c = manageCol(FIELDDATA,$("#showfield").datagrid('getData').rows)
+	queryJob(function(data){
+		data && drawTable(data,c)
+	})
+}
+
+//保存展示格式数据
+function saveFormatter(tab, user) {
+	var newData = $('#showfield').datagrid('getData').rows;
+	var parmas = {
+		table_name: tab,
+		user: user
+	};
+	tssJS.getJSON(REPORTURL.QUERY, parmas, function(data) {
+		var thisdata;
+		thisdata = dataSum(newData, data, 'field,title');
+		console.log(thisdata)
+		for (var i = 0; i < thisdata.length; i++) {
+			if (thisdata[i].handle == -1) {
+				// 删除该条数据
+				$.ajax({
+					url: BASE_RECORD_URL + GD[3].recordId + (thisdata[i].id ? '/' + thisdata[i].id : ''),
+					method: 'DELETE',
+					error: function () {
+						$.messager.alert('提示', '数据保存失败！请重新操作！谢谢！');
+					}
+				})
+			} else if (thisdata[i].handle == 1) {
+				// 新增该条数据
+				$.ajax({
+					url: BASE_RECORD_URL + GD[3].recordId + (thisdata[i].id ? '/' + thisdata[i].id : ''),
+					method: 'post',
+					type: 'json',
+					data: {
+						table_name: GD[1].recordName,
+						field: thisdata[i].field,
+						title: thisdata[i].title,
+						user: USER,
+						showtable: '回单'
+					},
+					error: function() {
+						$.messager.alert('提示', '数据保存失败！请重新操作！谢谢！')
+					}
+				})
+			}
+		}
+		closeDlg('#fielddlg')
+	})
+}
+// 若修改油卡返回油卡id,否则新增油卡使用记录
+// todo 改进方法将油卡时间录入表的job_code作为条件
+function updateId(url,callback) {
+	tssJS.getJSON(url, {}, function(data) {
+		var id;
+		for (var i = 0; i < data.length; i++) {
+			if (data[i].job_code == $("#job_code").textbox("getValue")) {
+				id = data[i].id
+			}
+		}
+		callback && callback(id)
+	})
+}
+function saveTable(recordId) {
+	// todo 油卡临时使用 回收之后数据需要更新至GD[2]
+	var oilid = $("#oil_id").textbox("getValue"),
+		oilib = $("#oil_ib").textbox("getValue"),
+		oilbdate = $("#oil_bdate").datebox("getValue");
+	if (oilid && (oilib == '是') && oilbdate) {
+		updateId(record_urls(GD[2].recordName).QUERY, function(data) {
+			$.ajax({
+				url: BASE_RECORD_URL + GD[2].recordId + (data ? '/' + data : ''),
+				method: 'post',
+				type: 'json',
+				data: {
+					end_day: oilbdate
+				},
+				success:function(){
+					save(recordId)
+				},
+				error: function() {
+					$.messager.alert('提示', '油卡信息保存失败，请重新操作，谢谢！')
+				}
+			})
+		})
+	} else {
+		save(recordId)
+	}
+}
+
+function save(recordId) {
+	var id = $("input[name='id']").val();
+	var isCreate = !id;
+	var $saveBtn = $('#dlg-buttons>a[onclick^="save"]');
+	$saveBtn.linkbutton("disable");
+	$('#fm').form('submit', {
+		url: BASE_RECORD_URL + recordId + (!isCreate ? "/" + id : ''),
+		onSubmit: function() {
+			var flag = $(this).form('validate');
+			if (!flag) {
+				$saveBtn.linkbutton("enable");
+			}
+			return flag;
+		},
+		success: function(result) {
+			$saveBtn.linkbutton("enable");
+			checkException(result, function() {
+				closeDialog();
+				$('#dg').datagrid('reload'); // reload the grid data
+			});
+			$.messager.show({
+				title: '提示',
+				msg: '保存成功！',
+				showType: 'slide',
+				timeout: 2000,
+				style: {
+					position: 'fixed',
+					right: 0,
+					bottom: 0,
+					top: '',
+					left: ''
+				}
+			});
+		}
+	});
+}
+</script>
+<body class="easyui-layout">
+	<table id="dg" class="easyui-datagrid" data-options="toolbar:'#tb'"></table>
+	<div id="tb" style="padding:5px;height:auto">
+		<div style="margin-bottom:5px">
+			计划发车时间从:&nbsp;
+			<input id="pstart_s" class="easyui-datetimebox" style="width:130px" data-options="showSeconds: false">
+			&emsp;&emsp;&emsp;到:&nbsp;
+			<input id="pstart_e" class="easyui-datetimebox" style="width:130px" data-options="showSeconds: false">
+			<a href="#" class="easyui-linkbutton" iconCls="icon-tss-record-0" plain="true" onclick="openDlg('#fielddlg')">设置</a>
+		</div>
+		<div style="margin-bottom:5px">
+			任&emsp;务&emsp;单&emsp;号:&nbsp;
+			<input id="jobcode" class="easyui-textbox" style="width:130px">
+			车头车牌:&nbsp;
+			<input id="licenseplate" class="easyui-textbox" style="width:130px">
+		</div>
+		<div>
+			计&emsp;划&emsp;线&emsp;路:&nbsp;
+			<input id="planroute" class="easyui-textbox" style="width:130px">
+			调整线路:&nbsp;
+			<input id="adjustroute" class="easyui-textbox" style="width:130px">
+			<a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="getJobData()">查询</a>
+			<a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="updateOld(record_urls(GD[1].recordName).GET,'dg','#fm','#dlg','回单确认')">修改</a>
+		</div>
+	</div>
+	<div id="fielddlg" title="设置报表显示格式" class="easyui-dialog" border="false" style="width:40%;height:550px;" closed=true>
+		<div class="floatLeft floatBigDiv">
+    		<table id = "allfield" title = "未展示字段" class = "easyui-datagrid" fit = "true">
+			</table>
+    	</div> 	
+    	<div class="floatLeft floatSmallDiv">
+			<a class = "easyui-linkbutton op_bnt_r" iconCls="icon-redo" onclick = "removeAdd('#allfield','#showfield',true)">&nbsp;右移&nbsp;</a>
+			<a class = "easyui-linkbutton op_bnt_l" iconCls="icon-undo" onclick = "removeAdd($('#showfield'),'#allfield')" >&nbsp;左移&nbsp;</a>
+			<a class = "easyui-linkbutton op_bnt_s" iconCls="icon-save" onclick = "saveFormatter(GD[1].recordName,USER)" >&nbsp;保存&nbsp;</a>
+	    </div>
+	    <div class="floatLeft floatBigDiv">
+    		<table id = "showfield" title = "已展示字段" class = "easyui-datagrid" fit = "true">
+			</table>
+    	</div>
+	</div>
+	<div id="dlg" class="easyui-dialog" style="width:600px;height: 400px;" closed=true buttons="#dlg-buttons">
+		<form id="fm" method="post" novalidate>
+			<input name="id" type="hidden"/>
+			<input id="lockVersion" name="lockVersion" type="hidden"/>
+			<input id="seqNo" name="seqNo" type="hidden"/>
+			<input id="normal" name="normal" type="hidden"/>
+			<table>
+				<tr>
+					<td class="label">任务单号:</td>
+					<td>
+						<input id="job_code" name="job_code" class="easyui-textbox" style="width: 180px" disabled/>
+					</td>
+					<td class="label">任务单状态:</td>
+					<td>
+						<input id="status" name="status" class="easyui-textbox" style="width: 180px" disabled/>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">客户名称:</td>
+					<td>
+						<input id="client" name="client" class="easyui-textbox" style="width: 180px" disabled/>
+					</td>
+					<td class="label">客户联系方式:</td>
+					<td>
+						<input id="client_phone" name="client_phone" class="easyui-textbox" style="width: 180px" disabled/>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">计划线路:</td>
+					<td>
+						<input id="plan_route" name="plan_route" class="easyui-textbox" style="width: 180px" disabled/>
+					</td>
+					<td class="label">调整线路:</td>
+					<td>
+						<input id="adjust_route" name="adjust_route" class="easyui-textbox" style="width: 180px" disabled/>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">计划发车时间:</td>
+					<td>
+						<input id="plan_start_time" name="plan_start_time" class="easyui-datetimebox" style="width: 180px" disabled/>
+					</td>
+					<td class="label">计划到达时间:</td>
+					<td>
+						<input id="plan_end_time" name="plan_end_time" class="easyui-datetimebox" style="width: 180px" disabled/>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">实际发车时间:</td>
+					<td>
+						<input id="actual_start_time" name="actual_start_time" class="easyui-datetimebox" style="width: 180px" disabled/>
+					</td>
+					<td class="label">实际到达时间:</td>
+					<td>
+						<input id="actual_end_time" name="actual_end_time" class="easyui-datetimebox" style="width: 180px" disabled/>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">驾驶员:</td>
+					<td>
+						<input id="driver" name="driver" class="easyui-textbox" style="width: 180px" disabled/>
+					</td>
+					<td class="label">驾驶员联系方式:</td>
+					<td>
+						<input id="driver_phrone" name="driver_phrone" class="easyui-textbox" style="width: 180px" disabled/>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">车头车牌:</td>
+					<td>
+						<input id="license_plate" name="license_plate" class="easyui-textbox" style="width: 180px" disabled/>
+					</td>
+					<td class="label">挂车车牌:</td>
+					<td>
+						<input id="trailer_plate" name="trailer_plate" class="easyui-textbox" style="width: 180px" disabled/>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">接单备注:</td>
+					<td>
+						<input id="order_remark" name="order_remark" class="easyui-textbox" style="width: 180px" disabled/>
+					</td>
+					<td class="label">派车备注:</td>
+					<td>
+						<input id="send_remark" name="send_remark" class="easyui-textbox" style="width: 180px" disabled/>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">回单是否需回收:</td>
+					<td>
+						<input id="receipt" name="receipt" class="easyui-textbox" style="width: 180px" disabled/>
+					</td>
+					<td class="label">回单回收日期:</td>
+					<td>
+						<input id="receipt_bdate" name="receipt_bdate" class="easyui-datebox" style="width: 180px">
+					</td>
+				</tr>
+				<tr>
+					<td class="label">回单寄还客户日期:</td>
+					<td>
+						<input id="receipt_to_client" name="receipt_to_client" class="easyui-datebox" style="width: 180px">
+					</td>
+					<td class="label">油卡是否需回收:</td>
+					<td>
+						<input id="oil_ib" name="oil_ib" class="easyui-textbox" style="width: 180px" disabled/>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">油卡卡号:</td>
+					<td>
+						<input id="oil_id" name="oil_id" class="easyui-textbox" style="width: 180px" disabled/>
+					</td>
+					<td class="label">油卡回收日期:</td>
+					<td>
+						<input id="oil_bdate" name="oil_bdate" class="easyui-datebox" style="width: 180px">
+					</td>
+				</tr>
+			</table>
+		</form>
+	</div>
+	<div id="dlg-buttons">
+		<a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveTable(GD[1].recordId)">保存</a>
+		<a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="closeDlg('#dlg','#fm')">取消</a>
+	</div>
+</body>
+</html>

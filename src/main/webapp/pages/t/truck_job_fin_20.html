@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+	<meta charset="utf-8">
+	<title>运单营收v1.0</title>
+	<meta name="author" content="陈荣沙；20180226"/>
+	<meta name="keywords" content="xxx"/>
+	<meta name="description" content="xxx"/>
+	<meta name="application" content="xxxx"/>
+	<meta name="datasource" content="xxxx"/>
+	<meta name="version" content="1.0 20180112"/>
+	<meta name="viewport" content="width=device-width"/>
+	<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+	<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+	<link rel="stylesheet" href="../../css/easyui.css">
+	<script src="../../tools/tssJS/tssJS.all.js"></script>
+	<script src="../../tools/easyui/jquery.min.js"></script>
+	<script src="../../tools/easyui/jquery.easyui.min.js"></script>
+	<script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+	<script src="../../tools/easyui/datagrid-filter.js"></script>
+	<script src="../../tools/easyui.js"></script>
+	<script src="truck.js"></script>
+</head>
+
+<style type="text/css">
+	.floatLeft{
+		float: left;
+		height:100%;
+	}
+	.floatBigDiv{
+		width: 40%;
+	}
+	.floatSmallDiv{
+		width: 20%;
+		background-color: #eee;
+		position:relative;
+	}
+
+	.op_bnt_r {
+		margin: 8%;
+		width:90%;
+		position: absolute;
+		top: 40%;
+		transform: translateY(-50%);
+	}
+
+	.op_bnt_l {
+		margin: 8%;
+		width:90%;
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+	}
+
+	.op_bnt_s {
+		margin: 8%;
+		width:90%;
+		position: absolute;
+		top: 60%;
+		transform: translateY(-50%);
+	}
+</style>
+
+<script type="text/javascript">
+
+var BASEURL = 'http://t.boubei.com',
+	FIELDURL = record_urls('t_field_code'),
+	REPORTURL = record_urls('t_report_format'),
+	JOBTYPEDATA = [
+		{text:'全部',value:'',selected:true},
+		{text:'临时',value:'0'},
+		{text:'固定',value:'1'}
+	],
+	GD = [
+		{id:0,recordId:98,recordName:'t_truck_job',uri:'/tss/auth/xdata/json/'},
+		{id:1,recordId:88,recordName:'t_trucks_job_expend',uri:'/tss/auth/xdata/json/'},
+		{id:2,recordId:87,recordName:'t_trucks_job_income',uri:'/tss/auth/xdata/json/'},
+	];
+
+$(function(){
+	$("#pstart_s").datetimebox('setValue', getCurrentMonthFirst().format('2018-01-01'));
+	$("#pstart_e").datetimebox('setValue', new Date().format('yyyy-MM-dd 23:59'));
+
+	$("#jobtype").combobox({
+		data: JOBTYPEDATA,
+		valueField: 'value',
+		textField: 'text',
+		panelHeight: 'auto',
+		limitToList:true
+	})
+	jobQuery()
+
+	getSumPrice(record_urls(GD[2].recordName).QUERY, function(idata) { //运单收入
+		getSumPrice(record_urls(GD[1].recordName).QUERY, function(edata) { //运单支出
+			// 18012600001388
+			console.log(idata,edata)
+			console.log(dataSum(idata,edata,'truck_code','truck_code'))
+		})
+	})
+})
+// 获取运单营收 
+function getSumPrice(url, callback) {
+	var params = {
+		truck_code:'18012600001388',
+		fields: "truck_code,sum(price) as price",
+		groupby: "truck_code"
+	}
+	tssJS.getJSON(url, params, function(data) {
+		callback && callback(data)
+	})
+}
+// 获取运单主要数据
+function jobQuery() {
+	var a, b;
+	a = new Date($("#pstart_s").datetimebox("getValue").replace('-', '/'));
+	b = new Date($("#pstart_e").datetimebox("getValue").replace('-', '/'));
+	var params = {
+		job_code: $("#jcode").textbox("getValue"),
+		client: $("#cname").textbox("getValue"),
+		plan_start_time: '[' + a.format('yyyy-MM-dd hh:mm') + ',' + b.format('yyyy-MM-dd hh:mm') + ']',
+		plan_route: $('#route').textbox('getValue'),
+		normal: $("#jobtype").combobox('getValue')
+	};
+	tssJS.getJSON(record_urls(GD[0].recordName).QUERY + '?noCache=true', params, function(data) {
+		data && drawTable(data)
+	})
+}
+// 画表
+function drawTable(data){
+	$("#dg").datagrid({
+		data:data,
+		fit:true,
+		rownumbers: true,
+		singleSelect: true,
+		frozenColumns: [[{field:'ck',checkbox:true},{field:'job_code',title:'任务单号',width:'120px',align:'center',styler: styler2}]],
+		// columns: COL,
+	})
+}
+// Object.assign(c,d)
+function leftJion(obj, data, str1, str2) {
+	str2 = st2 || str1;
+	str1 = str1.split(',');
+	str2 = str2.split(',');
+	for (var i = 0; i < data.length; i++) {
+		for (var x in data[i]) {
+			for (var y in obj) {
+				if (obj[y] == data[i][x] && (str1.indexOf(y) >= 0) && (str2.indexOf(x) >= 0)) {
+					// Object.assign(obj,data[i]);
+					$.extend(obj,data[i]);
+				}
+			}
+		}
+	}
+	return obj
+}
+
+</script>
+
+<body class="easyui-layout">
+	<table id="dg" class="easyui-datagrid" data-options="toolbar:'#tb'"></table>
+	<div id="tb" style="padding: 5px;height: auto;">
+		<div style="margin-bottom:5px">
+			客&emsp;户&emsp;名&emsp;称:&nbsp;
+			<input id="cname" class="easyui-textbox" style="width: 150px">
+			&emsp;任务单号:&nbsp;
+			<input id="jcode" class="easyui-textbox" style="width: 150px">
+		</div>
+		<div style="margin-bottom:5px">
+			线&emsp;&emsp;&emsp;&emsp;&emsp;路:&nbsp;
+			<input id="route" class="easyui-textbox" style="width: 150px">
+			任务单类型:&nbsp;
+			<input id="jobtype" class="easyui-combobox" style="width: 150px">
+		</div>
+		<div>
+			计划发车时间从:&nbsp;
+			<input id="pstart_s" class="easyui-datetimebox" style="width:150px" data-options="showSeconds: false">
+			&emsp;&emsp;&emsp;&emsp;到:&nbsp;
+			<input id="pstart_e" class="easyui-datetimebox" style="width:150px" data-options="showSeconds: false">
+			<a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="jobQuery()">查询</a>
+		</div>
+</div>
+	<div id="fielddlg" title="设置报表显示格式" class="easyui-dialog" border="false" style="width:40%;height:550px;" closed=true>
+		<div class="floatLeft floatBigDiv">
+    		<table id = "allfield" title = "未展示字段" class = "easyui-datagrid" fit = "true">
+			</table>
+    	</div> 	
+    	<div class="floatLeft floatSmallDiv">
+			<a class = "easyui-linkbutton op_bnt_r" iconCls="icon-redo" onclick = "removeAdd('#allfield','#showfield',true)">&nbsp;右移&nbsp;</a>
+			<a class = "easyui-linkbutton op_bnt_l" iconCls="icon-undo" onclick = "removeAdd($('#showfield'),'#allfield')">&nbsp;左移&nbsp;</a>
+			<a class = "easyui-linkbutton op_bnt_s" iconCls="icon-save" onclick = "saveFormatter(GD[1].recordName,USER)">&nbsp;保存&nbsp;</a>
+	    </div>
+	    <div class="floatLeft floatBigDiv">
+    		<table id = "showfield" title = "已展示字段" class = "easyui-datagrid" fit = "true">
+			</table>
+    	</div>
+	</div>
+</body>
+</html>

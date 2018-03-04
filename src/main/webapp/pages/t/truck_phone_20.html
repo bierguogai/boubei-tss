@@ -1,0 +1,472 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+	<meta charset="utf-8">
+	<title>随车电话</title>
+	<eta name="author" content="陈荣沙；20180103"/>
+    <meta name="keywords" content="xxx"/>
+    <meta name="description" content="xxx"/>
+    <meta name="application" content="xxxx"/>
+    <meta name="datasource" content="xxxx"/>
+    <meta name="version" content="1.0 20180112"/>
+    <meta name="viewport" content="width=device-width"/>
+    <link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+    <link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+    <link rel="stylesheet" href="../../css/easyui.css">
+    <script src="../../tools/tssJS/tssJS.all.js"></script>
+    <script src="../../tools/easyui/jquery.min.js"></script>
+    <script src="../../tools/easyui/jquery.easyui.min.js"></script>
+    <script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+    <script src="../../tools/easyui/datagrid-filter.js"></script>
+    <script src="../../tools/easyui.js"></script>
+    <script src="truck.js"></script>
+</head>
+<style type="text/css">
+
+.easyui-dialog table.l .label {
+    background-color: #eee;
+    width: 70px;
+    text-align: right;
+    box-sizing: content-box;
+}
+/*// todo readonly 背景颜色无法修改*/
+input[class~="easyui-textbox"][readonly]{
+	background-color:#eee;
+}
+</style>
+
+<script type="text/javascript">
+
+var BASEURL = '',
+	GD = [
+		{id:0,reportId:81,reportName:'t_truck_phone_info',uri:'/tss/auth/xdata/json/',type:'录入表'},
+		{id:1,reportId:118,reportName:'随车电话充值汇总',uri:'/tss/data/json/',type:'报表'},
+		{id:2,reportId:79,reportName:'t_truck_phone',uri:'/tss/auth/xdata/json/',type:'录入表'},
+	],
+	URL = record_urls(GD[0].reportName),
+	PHONE,
+	USER;
+$(function() {
+	// $("#")
+	$("#sd").datebox('setValue',getCurrentMonthFirst().format('yyyy-MM-dd'));
+	$("#ed").datebox('setValue',new Date().format('yyyy-MM-dd'));
+	$("#query").click();
+	showMonth("#start_time");
+	showMonth("#end_time");
+	showMonth("#rep_date");
+	$("#status").combobox({
+		panelHeight: '50px',
+        width: '150px',
+        editable: false,
+        valueField: 'name',
+        textField: 'name',
+        data: [ 
+            {"name": "启用"}, 
+            {"name": "停用"}
+        ]
+	});
+});
+
+function drawTable(data){
+	$("#dg").datagrid({
+		fit: true,
+		data:data,
+		rownumbers: true,
+        singleSelect: true,
+        frozenColumns:[[
+        	{field: 'ck', checkbox: true},
+			{field: 'phone',title: '号码',align: 'center',width:'100px'},
+			{field: 'usr_p',title: '使用对象',align: 'center',width:'80px'},
+			{field: 'recharge',title: '当前充值金额汇总',align: 'center',width:'120px'},
+			{field: 'cnt',title: '当前充值次数',align: 'center',width:'120px'}
+		]],
+		columns: [[
+			{field: 'free_call',title: '通话时长',align: 'center',width:'70px'},
+			{field: 'celluar_data',title: '流量',align: 'center',width:'70px'},
+			{field: 'prestore',title: '预存',align: 'center',width:'70px'},
+			{field: 'return_price',title: '反充金额',align: 'center',width:'70px'},
+			{field: 'start_time',title: '开始月份',align: 'center',width:'90px'},
+			{field: 'end_time',title: '结束月份',align: 'center',width:'90px'},
+			{field: 'pre_time_limit',title: '期限',align: 'center',width:'70px'},
+			{field: 'handle_price',title: '应充值金额',align: 'center',width:'70px'},
+			{field: 'password',title: '邮箱密码',align: 'center',width:'90px'},
+			{field: 'rep_date',title: '修改日期',align: 'center',width:'90px'},
+			{field: 'status',title: '状态',align: 'center',width:'70px'},
+			{field: 'remark',title: '备注',align: 'center',width:'70px'},
+			]],
+		onLoadSuccess:function(){
+			beginQuery()
+		},
+		onClickRow:function(rowIndex,rowData){
+			PHONE = rowData.phone;
+			USER = rowData.usr_p;
+			var url = record_urls(GD[2].reportName);
+			beginQuery(url.QUERY,{phone_number: PHONE})
+		}
+	}).datagrid('enableFilter',[
+	{field:'phone',type:'textbox'},
+	{field:'usr_p',type:'textbox'},
+	{field:'free_call',type:'textbox'},
+	{field: 'celluar_data',type:'textbox'},
+	{field: 'prestore',type:'textbox'},
+	{field: 'return_price',type:'textbox'},
+	{field: 'start_time',type:'textbox'},
+	{field: 'end_time',type:'textbox'},
+	{field: 'pre_time_limit',type:'textbox'},
+	{field: 'handle_price',type:'textbox'},
+	{field: 'password',type:'textbox'},
+	{field: 'rep_date',type:'textbox'},
+	{field: 'status',type:'textbox'},
+	{field: 'remark',type:'textbox'}])
+}
+
+function showTotal() {
+	tssJS.getJSON(URL.QUERY,{},function(data){
+		var recharge, cnt;
+		getSumData(function(sumdata) {
+			for (var i = 0; i < data.length; i++) {
+				for (var j = 0; j < sumdata.length; j++) {
+					if (sumdata[j].user == data[i].usr_p && sumdata[j].phone_number == data[i].phone) {
+						data[i].recharge = sumdata[j].recharge;
+						data[i].cnt = sumdata[j].cnt;
+					}
+				}
+			}
+			data && drawTable(data)
+		})
+	})
+}
+
+function getSumData(callback){
+	var params={
+		param1:$("#sd").datebox("getValue"),
+		param2:$("#ed").datebox("getValue")
+	};
+	tssJS.getJSON(BASEURL+GD[1].uri+GD[1].reportId,params,function(data){
+		// console.log(data)
+		callback && callback(data)
+	})
+}
+
+function beginQuery(url,param){
+	param = param || {phone_number:'?'};
+	$("#record").datagrid({
+		url:url,
+		queryParams:param,
+		fit: true,
+		singleSelect: true,
+		title: '号码' + param.phone_number + '的充值记录',
+		toolbar: [
+			{text: '新增',iconCls: 'icon-add',handler: createRecord}, 
+			{text: '修改',iconCls: 'icon-edit',handler:updateRecordRow}
+		],
+		columns: [[
+			{field: 'ck',checkbox: true}, 
+			{field: 'recharge',title: '充值金额',align: 'center',width: '90px'},
+			{field: 'recharge_time',title: '充值时间',align: 'center',width: '90px'}, 
+			{field: 'remark',title: '备注',align: 'center',width: '90px'}
+			]]
+	}).datagrid('enableFilter', [{field: 'recharge',type: 'textbox'}, {field: 'recharge_time',type: 'textbox'}, {field: 'remark',type: 'textbox'}]);
+}
+
+function saveTable(recordId,tableid) {
+	if (!checkPhone($("#phone").textbox("getValue"))) {
+		$.messager.alert({title:'提示',msg:'请输入正确手机号码！'});
+		return;
+	}
+    var id = $("input[name='id']").val();
+    var isCreate = !id;
+    var $saveBtn = $('#dlg-buttons>a[onclick^="save"]');
+    $saveBtn.linkbutton("disable");
+    $('#fm').form('submit',{
+        url: BASE_RECORD_URL + recordId + (!isCreate ? "/"+id : ''),
+        onSubmit: function(){
+            var flag = $(this).form('validate');
+            if( !flag ) {
+                $saveBtn.linkbutton("enable");
+            }
+            return flag;
+        },
+        success: function(result){
+            $saveBtn.linkbutton("enable");
+            checkException(result, function() {
+                closeDialog();
+                // $(tableid).datagrid('reload');
+                showTotal()
+            	$.messager.show({
+					title:'提示',
+					msg:'保存成功！',
+					showType:'slide',
+					timeout:2000,
+					style:{
+						position:'fixed',
+						right:'',
+						bottom:0,
+						top:'',
+						left:0
+					}
+				});
+            });
+        }
+    });
+}
+
+function createRow() {
+	$("#fm").form('clear');
+	$('#dlg').dialog({
+		"modal": true
+	}).dialog('open').dialog('setTitle', '新增号码').dialog('center');
+	$('#status').combobox('setValue', '启用');
+	$('#code').textbox('readonly', false);
+	$('#lockVersion').val('0'); // 給版本号设置默认值
+}
+
+function updateRow() {
+	var row = getSelectedRow('dg');
+	if (row) {
+		$.getJSON(URL.GET + row.id, {}, function(select_data) {
+			$('#fm').form('load', select_data);
+			$('#dlg').dialog({
+				"modal": true
+			}).dialog('open').dialog('setTitle', '修改').dialog('center');
+			$('#code').textbox('readonly', true);
+		}, "GET");
+	}
+}
+
+function createRecord(recordId,tableid){
+	$("#fm2").form('clear');
+	$('#dlg2').dialog({
+		"modal": true
+	}).dialog('open').dialog('setTitle', '新增充值记录').dialog('center');
+	$("#user").textbox('setValue',USER);
+	$("#phone_number").textbox('setValue',PHONE);
+	// $('input[readonly]').css('backgroundColor','#eee')
+	// $("#user").css('backgroundColor','#eee')
+	// $("#phone_number").css('backgroundColor','#eee')
+	// todo readonly 背景颜色无法修改
+	$('#code').textbox('readonly', false);
+	$('#lockVersion').val('0'); // 給版本号设置默认值
+}
+
+function saveRecord(recordId){
+	var id = $("#dlg2 input[name='id']").val();
+    var isCreate = !id;
+    var $saveBtn = $('#dlg-buttons>a[onclick^="save"]');
+    $saveBtn.linkbutton("disable");
+    $('#fm2').form('submit',{
+        url: BASE_RECORD_URL + recordId + (!isCreate ? "/"+id : ''),
+        onSubmit: function(){
+            var flag = $(this).form('validate');
+            if( !flag ) {
+                $saveBtn.linkbutton("enable");
+            }
+            return flag;
+        },
+        success: function(result){
+            $saveBtn.linkbutton("enable");
+            checkException(result, function() {
+               	$('#dlg2').dialog('close');
+    			$('#fm2').form('clear');
+				tssJS.getJSON(record_urls(GD[2].reportName).QUERY, {
+					phone_number: PHONE
+				}, function(data) {
+					$("#record").datagrid({
+						data: data
+					}).datagrid('enableFilter', [{
+						field: 'recharge',
+						type: 'textbox'
+					}, {
+						field: 'recharge_time',
+						type: 'textbox'
+					}, {
+						field: 'remark',
+						type: 'textbox'
+					}]);
+				});
+            	$.messager.show({
+					title:'提示',
+					msg:'保存成功！',
+					showType:'slide',
+					timeout:2000,
+					style:{
+						position:'fixed',
+						right:0,
+						bottom:0,
+						top:'',
+						left:''
+					}
+				});
+            });
+        }
+    });
+}
+
+function closeRecordDialog(){
+	$('#dlg2').dialog('close');
+    $('#fm2').form('clear');
+}
+
+function updateRecordRow() {
+	var row = getSelectedRow('record');
+	if (row) {
+		$.getJSON(record_urls(GD[2].reportName).GET + row.id, {}, function(select_data) {
+			$('#fm2').form('load', select_data);
+			$('#dlg2').dialog({
+				"modal": true
+			}).dialog('open').dialog('setTitle', '修改充值记录').dialog('center');
+			$('#code').textbox('readonly', true);
+		}, "GET");
+	}
+}
+
+</script>
+<body class="easyui-layout">
+	<div style="width:100%;height:100%;" >
+	    <div class="easyui-layout" fit="true">
+	        <div data-options="region:'west'" border="false" style="width:75%;">
+        		<table id="dg" class="easyui-datagrid" data-options="toolbar:'#tb'" border="false">
+            	</table>
+            	<div id="tb" style="height: auto;" border="false">
+        			&emsp;充值时间从:<input id="sd" class="easyui-datebox" style="width: 120px">
+					&emsp;到:<input id="ed" class="easyui-datebox" style="width: 120px">
+					<a href="#" id="query" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="showTotal()">查询</a>
+					<a href="#" id="addjob" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="createRow()">新增</a>
+						<a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="updateRow()">修改</a>
+            	</div>
+	        </div>
+	        <div data-options="region:'center'" style="width:25%;border-bottom:0px;border-top:0px;">
+	        	<table id="record" class="easyui-datagrid" border="false"></table>
+	        </div>
+	    </div>
+	</div>
+	<div id="dlg" class="easyui-dialog" style="width:550px;height: 380px;" closed=true buttons="#dlg-buttons">
+		<form id="fm" method="post" novalidate>
+			<input name="id" type="hidden"/>
+	        <input id="lockVersion" name="lockVersion" type="hidden"/>
+	        <input id="seqNo" name="seqNo" type="hidden" />
+	        <table class="l">
+	            <tr>
+	                <td class="label">号 码:</td>
+	                <td>
+	                    <input name="phone" id="phone" class="easyui-textbox" required/>
+	                </td>   
+	                <td class="label">使用对象:</td>
+	                <td>
+	                    <input name="usr_p" id="usr_p" class="easyui-textbox" required/>
+	                </td>            
+	            </tr>
+	            <tr>  
+	                <td class="label">通话时长:</td>
+	                <td>
+	                    <input name="free_call" id="free_call" class="easyui-textbox" required/>
+	                </td>  
+	                <td class="label">流 量:</td>
+	                <td>
+	                	<input name="celluar_data" id="celluar_data" class="easyui-textbox" required/>
+	                </td>           
+	            </tr>
+	            <tr>
+	            	<td class="label">预 存:</td>
+	            	<td>
+	            		<input name="prestore" id="prestore" class="easyui-textbox">
+	            	</td>
+	            	<td class="label">反充金额:</td>
+	            	<td>
+	            		<input name="return_price" id="return_price" class="easyui-textbox">
+	            	</td>
+	            </tr>
+	            <tr>
+	            	<td class="label">开始月份:</td>
+	            	<td>
+	            		<input name="start_time" id="start_time" class="easyui-datebox">
+	            	</td>
+	            	<td class="label">结束月份:</td>
+	            	<td>
+	            		<input name="end_time" id="end_time" class="easyui-datebox">
+	            	</td>
+	            </tr>
+	            <tr>
+	            	<td class="label">期 限:</td>
+	            	<td>
+	            		<input name="pre_time_limit" id="pre_time_limit" class="easyui-textbox">
+	            	</td>
+	            	<td class="label">应充值金额:</td>
+	            	<td>
+	            		<input name="handle_price" id="handle_price" class="easyui-textbox">
+	            	</td>
+	            </tr>
+	            <tr>
+	            	<td class="label">邮箱密码:</td>
+	            	<td>
+	            		<input name="password" id="password" class="easyui-textbox">
+	            	</td>
+	            	<td class="label">修改日期:</td>
+	            	<td>
+	            		<input name="rep_date" id="rep_date" class="easyui-datebox">
+	            	</td>
+	            </tr>
+	            <tr>
+	            	<td class="label">状 态:</td>
+	            	<td>
+	            		<input name="status" id="status" class="easyui-combobox" required/>
+	            	</td>
+	            	<td class="label">备 注:</td>
+	            	<td>
+	            		<input name="remark" id="remark" class="easyui-textbox">
+	            	</td>
+	            </tr>
+	        </table>
+        </form>
+	</div>
+	<div id="dlg-buttons">
+	    <a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveTable(GD[0].reportName,'#dg')">保 存</a>
+	    <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="closeDialog()">取 消</a>
+	</div>
+	<div id="dlg2" class="easyui-dialog" style="width: 500px;height: 200px;" closed=true buttons='#dlg-buttons2'>
+		<form id="fm2" method="post" novalidate>
+			<input name="id" type="hidden"/>
+	        <input id="lockVersion2" name="lockVersion" type="hidden"/>
+	        <input id="seqNo2" name="seqNo" type="hidden"/>
+	        <table>
+	        	<tr>
+	            	<td class="label">使用对象:</td>
+	            	<td>
+	            		<input name="user" id="user" class="easyui-textbox" readonly/>
+	            	</td>
+	            	<td class="label">号 码:</td>
+	            	<td>
+	            		<input name="phone_number" id="phone_number" class="easyui-textbox" readonly/>
+	            	</td>
+	            </tr>
+	        	<tr>
+	            	<td class="label">充值金额:</td>
+	            	<td>
+	            		<input name="recharge" id="recharge" class="easyui-textbox" required/>
+	            	</td>
+	            	<td class="label">充值日期:</td>
+	            	<td>
+	            		<input name="recharge_time" id="recharge_time" class="easyui-datebox" required/>
+	            	</td>
+	            </tr>
+	            <tr>
+	            	<td class="label">备 注:</td>
+	            	<td>
+	            		<input name="remark" id="remark2" class="easyui-textbox">
+	            	</td>
+	            	<td class="label"></td>
+	            	<td></td>
+	            </tr>
+	        </table>
+		</form>
+	</div>
+	<div id="dlg-buttons2">
+	    <a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveRecord(GD[2].reportName)">保 存</a>
+	    <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="closeRecordDialog()">取 消</a>
+	</div>
+</body>
+
+</html>

@@ -1,0 +1,625 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+	<meta charset="utf-8">
+	<title>接单v3.0</title>
+	<eta name="author" content="陈荣沙；20180112"/>
+	<meta name="keywords" content="xxx"/>
+	<meta name="description" content="xxx"/>
+	<meta name="application" content="xxxx"/>
+	<meta name="datasource" content="xxxx"/>
+	<meta name="version" content="2.0 20180112；3.0 20180201"/>
+	<meta name="viewport" content="width=device-width"/>
+	<link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+	<link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+	<link rel="stylesheet" href="../../css/easyui.css">
+	<script src="../../tools/tssJS/tssJS.all.js"></script>
+	<script src="../../tools/easyui/jquery.min.js"></script>
+	<script src="../../tools/easyui/jquery.easyui.min.js"></script>
+	<script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+	<script src="../../tools/easyui/datagrid-filter.js"></script>
+	<script src="../../tools/easyui.js"></script>
+	<script src="truck.js"></script>
+</head>
+
+<style type="text/css">
+
+</style>
+
+<script type="text/javascript">
+
+var BASEURL = '',
+	GD = [
+		{id:0,recordId:98,recordName:'t_truck_job',uri:'/tss/auth/xdata/json/'},//运单基础信息
+		{id:1,recordId:127,recordName:'t_temp_client',uri:'/tss/auth/xdata/json/'},//临时客户信息
+		{id:2,recordId:68,recordName:'t_truck_type',uri:'/tss/auth/xdata/json/'},//车型信息
+		{id:3,recordId:87,recordName:"t_trucks_job_income",uri:'/tss/auth/xdata/json/'},//运单收入明细
+		{id:4,reportId:82,reportName:'运单收入项目',uri:'/tss/data/json/'},//运单收入项目明细
+		{id:5,reportId:115,reportName:'客户信息',uri:'/tss/data/json/'},//客户信息
+	],
+	ROUTETYPEDATA = [{value:'单边'},{value:'往返'},{value:'对开'}],//线路属性
+	RECEIPTDATA = [{value:'是'},{value:'否'}],//回单状态
+	STATUSDATA = [{value:'待派'},{value:'待确认'}],//运单状态
+	JOBCODE,
+	COL = [[
+		{field: 'ck',checkbox: true}, 
+		{field: 'income_type',title: '收入类型',align: 'center',width: '90px'},
+		{field: 'price',title: '金额',align: 'center',width: '90px'}, 
+		{field:'due_date',title:'应收日期',align:'center',width:'90px'},
+		{field: 'ifpay',title: '是否已付',align: 'center',width: '90px'}, 
+		{field:'real_due_date',title:'实收日期',align:'center',width:'90px'},
+		{field: 'remark',title: '备注',align: 'center',width: '90px'}
+	]],
+	JOBTYPEDATA = [{text:'全部',value:''},{text:'临时',value:'0',selected:true},{text:'固定',value:'1'}];
+
+$(function(){
+	$("#pstart_s").datetimebox('setValue',getCurrentMonthFirst().format('yyyy-MM-dd'));
+	$("#pstart_e").datetimebox('setValue',new Date().format('yyyy-MM-dd 23:59'));
+	$("#jobtype").combobox({
+		data:JOBTYPEDATA,
+		valueField:'value',
+		textField:'text',
+		panelHeight:'auto'
+	})
+	jobQuery();
+	$("#ifpay").combobox({
+		data:RECEIPTDATA,
+		valueField: 'value',
+		textField: 'value',
+		panelHeight:'auto',
+		limitToList:true,
+		onChange:function(newValue,oldValue){
+			if (newValue == '是') {
+				$('#real_due_date').datebox({
+					required: true
+				});
+			} else {
+				$('#real_due_date').datebox({
+					required: false
+				});
+			}
+		}
+	});
+	$("#truck_type").combobox({
+		url: record_urls(GD[2].recordName).QUERY,
+		queryParams:{},
+		valueField:'truck_type',
+		textField:'truck_type',
+		panelHeight:'auto'
+	});
+	$("#route_type").combobox({
+		data:ROUTETYPEDATA,
+		valueField:'value',
+		textField:'value',
+		panelHeight:'auto'
+	});
+	$("#receipt").combobox({
+		data:RECEIPTDATA,
+		valueField:'value',
+		textField:'value',
+		panelHeight:'auto'
+	});
+	$("#status").combobox({
+		data:STATUSDATA,
+		valueField:'value',
+		textField:'value',
+		panelHeight:"auto",
+		limitToList: true
+	})
+	getClient()
+	$("#plan_end_time").datetimebox({
+		showSeconds: false,
+		required: true,
+		onChange: function(newValue, oldValue) {
+			if (newValue) {
+				var a = $("#plan_start_time").datetimebox('getValue'),
+					b = $("#plan_end_time").datetimebox('getValue');
+				if (a && b && a >= b) {
+					$.messager.alert('提示', '计划到达时间不能早于或等于计划发车时间，请修改！')
+				} else {
+					$("#aging").textbox('setValue', dateDiffer(a, b))
+				}
+			}
+		}
+	})
+	$("#plan_start_time").datetimebox({
+		showSeconds: false,
+		required: true,
+		onChange: function(newValue, oldValue) {
+			if (newValue) {
+				var a = $("#plan_start_time").datetimebox('getValue'),
+					b = $("#plan_end_time").datetimebox('getValue');
+				if (a && b && a >= b) {
+					$.messager.alert('提示', '计划到达时间不能早于或等于计划发车时间，请修改！')
+				} else {
+					$("#aging").textbox('setValue', dateDiffer(a, b))
+				}
+			}
+		}
+	})
+	$("#addjob").click(function(){
+		$('#status').combobox('setValue', '待派');
+	})
+	$("#addincome").click(function(){
+		$('#truck_code').textbox('setValue', JOBCODE);
+	})
+	$("#income_type").combobox({
+		url:BASEURL+GD[4].uri+GD[4].reportId,
+		valueField:'value',
+		textField:'value',
+		panelHeight:'auto'
+	})
+});
+function jobQuery() {
+	var a,b;
+	a = new Date($("#pstart_s").datebox("getValue").replace('-','/'));
+	b = new Date($("#pstart_e").datebox("getValue").replace('-','/'));
+	tssJS.ajax({
+		url: record_urls(GD[0].recordName).QUERY + '?noCache=true',
+		params: {
+			job_code: $("#jcode").textbox("getValue"),
+			client: $("#cname").textbox("getValue"),
+			plan_start_time:'['+a.format('yyyy-MM-dd hh:mm')+','+b.format('yyyy-MM-dd hh:mm')+']',
+			plan_route:$('#route').textbox('getValue'),
+			normal:$("#jobtype").combobox('getValue')
+		}, 
+		method: 'post',
+		type: "json",
+		waiting: true,
+		ondata: function() {
+			data = this.getResponseJSON();
+			data && drawTable(data);
+		}
+	});
+}
+//画主表
+function drawTable(data){
+	$("#dg").datagrid({
+		data: data,
+		fit: true,
+		rownumbers: true,
+		singleSelect: true,
+		frozenColumns:[[
+			{field: 'ck', checkbox: true},
+			{field: 'job_code',title: '任务单号',align: 'center',width:'120px',styler: styler2}
+			]],
+		columns: [[
+			{field: 'client',title: '客户名称',align: 'center',width:'100px'},
+			{field: 'client_phone',title: '联系方式',align: 'center',width:'100px'},
+			{field: 'plan_route',title: '计划线路',align: 'center',width:'100px'},
+			{field: 'truck_type',title: '车型',align: 'center',width:'100px'},
+			{field: 'plan_start_time',title: '计划发车时间',align: 'center',width:'110px',formatter:function(value){
+				var d = new Date(value.replace('-','/'))
+				return d.format('yyyy-MM-dd hh:mm');
+			}},
+			{field: 'plan_end_time',title: '计划到达时间',align: 'center',width:'110px',formatter:function(value){
+				var d = new Date(value.replace('-','/'))
+				return d.format('yyyy-MM-dd hh:mm');
+			}},
+			{field: 'aging',title: '在途时效',align: 'center',width:'120px'},
+			{field: 'route_type',title: '线路类型',align: 'center',width:'100px'},
+			{field: 'load_type',title: '额载',align: 'center',width:'100px'},
+			{field: 'bulk_type',title: '体积',align: 'center',width:'100px'},
+			// {field: 'payment_type',title: '付款方式',align: 'center',width:'100px'},
+			{field: 'receipt',title: '回单是否回收',align: 'center',width:'100px'},
+			{field: 'arr_port_time',title: '靠台时间',align: 'center',width:'110px',formatter:function(value){
+				if (!value) {
+					return
+				}
+				var d = new Date(value.replace('-','/'))
+				return d.format('yyyy-MM-dd hh:mm');
+			}},
+			{field: 'shipment_site',title: '装货地址',align: 'center',width:'100px'},
+			{field: 'shipment_phone',title: '装货联系方式',align: 'center',width:'100px'},
+			{field: 'status',title: '状态',align: 'center',width:'100px'},
+			{field: 'order_remark',title: '接单备注',align: 'center',width:'100px'},
+			]],
+		onLoadSuccess: function() {
+			getIncome("truck_code", COL, '运单', '收入明细', "#income", record_urls(GD[3].recordName).QUERY, {
+				truck_code: JOBCODE || '?'
+			});
+			$("#income").datagrid().datagrid("enableFilter", [{
+				field: 'income_type',
+				type: 'textbox'
+			}, {
+				field: 'price',
+				type: 'textbox'
+			}, {
+				field: 'remark',
+				type: 'textbox'
+			}, {
+				field: 'due_date',
+				type: 'textbox'
+			}, {
+				field: 'ifpay',
+				type: 'textbox'
+			}, {
+				field: 'real_due_date',
+				type: 'textbox'
+			}])
+		},
+		onClickCell: function(index, field, value) {
+			if (field == 'job_code') {
+				JOBCODE = value
+				getIncome("truck_code", COL, '运单', '收入明细', "#income", record_urls(GD[3].recordName).QUERY, {
+					truck_code: JOBCODE
+				});
+				$("#income").datagrid().datagrid("enableFilter", [{
+					field: 'income_type',
+					type: 'textbox'
+				}, {
+					field: 'price',
+					type: 'textbox'
+				}, {
+					field: 'remark',
+					type: 'textbox'
+				}, {
+					field: 'due_date',
+					type: 'textbox'
+				}, {
+					field: 'ifpay',
+					type: 'textbox'
+				}, {
+					field: 'real_due_date',
+					type: 'textbox'
+				}])
+			}
+		}
+	});
+}
+// 录入表dlg combobox设置，并默认setvalue第一个值
+function getClientInfo(comboboxid,url,params,value,text,str){
+	text = text || value;
+	str = str || value;
+	var a;
+	$(comboboxid).combobox({
+		url:url,
+		queryParams:params,
+		valueField:value,
+		textField:text,
+		limitToList:true,
+		panelHeight:'auto',
+		loadFilter:function(data){
+			var arr = [],
+				j = 0;
+			for (var i = 0; i < data.length; i++) {
+				if (!findObj(data[i],arr,str)) {
+					data[i].id = j
+					arr.push(data[i])
+					j++
+					a = arr[0][str]
+				}
+			}
+			return arr
+		},
+		onLoadSuccess:function(){
+			$(comboboxid).combobox('setValue',a)
+		}
+	})
+}
+
+// 获取客户信息
+function getClient() {
+	var url = BASEURL + GD[5].uri + GD[5].reportId + '?noCache=true';
+	$("#client").combobox({
+		url: url,
+		queryParams: {},
+		loadFilter: function(data) {
+			var arr = [];
+			for (var i = 0; i < data.length; i++) {
+				if (!findObj(data[i], arr, 'client')) {
+					arr.push(data[i])
+				}
+			}
+			return arr
+		},
+		valueField: 'client',
+		textField: 'client',
+		panelHeight: 'auto',
+		icons: [{
+			iconCls: 'icon-add',
+			handler: function(){
+				addTab('rec', '临时客户基础信息维护', GD[1].recordId, 'client_panel')
+			}
+		}, {
+			iconCls: 'icon-reload',
+			handler: getClient
+		}],
+		onChange: function(newValue, oldValue) {
+			if (newValue) {
+				var params = {param1:newValue};
+				console.log(params)
+				getClientInfo('#client_phone',url,params,'client_phone');
+				getClientInfo('#shipment_site',url,params,'shipment_site');
+				getClientInfo('#shipment_phone',url,params,'shipment_phone');
+			}
+		}
+	})
+}
+// 保存运单
+function saveTable(recordId, tableid) {
+	if ($('#normal').val() == '') {
+		$('#normal').val('0');
+	};
+	var id = $("input[name='id']").val();
+	var isCreate = !id;
+	var $saveBtn = $('#dlg-buttons>a[onclick^="save"]');
+	$saveBtn.linkbutton("disable");
+	$('#fm').form('submit', {
+		url: BASE_RECORD_URL + recordId + (!isCreate ? "/" + id : ''),
+		onSubmit: function() {
+			var flag = $(this).form('validate');
+			if (!flag) {
+				$saveBtn.linkbutton("enable");
+			}
+			return flag;
+		},
+		success: function(result) {
+			$saveBtn.linkbutton("enable");
+			checkException(result, function() {
+				closeDialog();
+				jobQuery();
+				$.messager.show({
+					title: '提示',
+					msg: '保存成功！',
+					showType: 'slide',
+					timeout: 2000,
+					style: {
+						position: 'fixed',
+						right: '',
+						bottom: 0,
+						top: '',
+						left: 0
+					}
+				});
+			});
+		}
+	});
+}
+// 保存运单收入记录
+function saveRecord(recordId){
+	var id = $("#dlg2 input[name='id']").val();
+    var isCreate = !id;
+    var $saveBtn = $('#dlg-buttons>a[onclick^="save"]');
+    $saveBtn.linkbutton("disable");
+    $('#fm2').form('submit',{
+        url: BASE_RECORD_URL + recordId + (!isCreate ? "/"+id : ''),
+        onSubmit: function(){
+            var flag = $(this).form('validate');
+            if( !flag ) {
+                $saveBtn.linkbutton("enable");
+            }
+            return flag;
+        },
+        success: function(result){
+            $saveBtn.linkbutton("enable");
+            checkException(result, function() {
+               	$('#dlg2').dialog('close');
+    			$('#fm2').form('clear');
+				tssJS.getJSON(record_urls(GD[3].recordName).QUERY, {
+					truck_code: JOBCODE
+				}, function(data) {
+					$("#income").datagrid({
+						data: data
+					}).datagrid('enableFilter', [{
+						field: 'income_type',
+						type: 'textbox'
+					}, {
+						field: 'price',
+						type: 'textbox'
+					}, {
+						field: 'remark',
+						type: 'textbox'
+					}]);
+				});
+            	$.messager.show({
+					title:'提示',
+					msg:'保存成功！',
+					showType:'slide',
+					timeout:2000,
+					style:{
+						position:'fixed',
+						right:0,
+						bottom:0,
+						top:'',
+						left:''
+					}
+				});
+            });
+        }
+    });
+}
+
+</script>
+
+<body class="easyui-layout">
+	<div id="main" style="width: 100%;height: 100%;">
+		<div class="easyui-layout" fit="true">
+			<div data-options="region:'west'" border="false" style="width:58%">
+        		<table id="dg" class="easyui-datagrid" data-options="toolbar:'#tb'">
+            	</table>
+            	<div id="tb" style="padding:5px;height:auto">
+					<div style="margin-bottom:5px">
+						<a href="#" id="addjob" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="createNew('#dlg','#fm','新增运单')">新增</a>
+						<a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="updateOld(record_urls(GD[0].recordName).GET,'dg','#fm','#dlg','修改运单')">修改</a>
+					</div>
+					<div style="margin-bottom:5px">
+						客&emsp;户&emsp;名&emsp;称:&nbsp;<input id="cname" class="easyui-textbox" style="width: 150px">
+						&emsp;任务单号:&nbsp;<input id="jcode" class="easyui-textbox" style="width: 150px">
+					</div>
+					<div style="margin-bottom:5px">
+						线&emsp;&emsp;&emsp;&emsp;&emsp;路:&nbsp;<input id="route" class="easyui-textbox" style="width: 150px">
+						任务单类型:&nbsp;<input id="jobtype" class="easyui-combobox" style="width: 150px">
+					</div>
+					<div>
+						计划发车时间从:&nbsp;<input id="pstart_s" class="easyui-datetimebox" style="width:150px" data-options="showSeconds: false">
+						&emsp;&emsp;&emsp;&emsp;到:&nbsp;<input id="pstart_e" class="easyui-datetimebox" style="width:150px" data-options="showSeconds: false">
+						<a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="jobQuery()">查询</a>
+					</div>
+				</div>
+	        </div>
+	        <div data-options="region:'center'" border="false" style="width:42%">
+	        	<table id="income" class="easyui-datagrid" data-options="toolbar:'#tb2'"></table>
+	        	<div id="tb2" style="padding:0px;height:auto">
+	        		<div style="margin-bottom:0px">
+	        			<a href="#" id="addincome" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="createNew('#dlg2','#fm2','新增运单'+'<b>'+JOBCODE+'</b>'+'的收入')">新增</a>
+						<a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="updateOld(record_urls(GD[3].recordName).GET,'income','#fm2','#dlg2','修改运单'+'<b>'+JOBCODE+'</b>'+'的收入')">修改</a>
+	        		</div>
+	        	</div>
+	        </div>
+		</div>
+	</div>
+	<div id="dlg" class="easyui-dialog" style="width:580px;height: 380px;" closed=true buttons="#dlg-buttons">
+		<form id="fm" method="post" novalidate>
+			<input name="id" type="hidden"/>
+			<input id="lockVersion2" name="lockVersion" type="hidden"/>
+			<input id="seqNo2" name="seqNo" type="hidden"/>
+			<input id="normal" name="normal" type="hidden"/>
+			<table>
+				<tr>
+					<td class="label">任务单号:</td>
+					<td>
+						<input id="job_code" name="job_code" class="easyui-textbox" style="width: 180px" disabled/>
+					</td>
+					<td class="label">客户名称:</td>
+					<td>
+						<input id="client" name="client" class="easyui-combobox" style="width: 180px" required/>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">联系方式:</td>
+					<td>
+						<input id="client_phone" name="client_phone" class="easyui-textbox" style="width: 180px" required/>
+					</td>
+					<td class="label">线路:</td>
+					<td>
+						<input id="plan_route" name="plan_route" class="easyui-textbox" style="width: 180px" required/>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">车型:</td>
+					<td>
+						<input id="truck_type" name="truck_type" class="easyui-combobox" style="width: 180px" required/>
+					</td>
+					<td class="label">线路类型:</td>
+					<td>
+						<input id="route_type" name="route_type" class="easyui-combobox" style="width: 180px" required/>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">计划发车时间:</td>
+					<td>
+						<input id="plan_start_time" name="plan_start_time" class="easyui-datetimebox" style="width: 180px" required/>
+					</td>
+					<td class="label">计划到达时间:</td>
+					<td>
+						<input id="plan_end_time" name="plan_end_time" class="easyui-datetimebox" style="width: 180px" required/>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">在途时效:</td>
+					<td>
+						<input id="aging" name="aging" class="easyui-textbox" style="width: 180px" />
+					</td>
+					<td class="label">额载:</td>
+					<td>
+						<input id="load_type" name="load_type" class="easyui-textbox" style="width: 180px" >
+					</td>
+				</tr>
+				<tr>
+					<td class="label">体积:</td>
+					<td>
+						<input id="bulk_type" name="bulk_type" class="easyui-textbox" style="width: 180px" >
+					</td>
+					<td class="label">回单是否回收:</td>
+					<td>
+						<input id="receipt" name="receipt" class="easyui-combobox" style="width: 180px" required/>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">靠台时间:</td>
+					<td>
+						<input id="arr_port_time" name="arr_port_time" class="easyui-datetimebox" data-options="required:true,showSeconds:false" style="width: 180px" required/>
+					</td>
+					<td class="label">装货地址:</td>
+					<td>
+						<input id="shipment_site" name="shipment_site" class="easyui-combobox" style="width: 180px" required/>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">装货联系方式:</td>
+					<td>
+						<input id="shipment_phone" name="shipment_phone" class="easyui-combobox" style="width: 180px" required/>
+					</td>
+					<td class="label">接单备注:</td>
+					<td>
+						<input id="order_remark" name="order_remark" class="easyui-textbox" style="width: 180px" >
+					</td>
+				</tr>
+				<tr>
+					<td class="label">状态:</td>
+					<td>
+						<input id="status" name="status" class="easyui-combobox" style="width: 180px" required/>
+					</td>
+				</tr>
+			</table>
+		</form>
+	</div>
+	<div id="dlg-buttons">
+		<a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveTable(GD[0].recordName,'#dg')">保存</a>
+		<a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="closeDlg('#dlg','#fm')">取消</a>
+	</div>
+	<div id="dlg2" class="easyui-dialog" style="width:550px;height: 200px;" closed=true buttons="#dlg-buttons2">
+		<form id="fm2" method="post" novalidate>
+			<input name="id" type="hidden"/>
+	        <input id="lockVersion2" name="lockVersion" type="hidden"/>
+	        <input id="seqNo2" name="seqNo" type="hidden"/>
+	        <table>
+	        	<tr>
+	        		<td class="label">任务单号:</td>
+	        		<td>
+	        			<input name="truck_code" id="truck_code" class="easyui-textbox" style="width: 180px" readonly/>
+	        		</td>
+	        		<td class="label">收入类型:</td>
+	        		<td>
+	        			<input name="income_type" id="income_type" class="easyui-combobox" style="width: 180px" required/>
+	        		</td>
+	        	</tr>
+	        	<tr>
+	        		<td class="label">金额:</td>
+	        		<td>
+	        			<input name="price" id="price" class="easyui-textbox" style="width: 180px" required/>
+	        		</td>
+	        		<td class="label">应收日期:</td>
+	        		<td>
+	        			<input name="due_date" id="due_date" class="easyui-datebox" style="width: 180px" required/>
+	        		</td>
+	        	</tr>
+	        	<tr>
+	        		<td class="label">是否已付:</td>
+	        		<td>
+	        			<input name="ifpay" id="ifpay" class="easyui-combobox" style="width: 180px" required/>
+	        		</td>
+	        		<td class="label">实收日期:</td>
+	        		<td>
+	        			<input name="real_due_date" id="real_due_date" class="easyui-datebox" style="width: 180px">
+	        		</td>
+	        	</tr>
+	        	<tr>
+	        		<td class="label">备注:</td>
+	        		<td>
+	        			<input name="remark" id="remark2" class="easyui-textbox" style="width: 180px">
+	        		</td>
+	        	</tr>
+	        </table>
+		</form>
+	</div>
+	<div id="dlg-buttons2">
+	    <a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveRecord(GD[3].recordName)">保 存</a>
+	    <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="closeDlg('#dlg2','#fm2')">取 消</a>
+	</div>
+</body>
+</html>
