@@ -21,7 +21,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -65,14 +64,14 @@ import com.boubei.tss.util.EasyUtils;
  * 因为如果 appCode=CMS2 转发到 系统2的CMS（appCode=CMS）上的话，CMS2 != CMS，系统2会再次转发该请求。 
  * @see HttpMethod com.boubei.tss.core.proxy.HttpClientHelper.getHttpMethod(AppServer appServer)
  * 
- * 注：HttpProxyFilter需要配置在XMLHttpDecodeFilter之前，因为转发请求时将XMLHttp请求的参数流直接转发。
+ * 注：Filter5HttpProxy需要配置在XMLHttpDecodeFilter之前，因为转发请求时将XMLHttp请求的参数流直接转发。
  * 而如果先把XML参数流解析了，则因为该流是一次读完的（读了就没了），转发的时候将不复存在。
  * </pre>
  * 
  * 控制等待中的代理请求数量，以免耗尽线程（ 不超过阈值的30% ）
  * 
  */
-@WebFilter(filterName = "HttpProxyFilter", urlPatterns = {"/*"})
+//@WebFilter(filterName = "Filter5HttpProxy", urlPatterns = {"/*"})
 public class Filter5HttpProxy implements Filter {
 
 	Logger log = Logger.getLogger(Filter5HttpProxy.class);
@@ -81,7 +80,7 @@ public class Filter5HttpProxy implements Filter {
 	String P_KEY = "proxying_req_";
  
 	public void init(FilterConfig config) throws ServletException {
-		log.info("HttpProxyFilter init! appCode=" + Context.getApplicationContext().getCurrentAppCode());
+		log.info("Filter5HttpProxy init in " + Context.getApplicationContext().getCurrentAppCode());
 	}
  
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException, IOException {

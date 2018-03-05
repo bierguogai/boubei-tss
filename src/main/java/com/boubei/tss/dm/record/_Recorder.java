@@ -13,6 +13,7 @@ package com.boubei.tss.dm.record;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -74,7 +75,7 @@ public class _Recorder extends BaseActionSupport {
 			flag = flag || checkPermission( recordId, permitOption );
 		}
 		if(!flag) {
-			throw new BusinessException( EX.parse(EX.DM_09, recordId, permitOptions) );
+			throw new BusinessException( EX.parse(EX.DM_09, recordId, Arrays.asList(permitOptions).toString()) );
 		}
 		
 		Pool cache = CacheHelper.getLongCache();

@@ -745,11 +745,11 @@
         request.onsuccess = function(){
             detachReminder(page1Form.box.id);
 
+            ws.closeActiveTab();
+
             // 如果当前grid显示为此用户所在组，则刷新grid
             var gridGroupId = $.G("grid").getColumnValue("groupId");
             showUserList(groupId || gridGroupId || -7);
- 
-            ws.closeActiveTab();
         }
         request.send();
     }

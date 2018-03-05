@@ -18,8 +18,6 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
-import javax.servlet.annotation.WebInitParam;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
@@ -31,11 +29,12 @@ import com.boubei.tss.util.EasyUtils;
  
 /**
  * 设置Http request的字符集
- */
-@WebFilter(filterName = "EncodingFilter",
+
+@WebFilter(filterName = "Filter1Encoding",
 	urlPatterns = {"/*"} , 
 	initParams  = {@WebInitParam(name="encoding", value="UTF-8")}
 )
+ */
 public class Filter1Encoding implements Filter {
     
     private static final Log log = LogFactory.getLog(Filter1Encoding.class);
@@ -58,7 +57,7 @@ public class Filter1Encoding implements Filter {
         this.encoding = filterConfig.getInitParameter("encoding");
         this.encoding = (String) EasyUtils.checkNull(this.encoding, "UTF-8");
         
-        log.info("EncodingFilter init! appCode=" + Config.getAttribute(PX.APPLICATION_CODE));
+        log.info("Filter1Encoding init in" + Config.getAttribute(PX.APPLICATION_CODE));
     }
     
     public void destroy() {

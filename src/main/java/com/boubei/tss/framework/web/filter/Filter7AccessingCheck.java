@@ -25,7 +25,6 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -45,13 +44,13 @@ import com.boubei.tss.util.XMLDocUtil;
  * 应用地址(html类型)访问权限控制检测过滤器
  * 
  */
-@WebFilter(filterName = "AccessingCheckFilter", urlPatterns = {"*.htm", "*.html"})
+//@WebFilter(filterName = "Filter7AccessingCheck", urlPatterns = {"*.htm", "*.html"})
 public class Filter7AccessingCheck implements Filter {
     
     Log log = LogFactory.getLog(Filter7AccessingCheck.class);
 
     public void init(FilterConfig filterConfig) throws ServletException {
-        log.info("AccessingCheckFilter init! appCode=" + Context.getApplicationContext().getCurrentAppCode());
+        log.info("Filter7AccessingCheck init in " + Context.getApplicationContext().getCurrentAppCode());
     }
  
     public void destroy() { }

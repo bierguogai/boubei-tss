@@ -25,7 +25,7 @@ public class EX {
 	public static String parse(String msg, Object...values) {
 		Map<String, Object> data = new HashMap<String, Object>();
 		for(Object val : values) {
-			data.put("x" + (data.size() + 1), val);
+			data.put("x" + (data.size() + 1), val.toString());
 		}
 		return EasyUtils.fmParse(msg, data);
 	}
@@ -72,7 +72,7 @@ public class EX {
 	public static String DM_06 = "该附件不存在，可能已被删除!";
 	public static String DM_07 = "您对此附件没有查看权限";
 	public static String DM_08 = "您对此记录没有浏览权限";
-	public static String DM_09 = "对数据表【${x1}】的权限不足，【${x2}】。";
+	public static String DM_09 = "对数据表【${x1}】的权限不足，${x2}。";
 	public static String DM_10 = "该数据表已被停用，无法再录入数据！";
 	public static String DM_11 = "令牌验证未获通过，调用接口失败。";
 	public static String DM_12 = "您对此数据表没有维护权限";

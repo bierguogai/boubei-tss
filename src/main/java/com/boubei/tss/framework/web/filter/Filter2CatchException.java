@@ -18,7 +18,6 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
 
 import org.apache.log4j.Logger;
 
@@ -33,7 +32,7 @@ import com.boubei.tss.framework.sso.context.Context;
  * 捕获异常并转换成XML输出
  * 
  */
-@WebFilter(filterName = "CatchExceptionFilter", urlPatterns = {"/*"})
+//@WebFilter(filterName = "Filter2CatchException", urlPatterns = {"/*"})
 public class Filter2CatchException implements Filter {
 	
     Logger log = Logger.getLogger(Filter2CatchException.class);
@@ -57,7 +56,7 @@ public class Filter2CatchException implements Filter {
     }
  
     public void init(FilterConfig filterConfig) throws ServletException {
-        log.info("CatchExceptionFilter init! appCode=" + Config.getAttribute(PX.APPLICATION_CODE));
+        log.info("Filter2CatchException init in " + Config.getAttribute(PX.APPLICATION_CODE));
     }
     
     public void destroy() {

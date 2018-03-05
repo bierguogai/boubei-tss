@@ -21,8 +21,6 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
-import javax.servlet.annotation.WebInitParam;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -44,11 +42,12 @@ import com.boubei.tss.util.EasyUtils;
  * 类似在线用户库远程调用可以跳过本过滤器，以防TSS以外平台系统session注销时
  * 调用TSS配置的/remote/OnlineUserService，又会在TSS的UM里产生一个新的session。
  * </pre>
- */
-@WebFilter(filterName = "ContextFilter", 
+
+@WebFilter(filterName = "Filter3Context", 
 		urlPatterns = {"/*"}, 
 		initParams  = {@WebInitParam(name="ignorePaths", value="/remote/OnlineUserService,js,htm,html,jpg,png,gif,ico,css,xml,swf")}
 )
+ */
 public class Filter3Context implements Filter {
 	
 	private static Logger log = Logger.getLogger(Filter3Context.class);
@@ -59,7 +58,7 @@ public class Filter3Context implements Filter {
         String paths = EasyUtils.obj2String( filterConfig.getInitParameter("ignorePaths") );
         ignorePaths.addAll( Arrays.asList(paths.split(",")) );
         
-        log.info("ContextFilter init! appCode=" + Context.getApplicationContext().getCurrentAppCode() + ", ignorePaths=" + paths);
+        log.info("Filter3Context init in " + Context.getApplicationContext().getCurrentAppCode() + ", ignorePaths=" + paths);
     }
  
     public void destroy() {

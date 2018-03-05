@@ -21,8 +21,6 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
-import javax.servlet.annotation.WebInitParam;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -58,11 +56,12 @@ import com.boubei.tss.util.EasyUtils;
  *      将匿名用户和普通用户完全一样处理
  * </pre>
  *
- */
-@WebFilter(filterName = "AutoLoginFilter", 
-		urlPatterns = {"/auth/*", "*.do", "*.portal"}, 
+
+@WebFilter(filterName = "Filter4AutoLogin", 
+		urlPatterns = {"/auth/*", "/*.portal"}, 
 		initParams  = {@WebInitParam(name="ignorePaths", value="login.in,logout.in")
 })
+ */
 public class Filter4AutoLogin implements Filter {
 	private static Logger log = Logger.getLogger(Filter4AutoLogin.class);
 
@@ -73,7 +72,7 @@ public class Filter4AutoLogin implements Filter {
 		paths = (String) EasyUtils.checkNull( paths, "login.in,logout.in" );
 		ignorePaths.addAll( Arrays.asList(paths.split(",")) );
 		
-		log.info("AutoLoginFilter init! appCode=" + Context.getApplicationContext().getCurrentAppCode());
+		log.info("Filter4AutoLogin init in " + Context.getApplicationContext().getCurrentAppCode());
 	}
  
 	public void destroy() {

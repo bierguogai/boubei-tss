@@ -23,7 +23,6 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -47,7 +46,7 @@ import com.boubei.tss.util.EasyUtils;
  * 2、依据安全级别：<3一律放行；>=3 检查URL白名单
  * 3、上面两步检测不通过的，则要求登录才能访问
  */
-@WebFilter(filterName = "SecurityFilter", urlPatterns = {"/*"})
+//@WebFilter(filterName = "Filter0Security", urlPatterns = {"/*"})
 public class Filter0Security implements Filter {
 	
     Logger log = Logger.getLogger(Filter0Security.class);
@@ -185,7 +184,7 @@ public class Filter0Security implements Filter {
     }
 
 	public void init(FilterConfig filterConfig) throws ServletException {
-        log.info("SecurityFilter init! appCode=" + Config.getAttribute(PX.APPLICATION_CODE));
+        log.info("Filter0Security init in " + Config.getAttribute(PX.APPLICATION_CODE));
     }
     
     public void destroy() { }

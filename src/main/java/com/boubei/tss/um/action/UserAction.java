@@ -322,7 +322,7 @@ public class UserAction extends BaseActionSupport {
 		
 		List<Long> roleIds = loginService.getRoleIdsByUserId(userId);
 		
-		Object[] userHas = new Object[12];
+		Object[] userHas = new Object[13];
 		userHas[0] = loginService.getGroupsByUserId(userId);  //List<[groupId, groupName]>，截掉"主用户组"
 		userHas[1] = roleIds; //List<roleId>
 		userHas[2] = userId;
@@ -333,8 +333,9 @@ public class UserAction extends BaseActionSupport {
 		userHas[7] = Environment.getUserInfo("telephone");
 		userHas[8] = Environment.getUserInfo("address");
 		userHas[9] = Environment.getUserInfo("email");
-		userHas[10] = Environment.getUserInfo("employeeNo");
-		userHas[11] = loginService.getRoleNames(roleIds);
+		userHas[10]= Environment.getUserInfo("employeeNo");
+		userHas[11]= loginService.getRoleNames(roleIds);
+		userHas[12]= Environment.getDomain();
 		
 		return userHas;
 	}

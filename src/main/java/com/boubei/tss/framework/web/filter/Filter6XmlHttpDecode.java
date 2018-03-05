@@ -21,7 +21,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
@@ -51,13 +50,13 @@ import com.boubei.tss.util.XMLDocUtil;
  * 需要解析成 request.put("resourceId", 2);
  * </pre>
  */
-@WebFilter(filterName = "XmlHttpDecodeFilter", urlPatterns = {"/*"} )
+//@WebFilter(filterName = "Filter6XmlHttpDecode", urlPatterns = {"/*"} )
 public class Filter6XmlHttpDecode implements Filter {
     
     Logger log = Logger.getLogger(Filter6XmlHttpDecode.class);
  
     public void init(FilterConfig arg0) throws ServletException {
-        log.info("XmlHttpDecodeFilter init! appCode=" + Config.getAttribute(PX.APPLICATION_CODE));
+        log.info("Filter6XmlHttpDecode init in " + Config.getAttribute(PX.APPLICATION_CODE));
     }
 
     /**
