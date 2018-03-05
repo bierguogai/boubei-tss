@@ -537,7 +537,7 @@
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<properties>
-				<environment>dev</environment>
+				<environment>dev-tss-bi</environment>
 				<security.level>6</security.level>
 				<job.enable>true</job.enable>
 				<log.level>info</log.level>
