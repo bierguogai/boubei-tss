@@ -185,7 +185,7 @@ public class RoleService implements IRoleService {
             return roleDao.create(entity);
         }
             
-        roleDao.update(entity);
+        roleDao.refreshEntity(entity);
         return entity;
     }
 
@@ -197,7 +197,7 @@ public class RoleService implements IRoleService {
             role = roleDao.create(role);
         } 
         else {
-            roleDao.update(role);
+            roleDao.refreshEntity(role);
         }
         
         saveRole2User(role.getId(), userIds);   // 角色对用户

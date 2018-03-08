@@ -90,7 +90,7 @@ $(function(){
 		limitToList:true
 	})
 	jobQuery()
-
+	// console.log(record_urls(GD[0].recordName))
 	getSumPrice(record_urls(GD[2].recordName).QUERY, function(idata) { //运单收入
 		getSumPrice(record_urls(GD[1].recordName).QUERY, function(edata) { //运单支出
 			// 18012600001388
@@ -98,11 +98,20 @@ $(function(){
 			console.log(dataSum(idata,edata,'truck_code','truck_code'))
 		})
 	})
+	for (var i = 0; i < GD.length; i++) {
+		if (GD[i].recordName) {
+			record_id(GD[i].recordName,function(id){
+				GD[i].recordId = id;
+			})	
+		}
+		
+	}
+	console.log(GD)
 })
 // 获取运单营收 
 function getSumPrice(url, callback) {
 	var params = {
-		truck_code:'18012600001388',
+		// truck_code:'18012600001388',
 		fields: "truck_code,sum(price) as price",
 		groupby: "truck_code"
 	}
