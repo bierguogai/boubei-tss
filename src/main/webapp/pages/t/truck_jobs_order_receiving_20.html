@@ -175,6 +175,21 @@ function jobQuery() {
 		}
 	});
 }
+// 获取下载参数
+function getParams(){
+	var a,b,params;
+	a = new Date($("#pstart_s").datebox("getValue").replace('-','/'));
+	b = new Date($("#pstart_e").datebox("getValue").replace('-','/'));
+	params = {
+		job_code: $("#jcode").textbox("getValue"),
+		client: $("#cname").textbox("getValue"),
+		plan_start_time:'['+a.format('yyyy-MM-dd hh:mm')+','+b.format('yyyy-MM-dd hh:mm')+']',
+		plan_route:$('#route').textbox('getValue'),
+		normal:$("#jobtype").combobox('getValue')
+	}
+	return params;
+}
+
 //画主表
 function drawTable(data){
 	$("#dg").datagrid({
@@ -445,6 +460,7 @@ function saveRecord(recordId){
 					<div style="margin-bottom:5px">
 						<a href="#" id="addjob" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="createNew('#dlg','#fm','新增运单')">新增</a>
 						<a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="updateOld(record_urls(GD[0].recordName).GET,'dg','#fm','#dlg','修改运单')">修改</a>
+						<a href="#" class="easyui-linkbutton" iconCls="icon-tss-down" plain="true" onclick="_export('t_truck_job',getParams())">导出</a>
 					</div>
 					<div style="margin-bottom:5px">
 						客&emsp;户&emsp;名&emsp;称:&nbsp;<input id="cname" class="easyui-textbox" style="width: 150px">

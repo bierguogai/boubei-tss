@@ -94,24 +94,27 @@ $(function(){
 	getSumPrice(record_urls(GD[2].recordName).QUERY, function(idata) { //运单收入
 		getSumPrice(record_urls(GD[1].recordName).QUERY, function(edata) { //运单支出
 			// 18012600001388
+			var ndata = [];
 			console.log(idata,edata)
-			console.log(dataSum(idata,edata,'truck_code','truck_code'))
+			// console.log(dataSum(idata,edata,'truck_code','truck_code'))
+			for (var i = 0; i < idata.length; i++) {
+				edata.push(leftJion(idata[i],edata,'truck_code','truck_code'))
+			}
+			console.log(edata)
 		})
 	})
-	for (var i = 0; i < GD.length; i++) {
-		if (GD[i].recordName) {
-			record_id(GD[i].recordName,function(id){
-				GD[i].recordId = id;
-			})	
-		}
-		
-	}
-	console.log(GD)
+	// for (var i = 0; i < GD.length; i++) {
+	// 	if (GD[i].recordName) {
+	// 		record_id(GD[i].recordName,function(id){
+	// 			// todo 返回后台的id 
+	// 		})	
+	// 	}
+	// }
 })
 // 获取运单营收 
 function getSumPrice(url, callback) {
 	var params = {
-		// truck_code:'18012600001388',
+		truck_code:'18012600001388',
 		fields: "truck_code,sum(price) as price",
 		groupby: "truck_code"
 	}
@@ -132,7 +135,8 @@ function jobQuery() {
 		normal: $("#jobtype").combobox('getValue')
 	};
 	tssJS.getJSON(record_urls(GD[0].recordName).QUERY + '?noCache=true', params, function(data) {
-		data && drawTable(data)
+		data && drawTable(data);
+		// console.log(params)
 	})
 }
 // 画表
@@ -148,7 +152,7 @@ function drawTable(data){
 }
 // Object.assign(c,d)
 function leftJion(obj, data, str1, str2) {
-	str2 = st2 || str1;
+	str2 = str2 || str1;
 	str1 = str1.split(',');
 	str2 = str2.split(',');
 	for (var i = 0; i < data.length; i++) {
@@ -157,6 +161,7 @@ function leftJion(obj, data, str1, str2) {
 				if (obj[y] == data[i][x] && (str1.indexOf(y) >= 0) && (str2.indexOf(x) >= 0)) {
 					// Object.assign(obj,data[i]);
 					$.extend(obj,data[i]);
+					break;
 				}
 			}
 		}
