@@ -26,7 +26,11 @@
 </head>
 
 <style type="text/css">
-
+.bnt {
+	margin: 10px 5px;
+	width: 90px;
+	height: 28px;
+}
 </style>
 
 <script type="text/javascript">
@@ -154,18 +158,9 @@ $(function(){
 	})
 });
 function jobQuery() {
-	var a,b;
-	a = new Date($("#pstart_s").datebox("getValue").replace('-','/'));
-	b = new Date($("#pstart_e").datebox("getValue").replace('-','/'));
 	tssJS.ajax({
 		url: record_urls(GD[0].recordName).QUERY + '?noCache=true',
-		params: {
-			job_code: $("#jcode").textbox("getValue"),
-			client: $("#cname").textbox("getValue"),
-			plan_start_time:'['+a.format('yyyy-MM-dd hh:mm')+','+b.format('yyyy-MM-dd hh:mm')+']',
-			plan_route:$('#route').textbox('getValue'),
-			normal:$("#jobtype").combobox('getValue')
-		}, 
+		params: getParams(), 
 		method: 'post',
 		type: "json",
 		waiting: true,
@@ -447,6 +442,17 @@ function saveRecord(recordId){
         }
     });
 }
+// 导入数据
+function batchImport() {
+	function checkFileWrong(subfix) {
+		return subfix != ".csv";
+	};
+	var recordId = GD[0].recordId;
+		url = "/tss/auth/file/upload?afterUploadClass=com.boubei.tss.dm.record.file.ImportCSV",
+		url += "&recordId=" + recordId,
+		importDiv = createImportDiv("运单导入", checkFileWrong, url);
+	$(importDiv).show();
+}
 
 </script>
 
@@ -461,6 +467,7 @@ function saveRecord(recordId){
 						<a href="#" id="addjob" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="createNew('#dlg','#fm','新增运单')">新增</a>
 						<a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="updateOld(record_urls(GD[0].recordName).GET,'dg','#fm','#dlg','修改运单')">修改</a>
 						<a href="#" class="easyui-linkbutton" iconCls="icon-tss-down" plain="true" onclick="_export('t_truck_job',getParams())">导出</a>
+						<a href="#" class="easyui-linkbutton bnt" iconCls="icon-add" plain="true" onclick="batchImport()">导入</a>
 					</div>
 					<div style="margin-bottom:5px">
 						客&emsp;户&emsp;名&emsp;称:&nbsp;<input id="cname" class="easyui-textbox" style="width: 150px">

@@ -553,6 +553,48 @@ function GetField(url, params, str, callback) {
 	})
 }
 // 按照指定字段合并对象
-function mergeObj(obj1, obj2, str1, str2) {
+function createImportDiv(remark, checkFileWrong, importUrl) {
+	var importDiv = $1("importDiv");
+	if (importDiv == null) {
+		importDiv = tssJS.createElement("div", null, "importDiv");
+		document.body.appendChild(importDiv);
 
+		var str = [];
+		str[str.length] = "<form id='importForm' method='post' target='fileUpload' enctype='multipart/form-data'>";
+		str[str.length] = "  <div class='fileUpload'> <input type='file' name='file' id='sourceFile' onchange=\"$('#importDiv h2').html(this.value)\" /> </div> ";
+		str[str.length] = "  <input type='button' id='importBt' value='确定导入' class='tssbutton blue'/> ";
+		str[str.length] = "</form>";
+		str[str.length] = "<iframe style='width:0; height:0;' name='fileUpload'></iframe>";
+
+		tssJS(importDiv).panel(remark, str.join("\r\n"), false);
+		tssJS(importDiv).css("height", "300px").center();
+	}
+
+	//每次 importUrl 可能不一样，比如导入门户组件时。不能缓存
+	tssJS("#importBt").click(function() {
+		var fileValue = $1("sourceFile").value;
+		if (!fileValue) {
+			return tssJS("#importDiv h2").notice("请选择导入文件!");
+		}
+
+		var length = fileValue.length;
+		var subfix = fileValue.substring(length - 4, length);
+		if (checkFileWrong && checkFileWrong(subfix)) {
+			return tssJS("#importDiv h2").notice(remark);
+		}
+
+		var form = $1("importForm");
+		form.action = importUrl;
+		// console.log(form);
+		form.submit();
+
+		var emptystr;
+
+		$("#sourceFile").val(emptystr);
+		$('#importDiv h2').html(remark);
+
+		$(importDiv).hide();
+	});
+
+	return importDiv;
 }
