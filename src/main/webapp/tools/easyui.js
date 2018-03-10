@@ -22,9 +22,9 @@ function record_urls(tableId) {   // 一个录入表所拥有的增、删、改�
     result.QUERY  = BASE_RECORD_URL + 'json/' +tableId;
     result.CUD    = BASE_RECORD_URL + 'cud/'  +tableId;
     result.ATTACH = BASE_RECORD_URL + 'attach/json/' +tableId+ '/';
-    result.CSV_EXP= BASE_RECORD_URL + "export/" +tableId;
-    result.CSV_TL = BASE_RECORD_URL + "import/tl/" +tableId;
-    result.CSV_IMP= "/tss/auth/file/upload?afterUploadClass=com.boubei.tss.dm.record.file.ImportCSV&recordId=" +tableId;
+    result.CSV_EXP= BASE_RECORD_URL + 'export/' +tableId;
+    result.CSV_TL = BASE_RECORD_URL + 'import/tl/' +tableId;
+    result.CSV_IMP= '/tss/auth/file/upload?afterUploadClass=com.boubei.tss.dm.record.file.ImportCSV&recordId=' +tableId;
 
     return result; 
 }
@@ -36,9 +36,25 @@ function record_id(nameOrTable, callback) {
     });
 }
 
+// ["A","B","C"].contains("A,D")  ==> true
+Array.prototype.containsPart = function(obj) {
+    var i = this.length, result = false;
+    while (i--) {
+        var objArray = obj.split(",");
+        var curr = this[i];
+        objArray.each(function(i, item){
+            if ( curr === item) {
+                result = true;
+            }
+        });
+    }
+    return result;
+};
+
 // 用户权限信息
 var userCode, 
     userName, 
+    userDomain,
     userGroups = [], 
     userRoles = [],
     userRoleNames = [], 
@@ -51,6 +67,7 @@ $.getJSON("/tss/auth/user/has", {}, function(result) {
         userCode   = result[3];
         userName   = result[4];
         userHas    = result;
+        userDomain = result[12];
 
         userRoleNames.each(function(i, item){
             userRoles.push(item);

@@ -26,6 +26,13 @@ function init() {
             $("#b1_reg").width("352px");
         }
     });
+    getParam("regableDev", function(result) {
+        regable = result != "false";
+        if(!regable) {
+            $("#b3_reg").hide();
+            $("#b1_reg, #b2_reg").width("45%");
+        }
+    });
 
     var accountEl = $1("loginName"), passwdEl  = $1("password");
     accountEl.onfocus = function() {  passwdEl.disabled = true; }

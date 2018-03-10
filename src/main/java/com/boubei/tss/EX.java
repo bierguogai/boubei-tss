@@ -37,6 +37,13 @@ public class EX {
 	public static String _ERROR_TAG = "【失败!!!】";
 	public static String TIMER_REPORT = "定时报表";
 	public static String CACHE_CONFIG = "缓存池配置";
+	public static String COLUMN = "字段（列）";
+	public static String EXCEPTION = "异常：";
+	
+	public static String ERR_UNIQUE = "字段违反唯一性约束，值和其它数据重复了";
+	public static String ERR_HAS_FKEY = "该数据已被其它数据引用，不能删除";
+	public static String ERR_LOCK_VERSION = "您正在保存的信息可能已经被其它人修改过或删除了，请刷新后重试。";
+	public static String ERR_NOT_NULL = "字段必须填写，不能为空 ";
 	
 	public static String CACHE_1 = "当前应用服务器资源紧张，请稍后再查询。";
 	public static String CACHE_2 = "您当前点击的查询正在处理中，请您耐心等待，不要反复查询。";

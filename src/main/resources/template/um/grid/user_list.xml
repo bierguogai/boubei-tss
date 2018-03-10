@@ -3,11 +3,11 @@
 	<declare sequence="true">
 		<column caption="头像" name="icon" mode="image" width="50px"/>
         <column caption="用户ID" name="id" display="none"/>
-		<column caption="用户名" name="loginName" width="80px" sortable="true" highlightCol="true"/>
+		<column caption="账号" name="loginName" width="80px" sortable="true" highlightCol="true"/>
 		<column caption="账号状态" name="disabled" values="1|0" texts="停用|启用" width="60px"/>
 		<column caption="姓名" name="userName" width="80px"/>
         <column caption="电子邮件" name="email" width="120px"/>
-        <column caption="电话" name="telephone" width="80px"/>
+        <column caption="手机" name="telephone" width="80px"/>
         <column caption="性别" name="sex" values="0|1" texts="女|男" width="50px"/>
         <column caption="出生年月" name="birthday" mode="date" width="80px"/>
 		<column caption="所属组织" name="groupName" width="100px"/>

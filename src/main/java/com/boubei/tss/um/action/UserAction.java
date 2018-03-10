@@ -182,7 +182,7 @@ public class UserAction extends BaseActionSupport {
     public void getUsersByGroupId(HttpServletResponse response, 
     		@PathVariable("groupId") Long groupId, @PathVariable("page") int page) {
     	
-        PageInfo users = userService.getUsersByGroupId(groupId, page, " u.id asc ");
+        PageInfo users = userService.getUsersByGroupId(groupId, page, " u.loginName asc ");
         GridDataEncoder gridEncoder = new GridDataEncoder(users.getItems(), UMConstants.MAIN_USER_GRID);
         print(new String[]{"SourceList", "PageInfo"}, new Object[]{gridEncoder, users});
     }

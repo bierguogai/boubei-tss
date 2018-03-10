@@ -565,7 +565,7 @@ function removeBatch() {
     }
     tssJS.confirm("您确定要批量删除选中记录吗？", "批量删除确认", function(){
         tssJS.ajax({
-            url : URL_DELETE_SOURCE + "batch/" + recordId,
+            url : URL_BATCH_OPERATE + recordId,
             params: {"ids": ids},
             method : "DELETE",
             onsuccess : function() { 

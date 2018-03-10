@@ -425,7 +425,7 @@ public class _Recorder extends BaseActionSupport {
         printSuccessMessage();
     }
  
-    
+    // 微信小程序method=DELETE无效
     @RequestMapping(value = "/{record}/{id}", method = RequestMethod.DELETE)
     public void delete(HttpServletRequest request, HttpServletResponse response, 
     		@PathVariable("record") Object record, 
@@ -452,6 +452,12 @@ public class _Recorder extends BaseActionSupport {
     		recordService.deleteAttach( attach.getId() );
     		FileHelper.deleteFile(new File(attach.getAttachPath()));
     	}
+    }
+    
+    @RequestMapping(value = "/batch/{record}/del", method = RequestMethod.POST)
+    public void deleteBatchII(HttpServletRequest request, HttpServletResponse response, 
+    		@PathVariable("record") Object record, String ids) {
+    	deleteBatch(request, response, record, ids);
     }
     
     @RequestMapping(value = "/batch/{record}", method = RequestMethod.DELETE)
