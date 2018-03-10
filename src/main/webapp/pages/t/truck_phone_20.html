@@ -51,6 +51,23 @@ var BASEURL = '',
 	USER;
 $(function() {
 	// $("#")
+	// fix safari FireFox日期问题
+	$.fn.datebox.defaults.formatter = function(date) {
+		var y = date.getFullYear();
+		var m = date.getMonth() + 1;
+		var d = date.getDate();
+		// return m + '/' + d + '/' + y;
+		return y + '/' + m + '/' + d;
+	}
+	$.fn.datetimebox.defaults.formatter = function(date) {
+		var y = date.getFullYear();
+		var M = date.getMonth() + 1;
+		var d = date.getDate();
+		var h = date.getHours();
+		var m = date.getMinutes();
+		// return M + '/' + d + '/' + y;
+		return y + '/' + M + '/' + d + '' + 'h' + ':' + 'm';
+	}
 	$("#sd").datebox('setValue',getCurrentMonthFirst().format('yyyy-MM-dd'));
 	$("#ed").datebox('setValue',new Date().format('yyyy-MM-dd'));
 	$("#query").click();

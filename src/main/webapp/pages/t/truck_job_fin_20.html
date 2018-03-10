@@ -79,6 +79,24 @@ var BASEURL = 'http://t.boubei.com',
 	];
 
 $(function(){
+	// fix safari FireFox日期问题
+	$.fn.datebox.defaults.formatter = function(date) {
+		var y = date.getFullYear();
+		var m = date.getMonth() + 1;
+		var d = date.getDate();
+		// return m + '/' + d + '/' + y;
+		return y + '/' + m + '/' + d;
+	}
+	$.fn.datetimebox.defaults.formatter = function(date) {
+		var y = date.getFullYear();
+		var M = date.getMonth() + 1;
+		var d = date.getDate();
+		var h = date.getHours();
+		var m = date.getMinutes();
+		// return M + '/' + d + '/' + y;
+		return y + '/' + M + '/' + d + '' + 'h' + ':' + 'm';
+	}
+
 	$("#pstart_s").datetimebox('setValue', getCurrentMonthFirst().format('2018-01-01'));
 	$("#pstart_e").datetimebox('setValue', new Date().format('yyyy-MM-dd 23:59'));
 
@@ -171,7 +189,7 @@ function leftJion(obj, data, str1, str2) {
 
 </script>
 
-<body class="easyui-layout">
+<body>
 	<table id="dg" class="easyui-datagrid" data-options="toolbar:'#tb'"></table>
 	<div id="tb" style="padding: 5px;height: auto;">
 		<div style="margin-bottom:5px">
