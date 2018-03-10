@@ -62,22 +62,20 @@ var BASEURL = '',
 
 $(function(){
 	// fix safari FireFox日期问题
-	$.fn.datebox.defaults.formatter = function(date) {
-		var y = date.getFullYear();
-		var m = date.getMonth() + 1;
-		var d = date.getDate();
-		// return m + '/' + d + '/' + y;
-		return y + '/' + m + '/' + d;
-	}
-	$.fn.datetimebox.defaults.formatter = function(date) {
-		var y = date.getFullYear();
-		var M = date.getMonth() + 1;
-		var d = date.getDate();
-		var h = date.getHours();
-		var m = date.getMinutes();
-		// return M + '/' + d + '/' + y;
-		return y + '/' + M + '/' + d + '' + 'h' + ':' + 'm';
-	}
+	// $.fn.datebox.defaults.formatter = function(date) {
+	// 	var y = date.getFullYear();
+	// 	var m = date.getMonth() + 1;
+	// 	var d = date.getDate();
+	// 	return y + '/' + m + '/' + d;
+	// }
+	// $.fn.datetimebox.defaults.formatter = function(date) {
+	// 	var y = date.getFullYear();
+	// 	var M = date.getMonth() + 1;
+	// 	var d = date.getDate();
+	// 	var h = date.getHours();
+	// 	var m = date.getMinutes();
+	// 	return y + '/' + M + '/' + d + '' + 'h' + ':' + 'm';
+	// }
 	$("#pstart_s").datetimebox('setValue',getCurrentMonthFirst().format('yyyy-MM-dd'));
 	$("#pstart_e").datetimebox('setValue',new Date().format('yyyy-MM-dd 23:59'));
 	$("#jobtype").combobox({
@@ -299,6 +297,7 @@ function drawTable(data){
 	});
 }
 // 录入表dlg combobox设置，并默认setvalue第一个值
+// todo 修复combobox change事件问题
 function getClientInfo(comboboxid,url,params,value,text,str){
 	text = text || value;
 	str = str || value;
@@ -308,7 +307,7 @@ function getClientInfo(comboboxid,url,params,value,text,str){
 		queryParams:params,
 		valueField:value,
 		textField:text,
-		limitToList:true,
+		// limitToList:true,
 		panelHeight:'auto',
 		loadFilter:function(data){
 			var arr = [],
@@ -332,6 +331,7 @@ function getClientInfo(comboboxid,url,params,value,text,str){
 // 获取客户信息
 function getClient() {
 	var url = BASEURL + GD[5].uri + GD[5].reportId + '?noCache=true';
+	console.log(url)
 	$("#client").combobox({
 		url: url,
 		queryParams: {},
@@ -460,17 +460,6 @@ function saveRecord(recordId){
         }
     });
 }
-// 导入数据
-function batchImport() {
-	function checkFileWrong(subfix) {
-		return subfix != ".csv";
-	};
-	var recordId = GD[0].recordId;
-		url = "/tss/auth/file/upload?afterUploadClass=com.boubei.tss.dm.record.file.ImportCSV",
-		url += "&recordId=" + recordId,
-		importDiv = createImportDiv("运单导入", checkFileWrong, url);
-	$(importDiv).show();
-}
 
 </script>
 
@@ -485,7 +474,6 @@ function batchImport() {
 						<a href="#" id="addjob" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="createNew('#dlg','#fm','新增运单')">新增</a>
 						<a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="updateOld(record_urls(GD[0].recordName).GET,'dg','#fm','#dlg','修改运单')">修改</a>
 						<a href="#" class="easyui-linkbutton" iconCls="icon-tss-down" plain="true" onclick="_export('t_truck_job',getParams())">导出</a>
-						<a href="#" class="easyui-linkbutton bnt" iconCls="icon-add" plain="true" onclick="batchImport()">导入</a>
 					</div>
 					<div style="margin-bottom:5px">
 						客&emsp;户&emsp;名&emsp;称:&nbsp;<input id="cname" class="easyui-textbox" style="width: 150px">
@@ -575,7 +563,7 @@ function batchImport() {
 					<td>
 						<input id="bulk_type" name="bulk_type" class="easyui-textbox" style="width: 180px" >
 					</td>
-					<td class="label">回单是否回收:</td>
+					<td class="label">回单是否需要回收:</td>
 					<td>
 						<input id="receipt" name="receipt" class="easyui-combobox" style="width: 180px" required/>
 					</td>
