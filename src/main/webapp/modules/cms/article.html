@@ -210,6 +210,7 @@
 
 			var xform = $.F("articleForm", articleInfoNode);
 			editor.insertHtml(articleContentNode);
+			attachReminder(articleId, xform); // 离开提醒
 
 			var grid = $.G("attachGrid", attachsListNode);
 			grid.element.onRightClickRow = function() {

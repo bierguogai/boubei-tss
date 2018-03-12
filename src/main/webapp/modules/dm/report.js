@@ -268,6 +268,8 @@ function loadReport(treeNodeID, type, params, readonly) {
 
 	function initForm() {
 		var xform = $.F("reportForm", sourceInfoNode);
+		attachReminder(treeNodeID, xform); // 离开提醒
+		
 		if(readonly) {
 			$("#sourceSave").hide();
 			xform.setEditable("false");

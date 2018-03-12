@@ -724,7 +724,8 @@ function showQueryForm() {
                     if( field.type == 'int' || field.type == 'number' ){
                         code = "sum(" + code + ") as " + code;
                     } else {
-                        code = "count(distinct " + code + ") as " + field.label + "_数";
+                        var asName = code;  // field.label + "_数" label不能含括号等特殊字符
+                        code = "count(distinct " + code + ") as " + asName;
                     }
                     params.fields += "," + code
                 });

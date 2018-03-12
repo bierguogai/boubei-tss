@@ -254,6 +254,7 @@ function loadRecordDetail(isCreate, type, readonly, isPage) {
 			$.cache.XmlDatas[treeNodeID] = sourceInfoNode;
 			
 			var xform = $.F("recordForm", sourceInfoNode);
+			attachReminder(treeNodeID, xform); // 离开提醒
 
 			if(type == "1") {
 				for( var i = 7; i <= 10; i++) {
