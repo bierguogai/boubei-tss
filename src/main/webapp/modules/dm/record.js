@@ -524,7 +524,7 @@ function closeDefine() {
 }
 
 var RECORD_PARAM_FIELDS = ['label', 'code', 'type', 'nullable', 'unique', 'defaultValue', 'isparam', 'role1', 'role2',
-	'calign', 'cwidth', 'checkReg', 'errorMsg', 'width', 'height', 'options', 'multiple', 'onchange'];
+	'calign', 'cwidth', 'checkReg', 'pattern', 'width', 'height', 'options', 'multiple', 'onchange'];
 
 function editFieldConfig() {
 	var activeNode = fieldTree.getActiveTreeNode();

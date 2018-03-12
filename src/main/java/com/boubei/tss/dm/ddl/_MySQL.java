@@ -21,6 +21,14 @@ public class _MySQL extends _Database {
 		super(record);
 	}
 	
+	protected Map<String, String> getDBFiledTypes(int length) {
+		Map<String, String> m = super.getDBFiledTypes(length);
+		m.put(_Filed.TYPE_NUMBER, "DOUBLE");
+		m.put(_Filed.TYPE_INT, "BIGINT");
+		
+		return m;
+	}
+	
 	public void createTable() {
 		if(this.fields.isEmpty()) return;
 		

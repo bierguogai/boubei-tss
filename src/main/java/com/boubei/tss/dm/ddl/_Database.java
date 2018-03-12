@@ -62,6 +62,7 @@ public abstract class _Database {
 	List<Map<Object, Object>> fields;
 	public List<String> fieldCodes;
 	public List<String> fieldTypes;
+	public List<String> fieldPatterns;
 	public List<String> fieldNames;
 	public List<String> fieldAligns;
 	public List<String> fieldWidths;
@@ -93,6 +94,7 @@ public abstract class _Database {
 	protected void initFieldCodes() {
 		this.fieldCodes = new ArrayList<String>();
 		this.fieldTypes = new ArrayList<String>();
+		this.fieldPatterns = new ArrayList<String>();
 		this.fieldNames = new ArrayList<String>();
 		this.fieldAligns = new ArrayList<String>();
 		this.fieldWidths = new ArrayList<String>();
@@ -104,6 +106,7 @@ public abstract class _Database {
 			this.fieldNames.add(label);
 			String type = (String) fDefs.get("type");
 			this.fieldTypes.add(type);
+			this.fieldPatterns.add( (String) fDefs.get("pattern") ); 
 			String role2 = (String) fDefs.get("role2");
 			this.fieldRole2s.add(role2);
 			this.fieldAligns.add( (String)EasyUtils.checkNull(fDefs.get("calign"), "") ); // 列对齐方式
@@ -697,7 +700,14 @@ public abstract class _Database {
             String fieldAlign = (String) EasyUtils.checkNull(fieldAligns.get(index), "center");
             String fieldWidth = fieldWidths.get(index);
             String fieldRole2 = fieldRole2s.get(index);
-            String fieldType  = "string"; // fieldTypes.get(index);==> GridNode里转换异常（date类型要求值也为date）
+            String fieldType  = fieldTypes.get(index);
+            String fieldPattern = fieldPatterns.get(index);
+            if( _Filed.TYPE_DATE.equalsIgnoreCase(fieldType) ) { // GridNode里转换异常（date类型要求值也为date）
+            	fieldType = "string";  
+            } 
+            else if( _Filed.TYPE_NUMBER.equalsIgnoreCase(fieldType) ) {
+            	fieldPattern = (String) EasyUtils.checkNull(fieldPattern, "##,###.00");
+            }
             
             if(EasyUtils.isNullOrEmpty(fieldWidth)) {
             	fieldWidth = "";
@@ -712,7 +722,7 @@ public abstract class _Database {
             boolean isHidden = "hidden".equals( fieldTypes.get(index) );
             if( PermissionHelper.checkRole(fieldRole2) && !isHidden ) {
             	
-            	sb.append("<column name=\"" + fieldCode + "\" mode=\"" + fieldType + "\" caption=\"" + fieldName 
+            	sb.append("<column name=\"" + fieldCode + "\" mode=\"" + fieldType + "\" pattern=\"" + fieldPattern + "\" caption=\"" + fieldName 
 					+ "\" align=\"" + fieldAlign + "\" " + fieldWidth + " />").append("\n");
             }
             index++;
