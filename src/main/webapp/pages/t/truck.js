@@ -1,3 +1,4 @@
+
 // 检查输入号码是否正确 
 function checkPhone(num) {
 	var arr = [1];
@@ -27,23 +28,23 @@ Date.prototype.format = function(format) {
 	return format;
 }
 //计算两个日期的差
-function dateDiffer(a, b) {
-	if (a == '' || b == '') {
-		return '';
-	} else {
-		var date1 = new Date(a)
-		var date2 = new Date(b)
-		var s1 = date1.getTime(),
-			s2 = date2.getTime();
-		var total = (s2 - s1) / 1000;
-		var day = parseInt(total / (24 * 60 * 60)); //计算整数天数
-		var afterDay = total - day * 24 * 60 * 60; //取得算出天数后剩余的秒数
-		var hour = parseInt(afterDay / (60 * 60)); //计算整数小时数
-		var afterHour = total - day * 24 * 60 * 60 - hour * 60 * 60; //取得算出小时数后剩余的秒数
-		var min = parseInt(afterHour / 60); //计算整数分
-		var afterMin = total - day * 24 * 60 * 60 - hour * 60 * 60 - min * 60; //取得算出分后剩余的秒数
-		return day + '天' + hour + '小时' + min + '分钟'
-	}
+function dateDiffer(a,b) {
+    if (a == '' || b == '') {
+        return '';
+    } else {
+        var date1 = new Date(a)
+        var date2 = new Date(b)
+        var s1 = date1.getTime(),
+        s2 = date2.getTime();
+        var total = (s2 - s1) / 1000;
+        var day = parseInt(total / (24 * 60 * 60)); //计算整数天数
+        var afterDay = total - day * 24 * 60 * 60; //取得算出天数后剩余的秒数
+        var hour = parseInt(afterDay / (60 * 60)); //计算整数小时数
+        var afterHour = total - day * 24 * 60 * 60 - hour * 60 * 60; //取得算出小时数后剩余的秒数
+        var min = parseInt(afterHour / 60); //计算整数分
+        var afterMin = total - day * 24 * 60 * 60 - hour * 60 * 60 - min * 60; //取得算出分后剩余的秒数
+        return day+'天'+hour+'小时'+min+'分钟'
+    }
 }
 // 日期框只显示月份
 function showMonth(id) {
@@ -60,7 +61,7 @@ function showMonth(id) {
 						$(id).datebox('hidePanel')
 							.datebox('setValue', year + '-' + month);
 					});
-					$(".datebox-button a").css('display', 'none');
+					$(".datebox-button a").css('display','none');
 				}, 0);
 		},
 		parser: function(s) {
@@ -179,23 +180,21 @@ function openEasyuiIframe(panelId, src, title, width, height) {
 	//$.parser.parse()
 }
 
-function getIncome(str, col, title1, title2, tableid, url, param) {
-	param = param || {
-		str: '?'
-	};
+function getIncome(str,col,title1,title2,tableid,url,param){
+	param = param || {str:'?'};
 	$(tableid).datagrid({
-		url: url,
-		queryParams: param,
+		url:url,
+		queryParams:param,
 		fit: true,
 		singleSelect: true,
 		title: title1 + (param[str] || '?') + title2,
 		columns: col,
-		showFooter: true
+		showFooter:true
 	})
 }
 
 // 录入表新增记录
-function createNew(dialogid, fromid, title) {
+function createNew(dialogid,fromid,title){
 	$(fromid).form('clear');
 	$(dialogid).dialog({
 		"modal": true
@@ -204,12 +203,12 @@ function createNew(dialogid, fromid, title) {
 	$('#lockVersion').val('0'); // 給版本号设置默认值
 }
 // 关闭dialog
-function closeDlg(dialogid, formid) {
-	$(dialogid).dialog('close'); // close the dialog
-	$(formid).form('clear');
+function closeDlg(dialogid,formid) {
+    $(dialogid).dialog('close'); // close the dialog
+    $(formid).form('clear');
 }
 // 修改历史记录
-function updateOld(url, tableid, formid, dlgid, title) {
+function updateOld(url,tableid,formid,dlgid,title) {
 	var row = getSelectedRow(tableid);
 	// console.log(row)
 	if (row) {
@@ -248,7 +247,7 @@ function tooltip(value) {
 	}
 }
 //针对单个json格式数据str属性distinct，并返回
-function getComboboxList(data, str) {
+function getComboboxList(data,str) {
 	var arr = [];
 	for (var i = data.length - 1; i >= 0; i--) {
 		if (!findObj(data[i], arr, str) && data[i][str]) {
@@ -260,43 +259,7 @@ function getComboboxList(data, str) {
 
 //身份证号验证正确与否
 function IdentityCodeValid(code) {
-	var city = {
-		11: "北京",
-		12: "天津",
-		13: "河北",
-		14: "山西",
-		15: "内蒙古",
-		21: "辽宁",
-		22: "吉林",
-		23: "黑龙江",
-		31: "上海",
-		32: "江苏",
-		33: "浙江",
-		34: "安徽",
-		35: "福建",
-		36: "江西",
-		37: "山东",
-		41: "河南",
-		42: "湖北",
-		43: "湖南",
-		44: "广东",
-		45: "广西",
-		46: "海南",
-		50: "重庆",
-		51: "四川",
-		52: "贵州",
-		53: "云南",
-		54: "西藏",
-		61: "陕西",
-		62: "甘肃",
-		63: "青海",
-		64: "宁夏",
-		65: "新疆",
-		71: "台湾",
-		81: "香港",
-		82: "澳门",
-		91: "国外"
-	};
+	var city = {11: "北京",12: "天津",13: "河北",14: "山西",15: "内蒙古",21: "辽宁",22: "吉林",23: "黑龙江",31: "上海",32: "江苏",33: "浙江",34: "安徽",35: "福建",36: "江西",37: "山东",41: "河南",42: "湖北",43: "湖南",44: "广东",45: "广西",46: "海南",50: "重庆",51: "四川",52: "贵州",53: "云南",54: "西藏",61: "陕西",62: "甘肃",63: "青海",64: "宁夏",65: "新疆",71: "台湾",81: "香港",82: "澳门",91: "国外"};
 	var tip = "";
 	var pass = true;
 	if (!code || !/^\d{6}(18|19|20)?\d{2}(0[1-9]|1[12])(0[1-9]|[12]\d|3[01])\d{3}(\d|X)$/i.test(code)) {
@@ -333,121 +296,126 @@ function IdentityCodeValid(code) {
 }
 
 // 获取用户登录信息
-function loginInfo(callback) {
-	tssJS.ajax({
-		url: "http://t.boubei.com/tss/auth/user/has",
-		method: "GET",
-		type: "json",
-		ondata: function() {
-			var info = this.getResponseJSON();
-			if (info && info.length > 0) {
-				var obj = {
-					login_code: info[3],
-					login_name: info[4],
-					all_info: info
-				}
-				callback && callback(obj)
-			}
+function loginInfo(callback){
+    tssJS.ajax({
+        url : "http://t.boubei.com/tss/auth/user/has",
+        method : "GET",
+        type : "json",
+        ondata: function() {
+            var info = this.getResponseJSON();
+            if(info && info.length>0){
+                var obj={
+                    login_code : info[3],
+                    login_name : info[4],
+                    all_info : info
+                }
+                callback && callback(obj)
+            }
 
-		}
-	})
+        }
+    })
 }
 
 // 当colList1不存在时，colList根据逗号分隔的field根据自身数据合并单元格。
 // 当colList1存在时，colList1根据逗号分隔的field根据colList用竖杠分隔的一个或多个field数据合并单元格。
-function mergeCellsByField(tableID, colList, colList1) {
-	if (colList1) {
-		var ColArray = colList.split("|");
-		var ColArray1 = colList1.split(",");
-	} else {
+function mergeCellsByField(tableID, colList,colList1) {
+	if(colList1){
+	    var ColArray = colList.split("|");
+	    var ColArray1= colList1.split(",");
+	}
+	else{
 		var ColArray = colList.split(",");
 		var ColArray1 = colList.split(",");
 	}
-	var tTable = $("#" + tableID);
-	var TableRowCnts = tTable.datagrid("getRows").length;
-	var tmpA;
-	var tmpB;
-	var PerTxt = "";
-	var CurTxt = "";
-	var alertStr = "";
-	for (j = ColArray1.length - 1; j >= 0; j--) {
-		PerTxt = "";
-		tmpA = 1;
-		tmpB = 0;
+    var tTable = $("#" + tableID);
+    var TableRowCnts = tTable.datagrid("getRows").length;
+    var tmpA;
+    var tmpB;
+    var PerTxt = "";
+    var CurTxt = "";
+    var alertStr = "";
+    for (j = ColArray1.length - 1; j >= 0; j--) {
+        PerTxt = "";
+        tmpA = 1;
+        tmpB = 0;
 
-		for (i = 0; i <= TableRowCnts; i++) {
-			if (i == TableRowCnts) {
-				CurTxt = "";
-			} else {
-				if (colList1) {
-					CurTxt = "";
-					for (k = 0; k < ColArray.length; k++) {
-						CurTxt = CurTxt + tTable.datagrid("getRows")[i][ColArray[k]];
-					};
-				} else {
-					CurTxt = tTable.datagrid("getRows")[i][ColArray[j]];
-				}
-
-			}
-			if (PerTxt == CurTxt) {
-				tmpA += 1;
-			} else {
-				tmpB += tmpA;
-
-				tTable.datagrid("mergeCells", {
-					index: i - tmpA,
-					field: ColArray1[j],
-					　　 //合并字段
-					rowspan: tmpA,
-					colspan: null
-				});
-
-				tmpA = 1;
-			}
-			PerTxt = CurTxt;
-		}
-	}
-
+        for (i = 0; i <= TableRowCnts; i++) {
+            if (i == TableRowCnts) {
+                CurTxt = "";
+            }
+            else {
+            	if(colList1){
+            		CurTxt = "";
+	            	for(k = 0; k< ColArray.length;k++){
+	            		CurTxt = CurTxt + tTable.datagrid("getRows")[i][ColArray[k]];
+	            	};
+            	}
+            	else{
+            		CurTxt = tTable.datagrid("getRows")[i][ColArray[j]];
+            	}
+            	
+            }
+            if (PerTxt == CurTxt) {
+                tmpA += 1;
+            }
+            else {
+                tmpB += tmpA;
+                
+                tTable.datagrid("mergeCells", {
+                    index: i - tmpA,
+                    field: ColArray1[j],　　//合并字段
+                    rowspan: tmpA,
+                    colspan: null
+                });
+                
+                tmpA = 1;
+            }
+            PerTxt = CurTxt;
+        }
+    }
+    
 }
 
 //下载报表
 function exportCSV(reportId, params, url) { //空参数表示{param1:123,param2:345,param3:null或'',param4:456}
-	var queryString = "?";
-	$.each(params, function(key, value) {
-		if (queryString.length > 1) {
-			queryString += "&";
-		}
-		if (value == null || value === '') {
-			queryString += ('null');
-		} else {
-			queryString += (key + "=" + value);
-		}
-	});
-	var ua = window.navigator.userAgent;
-	var msie = ua.indexOf("MSIE ");
-	if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) //IE未验证
-	{
-		var IEwindow = window.open();
-		IEwindow.document.write('sep=,\r\n' + CSV);
-		IEwindow.document.close();
-		IEwindow.document.execCommand('SaveAs', true, name + ".csv");
-		IEwindow.close();
-	} else { // If another browser, 
-		if (url) {
-			var uri = url + "/tss/data/export/" + reportId + "/1/100000" + queryString;
-		} else if (location.hostname == 't.boubei.com') {
-			var uri = "/tss/data/export/" + reportId + "/1/100000" + queryString;
-		} else {
-			var uri = "/tss/data/export/" + reportId + "/1/100000" + queryString;
-		}
-		var link = document.createElement("a");
-		link.href = uri;
-		link.style = "visibility:hidden";
-		link.download = name + ".csv";
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
-	}
+    var queryString = "?";
+    $.each(params, function(key, value) {
+        if (queryString.length > 1) {
+            queryString += "&";
+        }
+        if (value == null || value === '') {
+            queryString += ('null');
+        } else {
+            queryString += (key + "=" + value);
+        }
+    });
+    var ua = window.navigator.userAgent;
+    var msie = ua.indexOf("MSIE ");
+    if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) //IE未验证
+    {
+        var IEwindow = window.open();
+        IEwindow.document.write('sep=,\r\n' + CSV);
+        IEwindow.document.close();
+        IEwindow.document.execCommand('SaveAs', true, name + ".csv");
+        IEwindow.close();
+    } else { // If another browser, 
+        if (url) {
+            var uri = url + "/tss/data/export/" + reportId + "/1/100000" + queryString;
+        } 
+        else if(location.hostname=='t.boubei.com'){
+            var uri = "/tss/data/export/" + reportId + "/1/100000" + queryString;
+        }
+        else {
+            var uri = "/tss/data/export/" + reportId + "/1/100000" + queryString;
+        }
+        var link = document.createElement("a");
+        link.href = uri;
+        link.style = "visibility:hidden";
+        link.download = name + ".csv";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
 }
 // 动态实现两个datagrid数据相互添加删除到另一个datagrid 用于格式设置 注意次方法会修改column值
 function removeAdd(removeid, addid, bl) {
@@ -475,21 +443,21 @@ function removeAdd(removeid, addid, bl) {
 	}
 }
 // 打开指定的dlg
-function openDlg(dialogid, formid) {
-	$(dialogid).dialog('open');
-	$(formid).form('clear');
+function openDlg(dialogid,formid) {
+    $(dialogid).dialog('open');
+    $(formid).form('clear');
 }
 
 // 返回两个数组的并集，并对并集之后的数据打上标记，用于区分共有、存在于data1、存在于data2
 // var data1 = [{a:1,b:2},{a:2,b:5}],
 // data2 = [{a:1,b:2},{a:2,b:4}]
-function dataSum(data1, data2, str1, str2) {
-	var sumData = [];
+function dataSum(data1,data2,str1,str2){
+	var sumData=[];
 	str2 = str2 || str1;
 	for (var i = 0; i < data1.length; i++) {
-		if (findObj(data1[i], data2, str1, str2) && data1[i]) {
+		if (findObj(data1[i],data2,str1,str2) && data1[i]) {
 			// data1[i]存在于data2，即两者共有部分
-			var thisobj = findObj(data1[i], data2, str1, str2);
+			var thisobj  = findObj(data1[i],data2,str1,str2);
 			thisobj.handle = 0;
 			sumData.push(thisobj)
 		} else {
@@ -500,7 +468,7 @@ function dataSum(data1, data2, str1, str2) {
 		}
 	}
 	for (var i = 0; i < data2.length; i++) {
-		if (!findObj(data2[i], sumData, str1, str2) && data2[i]) {
+		if(!findObj(data2[i],sumData,str1,str2) && data2[i]){
 			// data2[i]不存于sumData,即data2特有
 			var thisobj = data2[i];
 			thisobj.handle = -1
@@ -550,47 +518,43 @@ function GetField(url, params, str, callback) {
 	})
 }
 //将datagrid id为tid的选中行的field字段批量修改为value,修改的后台表id为recordId
-function batchUpdate(tid, field, value, recordId) {
-	var result = [];
-	var rows = $('#' + tid).datagrid('getSelections');
+function batchUpdate(tid, field, value,recordId) {
+	var result=[];
+    var rows = $('#'+tid).datagrid('getSelections');
 
-	if (!rows) {
-		return alert("你没有选中任何记录，请勾选后再进行批量操作。");
-	} else if (rows.length >= 1000) {
-		return alert("单次批量操作行数不能超过999行。")
-	} else {
-		result.push("id," + field);
-		for (var i = 0; i < rows.length; i++) {
-			result.push(rows[i].id + ',' + value)
-		}
-		$.post(record_urls(recordId).CUD, {
-			"csv": result.join("\n")
-		}, function(data) {
-			if (data.created || data.updated) {
-				$.messager.show({
-					title: '提示',
-					msg: '批量处理成功！'
-				});
-				$('#' + tid).datagrid('reload');
-			}
-		});
-	}
-
+    if(!rows) {
+        return alert("你没有选中任何记录，请勾选后再进行批量操作。");
+    }
+    else if(rows.length >= 1000) {
+        return alert("单次批量操作行数不能超过999行。")
+    }
+    else{
+    	result.push("id,"+field);
+	    for(var i=0; i<rows.length; i++){
+			result.push(rows[i].id+','+value)			
+		}  
+	    $.post( record_urls(recordId).CUD, {"csv": result.join("\n")}, function(data) {
+	        if(data.created || data.updated) {
+	            $.messager.show({
+	                title: '提示',
+	                msg: '批量处理成功！'
+	            });	 
+	            $('#'+tid).datagrid('reload');
+	        }
+	    });
+    }
+     
 }
 
 //由用户自己在项目类型维护中维护的类型字段，obj为项目类型维护录入表的信息，需包含recordName，ChineseName,recordId
-function getItemType(obj, id, name) {
-	$("#" + id).combobox({
+function getItemType(obj,id,name){
+	$("#"+id).combobox({
 		url: record_urls(obj.recordName).QUERY + '?noCache=true',
-		queryParams: {
-			type: name
-		},
+		queryParams: {type:name},
 		loadFilter: function(data) {
 			var arr = [];
-			for (var i = 0; i < data.length; i++) {
-				arr.push({
-					type: data[i].item_name
-				})
+			for (var i = 0; i <data.length; i++) {
+				arr.push({type:data[i].item_name})
 			}
 			return arr
 		},
@@ -599,42 +563,34 @@ function getItemType(obj, id, name) {
 		panelHeight: 'auto',
 		icons: [{
 			iconCls: 'icon-add',
-			handler: function() {
-				addTab('rec', obj.ChineseName, obj.recordId + '&user-defined1=' + name, obj.ChineseName)
+			handler: function(){
+				addTab('rec', obj.ChineseName, obj.recordId+'&user-defined1='+name, obj.ChineseName)
 			}
 		}, {
 			iconCls: 'icon-reload',
-			handler: function() {
-				getItemType(obj, id, name)
-			}
+			handler: function(){getItemType(obj,id,name)}
 		}]
 	})
-
+	
 }
 
 //返回datagrid中enablefilter需要的数据（注：所有的type都为textbox）
-function getFilterObj(frozenColumns, columns) {
-	var f = [];
-	if (frozenColumns) {
-		for (var i = 0; i < frozenColumns.length; i++) {
-			for (var j = 0; j < frozenColumns[i].length; j++) {
-				if (frozenColumns[i][j]['field'] && frozenColumns[i][j]['field'] != 'ck') {
-					f.push({
-						field: frozenColumns[i][j]['field'],
-						type: 'textbox'
-					})
+function getFilterObj(frozenColumns,columns){
+	var f=[];
+	if(frozenColumns){
+		for(var i=0;i<frozenColumns.length;i++){
+			for(var j=0;j<frozenColumns[i].length;j++){
+				if(frozenColumns[i][j]['field'] && frozenColumns[i][j]['field']!='ck'){
+					f.push({field: frozenColumns[i][j]['field'],type: 'textbox'})
 				}
 			}
 		}
 	}
-	if (columns) {
-		for (var i = 0; i < columns.length; i++) {
-			for (var j = 0; j < columns[i].length; j++) {
-				if (columns[i][j]['field'] && columns[i][j]['field'] != 'ck') {
-					f.push({
-						field: columns[i][j]['field'],
-						type: 'textbox'
-					})
+	if(columns){
+		for(var i=0;i<columns.length;i++){
+			for(var j=0;j<columns[i].length;j++){
+				if(columns[i][j]['field'] && columns[i][j]['field']!='ck'){
+					f.push({field: columns[i][j]['field'],type: 'textbox'})
 				}
 			}
 		}
@@ -703,19 +659,19 @@ function AddDays(date, days) {
 }
 
 // fix safari FireFox日期问题
-// $.fn.datebox.defaults.formatter = function(date) {
-// 	var y = date.getFullYear();
-// 	var m = date.getMonth() + 1;
-// 	var d = date.getDate();
-// 	// return m + '/' + d + '/' + y;
-// 	return y + '/' + m + '/' + d;
-// }
-// $.fn.datetimebox.defaults.formatter = function(date) {
-// 	var y = date.getFullYear();
-// 	var M = date.getMonth() + 1;
-// 	var d = date.getDate();
-// 	var h = date.getHours();
-// 	var m = date.getMinutes();
-// 	// return M + '/' + d + '/' + y;
-// 	return y + '/' + M + '/' + d + '' + 'h' + ':' + 'm';
-// }
+	// $.fn.datebox.defaults.formatter = function(date) {
+	// 	var y = date.getFullYear();
+	// 	var m = date.getMonth() + 1;
+	// 	var d = date.getDate();
+	// 	// return m + '/' + d + '/' + y;
+	// 	return y + '/' + m + '/' + d;
+	// }
+	// $.fn.datetimebox.defaults.formatter = function(date) {
+	// 	var y = date.getFullYear();
+	// 	var M = date.getMonth() + 1;
+	// 	var d = date.getDate();
+	// 	var h = date.getHours();
+	// 	var m = date.getMinutes();
+	// 	// return M + '/' + d + '/' + y;
+	// 	return y + '/' + M + '/' + d + '' + 'h' + ':' + 'm';
+	// }

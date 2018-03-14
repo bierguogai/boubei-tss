@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -30,22 +29,16 @@
 
 <script type="text/javascript">
 
-var BASEURL = '',
-	GD = [
-		{id:0,recordId:98,recordName:'t_truck_job',uri:'/tss/auth/xdata/json/'},//运单基础信息
-		{id:1,recordId:88,recordName:'t_trucks_job_expend',uri:'/tss/auth/xdata/json/'},//运单支出
-		{id:2,reportId:105,reportName:'驾驶员明细',uri:'/tss/data/json/'},//自有员工信息
-		{id:3,recordId:94,recordName:'t_temp_driver',uri:'/tss/auth/xdata/json/'},//临时驾驶员信息
-		{id:4,reportId:107,reportName:'驾驶员电话',uri:'/tss/data/json/'},//驾驶员电话
-		{id:5,recordId:68,recordName:'t_truck_type',uri:'/tss/auth/xdata/json/'},//车型信息
-		{id:6,reportId:109,reportName:'车头车牌信息',uri:'/tss/data/json/'},//车牌信息
-		{id:7,recordId:126,recordName:'t_temp_cars',uri:'/tss/auth/xdata/json/'},//外请车信息维护
-		{id:8,reportId:110,reportName:'车挂车牌信息',uri:'/tss/data/json/'},//车挂车牌信息
-		{id:9,recordId:135,recordName:'t_temp_payee',uri:'/tss/auth/xdata/json/'},//外车请收款信息
-		{id:10,reportId:83,reportName:'运单支出项目',uri:'/tss/data/json/'},//运单支出项目明细
-		{id:11,reportId:111,reportName:'油卡综合信息',uri:'/tss/data/json/'},//油卡综合信息
-		{id:12,recordId:132,recordName:'t_oil_card_event',uri:'tss/auth/xdata/json/'},//油卡事件录入
-	],
+var BASEURL = 'http://t.boubei.com',
+	GD = {
+		't_truck_job':{recordId:98,recordName:'t_truck_job',uri:'/tss/auth/xdata/json/'},//运单基础信息
+		't_trucks_job_expend':{recordId:88,recordName:'t_trucks_job_expend',uri:'/tss/auth/xdata/json/'},//运单支出
+		't_temp_payee':{recordId:135,recordName:'t_temp_payee',uri:'/tss/auth/xdata/json/'},//外车请收款信息
+		'pay_items':{reportId:83,reportName:'运单支出项目',uri:'/tss/data/json/'},//运单支出项目明细
+		'oil_info':{reportId:111,reportName:'油卡综合信息',uri:'/tss/data/json/'},//油卡综合信息
+		'oil_event':{recordId:132,recordName:'t_oil_card_event',uri:'/tss/auth/xdata/json/'},//油卡事件录入
+		'license':{recordId:150,recordName:'t_temp_car_info',uri:'/tss/auth/xdata/json/'}//车牌对挂车、车型、驾驶员、联系方式信息
+	},
 	FCOL = [[
 		{field: 'ck', checkbox: true},
 		{field: 'job_code',title: '任务单号',align: 'center',width:'120px',styler: styler2},
@@ -105,66 +98,99 @@ var BASEURL = '',
 	]],//主表columns
 	jobcode,
 	NEEDOIL = false,
+	// CARINFO = [],
+	IFDATA = [{value: '是'}, {value: '否'}],
 	STATUSDATA = [{value:'待派'},{value:'已派'},{value:'在途'},{value:'到达'},{value:'待确认'},{value:'终止'}],
 	JOBTYPEDATA = [{text:'全部',value:'',selected:true},{text:'临时',value:'0'},{text:'固定',value:'1'}],//任务单类型
 	EXCOL = [[
 		{field:'ck',checkbox:true},
 		{field:'expend_type',title:'支出类型',align:'center',width:'90px'},
-		{field:'price',title:'金额',align:'center',width:'90px'},
+		{field:'price',title:'应付金额',align:'center',width:'90px'},
 		{field:'pay_date',title:'应付日期',align:'center',width:'90px'},
 		{field:'ifpay',title:'是否已付',align:'center',width:'90px'},
+		{field:'real_pay_price',title:'实付金额',align:'center',width:'90px'},
 		{field:'real_pay_date',title:'实付日期',align:'center',width:'90px'},
 		{field: 'remark',title: '备注',align: 'center',width: '90px'}
 	]];//运单支出columns
 
 $(function() {
-	// fix safari FireFox日期问题
-	$.fn.datebox.defaults.formatter = function(date) {
-		var y = date.getFullYear();
-		var m = date.getMonth() + 1;
-		var d = date.getDate();
-		// return m + '/' + d + '/' + y;
-		return y + '/' + m + '/' + d;
-	}
-	$.fn.datetimebox.defaults.formatter = function(date) {
-		var y = date.getFullYear();
-		var M = date.getMonth() + 1;
-		var d = date.getDate();
-		var h = date.getHours();
-		var m = date.getMinutes();
-		// return M + '/' + d + '/' + y;
-		return y + '/' + M + '/' + d + '' + 'h' + ':' + 'm';
-	}
+	// 设置查询初始时间
 	$("#pstart_s").datetimebox('setValue', new Date().format('yyyy-MM-dd'));
 	$("#pstart_e").datetimebox('setValue', new Date().format('yyyy-MM-dd 23:59'));
-	$("#jobtype").combobox({
-		data: JOBTYPEDATA,
-		valueField: 'value',
-		textField: 'text',
-		panelHeight: 'auto',
-		limitToList:true
+	// setcombobox
+	setCombobox('#jobtype',JOBTYPEDATA,'','text');
+	setCombobox('#status',STATUSDATA);
+	setCombobox('#expend_type',BASEURL + GD['pay_items'].uri + GD['pay_items'].reportId,'','');
+	setCombobox('#ifpay',IFDATA);
+	setCombobox('#oil_ib',IFDATA);
+	setCombobox('#temp_car',IFDATA);
+	setCombobox('#license_plate',record_urls(GD['license'].recordName).QUERY,'license','','150px','',{license:''});
+	$('#license_plate').combobox({
+		icons: [{
+			iconCls: 'icon-reload',
+			handler: function() {
+				setCombobox('#license_plate', record_urls(GD['license'].recordName).QUERY, 'license', '', '150px', '', {
+					license: ''
+				});
+
+			}
+		}],
+		loadFilter: function(data) {
+			var list = getComboboxList(data, 'license');
+			return list
+		},
+		onChange: function(newValue, oldValue) {
+			if (newValue) {
+				getCarInfo(newValue)
+				getPayInfo(newValue)
+				getOilCard()
+			}
+		}
 	})
+
+	$("#addexpend").click(function() {
+		$('#truck_code').textbox('setValue', jobcode);
+		$('#ifpay').textbox('setValue', '否');
+	})
+
+	$("#ifpay").combobox({
+		onChange: function(newValue, oldValue) {
+			if (newValue == '是') {
+				$('#real_pay_date').datebox({
+					required: true
+				});
+				$('#real_pay_price').numberbox({
+					required: true
+				});
+			} else {
+				$('#real_pay_date').datebox({
+					required: false
+				});
+				$('#real_pay_price').numberbox({
+					required: false
+				});
+			}
+		}
+	})
+
+	$("#temp_car").combobox({
+		onChange: function(newValue, oldValue) {
+			if (newValue == '是' && oldValue) {
+				$("#oil_ib").combobox("setValue", '是')
+			} else if (newValue && oldValue) {
+				$("#oil_ib").combobox("clear")
+			}
+		}
+	})
+
 	jobQuery()
-	$("#send_truck_type").combobox({
-		url: record_urls(GD[5].recordName).QUERY,
-		queryParams: {},
-		valueField: 'truck_type',
-		textField: 'truck_type',
-		panelHeight: '150px',
-		limitToList:true
-	})
-	getCarinfo()
-	payeeInfo()
+});
+// confirm 运单状态变化
+function confirm(){
 	$("#status").combobox({
-		data: STATUSDATA,
-		valueField: 'value',
-		textField: 'value',
-		panelHeight: 'auto',
-		limitToList:true,
 		onChange:function(newValue,oldValue){
 			if (newValue == '终止') {
 				$("#license_plate").combobox({required: false})
-				$("#oil_id").combobox({required: false})
 				$("#oil_ib").combobox({required: false})
 				$("#driver").combobox({required: false})
 				$("#driver_phrone").combobox({required: false})
@@ -172,7 +198,6 @@ $(function() {
 				$("#temp_car").combobox({required: false})
 			} else {
 				$("#license_plate").combobox({required: true})
-				$("#oil_id").combobox({required: true})
 				$("#oil_ib").combobox({required: true})
 				$("#driver").combobox({required: true})
 				$("#driver_phrone").combobox({required: true})
@@ -181,84 +206,66 @@ $(function() {
 			}
 		}
 	})
-	$('#expend_type').combobox({
-		url: BASEURL + GD[10].uri + GD[10].reportId,
-		valueField: 'value',
-		textField: 'value',
-		panelHeight: 'auto',
-		limitToList: true,
-	})
-	$("#addexpend").click(function() {
-		$('#truck_code').textbox('setValue', jobcode);
-		$('#ifpay').textbox('setValue', '否');
-	})
-	$("#ifpay").combobox({
-		data: [{
-			value: '是'
-		}, {
-			value: '否'
-		}],
-		valueField: 'value',
-		textField: 'value',
-		panelHeight: 'auto',
-		limitToList: true,
-		onChange: function(newValue, oldValue) {
-			if (newValue == '是') {
-				$('#real_pay_date').datebox({
-					required: true
-				});
-			} else {
-				$('#real_pay_date').datebox({
-					required: false
-				});
-			}
+}
+// get pay info
+function getPayInfo(value) {
+	var params = {
+		plate_no: value
+	};
+	onchangeInfo(record_urls(GD['t_temp_payee'].recordName).QUERY, params, 'payee', '#payee')
+	onchangeInfo(record_urls(GD['t_temp_payee'].recordName).QUERY, params, 'payee_id', '#payee_id')
+	onchangeInfo(record_urls(GD['t_temp_payee'].recordName).QUERY, params, 'bank_card', '#bank_no')
+	onchangeInfo(record_urls(GD['t_temp_payee'].recordName).QUERY, params, 'open_bank', '#open_bank')
+}
+// get car info
+function getCarInfo(value) {
+	var params = {
+		license: value
+	};
+	onchangeInfo(record_urls(GD['license'].recordName).QUERY, params, 'trailer', '#trailer_plate')
+	onchangeInfo(record_urls(GD['license'].recordName).QUERY, params, 'truck_type', '#send_truck_type')
+	onchangeInfo(record_urls(GD['license'].recordName).QUERY, params, 'driver', '#driver')
+	onchangeInfo(record_urls(GD['license'].recordName).QUERY, params, 'phone', '#driver_phrone')
+}
+// 车牌onchange事件
+function onchangeInfo(url,params,str,id,high,limit){
+	GetField(url,params,str,function(data){
+		var arr = getComboboxList(data,str);
+		if(arr.length > 0) {
+			arr[0].selected = true;
 		}
+		setCombobox(id,arr,str,str,high,limit)
 	})
-	getDriver('否')
-	getPlateInfo('否')
-	$("#oil_ib").combobox({
-		data:[{
-			value: '是'
-		}, {
-			value: '否'
-		}],
-		valueField:'value',
-		textField:'value',
-		panelHeight:'auto',
-		limitToList:true
-	})
-});
-//车辆信息 驾驶员信息
-function getCarinfo() {
-	$("#temp_car").combobox({
-		data: [{
-			value: '是'
-		}, {
-			value: '否'
-		}],
-		valueField: 'value',
-		textField: 'value',
-		panelHeight: 'auto',
-		limitToList:true,
-		onChange: function(newValue, oldValue) {
-			// console.log(1)
-			if (newValue == '是' && oldValue) {
-				getDriver(newValue)
-				getPlateInfo(newValue)
-				$("#oil_ib").combobox("setValue",'是')
-			} else if(newValue && oldValue) {
-				// console.log(1)
-				getDriver(newValue)
-				getPlateInfo(newValue)
-			}
-		}
+}
+// combobox function
+function setCombobox(id, data, value, text, high, limit, params) {
+	value = value || 'value';
+	text = text || value;
+	high = high || 'auto';
+	limit = limit || false;
+	if ($.type(data) == 'string') {
+		params = params || {};
+		$(id).combobox({
+			url: data,
+			queryParams: params
+		})
+	} else {
+		$(id).combobox({
+			data: data
+		})
+	}
+	$(id).combobox({
+		valueField: value,
+		textField: text,
+		panelHeight: high,
+		limitToList: limit
 	})
 }
 // 油卡信息
 function getOilCard() {
 	$("#oil_id").combobox('clear')
 	$("#oil_id").combobox({
-		url: BASEURL + GD[11].uri + GD[11].reportId + '?noCache=true',
+		url: BASEURL + GD['oil_info'].uri + GD['oil_info'].reportId + '?noCache=true',
 		queryParams: {},
 		loadFilter: function(data) {
 			var arr = [];
@@ -287,208 +294,13 @@ function getOilCard() {
 		limitToList: true
 	})
 }
-//获取车头车挂信息
-function getPlateInfo(value) {
-	$("#license_plate").combobox({
-		url: BASEURL + GD[6].uri + GD[6].reportId + '?noCache=true',
-		valueField: 'plate',
-		textField: 'plate',
-		panelHeight: '150px',
-		limitToList:true,
-		icons: [{
-			iconCls: 'icon-add',
-			handler: function() {
-				if (value == '是') {
-					addTab('rec', '外请车信息维护', GD[7].recordId, 'tempcar')
-				} else {
-					$.messager.alert("提示", '自有或加盟车辆信息新增请联系相关人员！谢谢！');
-				}
-			},
-		}, {
-			iconCls: 'icon-reload',
-			handler: function() {
-				var val = $("#temp_car").combobox('getValue'),
-					tra = $("#trailer_plate").combobox('getValue'),
-					dri = $("#driver").combobox('getValue');
-				getCarinfo()
-				$("#temp_car").combobox('setValue', val)
-				$("#trailer_plate").combobox('setValue', tra)
-				$("#driver").combobox('setValue', dri)
-				$("#oil_id").combobox("clear")
-			}
-		}],
-		onChange: function(newValue, oldValue) {
-			getOilCard();
-		},
-		queryParams: {
-			param1: value
-		}
-	})
-	$("#trailer_plate").combobox({
-		url: BASEURL + GD[8].uri + GD[8].reportId + '?noCache=true',
-		valueField: 'plate',
-		textField: 'plate',
-		panelHeight: '150px',
-		limitToList:true,
-		icons: [{
-			iconCls: 'icon-add',
-			handler: function() {
-				if (value == "是") {
-					addTab('rec', '外请车信息维护', GD[7].recordId, 'tempcar')
-				} else {
-					$.messager.alert("提示", '自有或加盟车辆信息新增请联系相关人员！谢谢！');
-				}
-			},
-		}, {
-			iconCls: 'icon-reload',
-			handler: function() {
-				var val = $("#temp_car").combobox('getValue'),
-					lic = $("#license_plate").combobox('getValue'),
-					dri = $("#driver").combobox('getValue');
-				getCarinfo()
-				$("#temp_car").combobox('setValue', val)
-				$("#license_plate").combobox('setValue', lic)
-				$("#driver").combobox('setValue', dri)
-			}
-		}],
-		queryParams: {
-			param1: value
-		}
-	})
-}
-//收款人相关信息
-function payeeInfo() {
-	$("#payee").combobox({
-		url: record_urls(GD[9].recordName).QUERY + '?noCache=true',
-		queryParams: {},
-		valueField: 'payee',
-		textField: 'payee',
-		limitToList:true,
-		icons: [{
-			iconCls: 'icon-add',
-			handler: function() {
-				addTab('rec', '外请车收款信息维护', GD[9].recordId, 'temppay')
-			},
-		}, {
-			iconCls: 'icon-reload',
-			handler: function() {
-				payeeInfo();
-				$("#payee_id").combobox('clear')
-				$("#open_bank").combobox('clear')
-				$("#bank_no").combobox('clear')
-			}
-		}],
-		onChange: function(newValue, oldValue) {
-			if (newValue) {
-				tssJS.ajax({
-					url: record_urls(GD[9].recordName).QUERY + '?noCache=true',
-					params: {
-						payee: newValue
-					},
-					method: 'post',
-					type: 'json',
-					waiting: true,
-					ondata: function(data) {
-						data = this.getResponseJSON();
-						if (data.length == 1) {
-							$("#payee_id").combobox('setValue', data[0].payee_id)
-							$("#open_bank").combobox('setValue', data[0].open_bank)
-							$("#bank_no").combobox('setValue', data[0].bank_card)
-						} else {
-							getComboboxList(data, 'payee_id')
-							$("#payee_id").combobox({
-								data: getComboboxList(data, 'payee_id'),
-								valueField: 'payee_id',
-								textField: 'payee_id',
-								panelHeight: 'auto',
-								limitToList:true
-							})
-							getComboboxList(data, 'open_bank')
-							$("#open_bank").combobox({
-								data: getComboboxList(data, 'open_bank'),
-								valueField: 'open_bank',
-								textField: 'open_bank',
-								panelHeight: 'auto',
-								limitToList:true
-							})
-							getComboboxList(data, 'bank_card')
-							$("#bank_no").combobox({
-								data: getComboboxList(data, 'bank_card'),
-								valueField: 'bank_card',
-								textField: 'bank_card',
-								panelHeight: 'auto',
-								limitToList:true
-							})
-						}
-					}
-				})
-			}
-		}
-	})
-}
-//获取驾驶员信息
-function getDriver(value) {
-	$("#driver").combobox({
-		url: BASEURL + GD[2].uri + GD[2].reportId + '?noCache=true',
-		queryParams: {
-			param1: value
-		},
-		valueField: 'name',
-		textField: 'name',
-		panelHeight: '150px',
-		limitToList:true,
-		icons: [{
-			iconCls: 'icon-add',
-			handler: function() {
-				if (value == '是') {
-					addTab('rec', '临时驾驶员基础信息维护', GD[3].recordId, 'temp_driver')
-				} else {
-					$.messager.alert("提示", '自有或加盟车辆信息新增请联系相关人员！谢谢！');
-				}
-			}
-		}, {
-			iconCls: 'icon-reload',
-			handler: function() {
-				$("#driver_phrone").combobox('clear')
-				var val = $("#temp_car").combobox('getValue'),
-					lic = $("#license_plate").combobox('getValue'),
-					tra = $("#trailer_plate").combobox('getValue');
-				getCarinfo()
-				$("#temp_car").combobox('setValue', val)
-				$("#license_plate").combobox('setValue', lic)
-				$("#trailer_plate").combobox('setValue', tra)
-			}
-
-		}],
-		onChange: function(newValue, oldValue) {
-			if (newValue) {
-				$("#driver_phrone").combobox({
-					url: BASEURL + GD[4].uri + GD[4].reportId,
-					queryParams: {
-						param1: newValue
-					},
-					valueField: 'tel_phone',
-					textField: 'tel_phone',
-					panelHeight: 'auto',
-					limitToList: true, //限制于下拉框内数据
-					onLoadSuccess: function() {
-						var list = $("#driver_phrone").combobox("getData");
-						if (list.length != 0) {
-							$(this).combobox('setValue', list[0].tel_phone);
-						}
-					}
-				})
-			}
-		}
-	});
-}
 // 获取运单信息
 function jobQuery() {
 	var a, b;
 	a = new Date($("#pstart_s").datebox("getValue").replace('-', '/'));
 	b = new Date($("#pstart_e").datebox("getValue").replace('-', '/'));
 	tssJS.ajax({
-		url: record_urls(GD[0].recordName).QUERY + '?noCache=true',
+		url: record_urls(GD['t_truck_job'].recordName).QUERY + '?noCache=true',
 		params: {
 			job_code: $("#jcode").textbox("getValue"),
 			client: $("#cname").textbox("getValue"),
@@ -517,7 +329,7 @@ function drawTable(data) {
 		columns: COL,
 		iconCls: 'icon-edit',
 		onLoadSuccess: function() {
-			getIncome("truck_code", EXCOL, '运单', '支出明细', "#expend", record_urls(GD[1].recordName).QUERY, {
+			getIncome("truck_code", EXCOL, '运单', '支出明细', "#expend", record_urls(GD['t_trucks_job_expend'].recordName).QUERY, {
 				truck_code: jobcode || '?'
 			});
 			$("#expend").datagrid().datagrid("enableFilter", [{
@@ -543,7 +355,7 @@ function drawTable(data) {
 		onClickCell: function(index, field, value) {
 			if (field == 'job_code') {
 				jobcode = value
-				getIncome("truck_code", EXCOL, '运单', '支出明细', "#expend", record_urls(GD[1].recordName).QUERY, {
+				getIncome("truck_code", EXCOL, '运单', '支出明细', "#expend", record_urls(GD['t_trucks_job_expend'].recordName).QUERY, {
 					truck_code: jobcode
 				});
 				$("#expend").datagrid().datagrid("enableFilter", [{
@@ -620,9 +432,9 @@ function saveSuccess(recordId, tableid){
 // 保存运单
 function saveTable(recordId, tableid) {
 	if (NEEDOIL && $("#oil_id").combobox("getValue") && $("#license_plate").combobox("getValue")) {
-		updateId(record_urls(GD[12].recordName).QUERY, function(data) {
+		updateId(record_urls(GD['oil_event'].recordName).QUERY, function(data) {
 			$.ajax({
-				url: BASE_RECORD_URL + GD[12].recordId + (data ? '/' + data : ''),
+				url: BASE_RECORD_URL + GD['oil_event'].recordId + (data ? '/' + data : ''),
 				method: 'post',
 				type:'json',
 				data: {
@@ -664,7 +476,7 @@ function saveRecord(recordId) {
 			checkException(result, function() {
 				$('#dlg2').dialog('close');
 				$('#fm2').form('clear');
-				tssJS.getJSON(record_urls(GD[1].recordName).QUERY, {
+				tssJS.getJSON(record_urls(GD['t_trucks_job_expend'].recordName).QUERY, {
 					truck_code: jobcode
 				}, function(data) {
 					$("#expend").datagrid({
@@ -729,7 +541,7 @@ function batchImport() {
 						计划发车时间从:&nbsp;<input id="pstart_s" class="easyui-datetimebox" style="width:150px" data-options="showSeconds: false">
 						&emsp;&emsp;&emsp;&emsp;到:&nbsp;<input id="pstart_e" class="easyui-datetimebox" style="width:150px" data-options="showSeconds: false">
 						<a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="jobQuery()">查询</a>
-						<a href="#" id="eb" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="updateOld(record_urls(GD[0].recordName).GET,'dg','#fm','#dlg','任务单派车')">修改</a>
+						<a href="#" id="eb" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="updateOld(record_urls(GD['t_truck_job'].recordName).GET,'dg','#fm','#dlg','任务单派车')">修改</a>
 					</div>
             	</div>
 	        </div>
@@ -738,7 +550,7 @@ function batchImport() {
 	        	<div id="tb2" style="padding:0px;height:auto">
 	        		<div style="margin-bottom:0px">
 	        			<a href="#" id="addexpend" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="createNew('#dlg2','#fm2','新增运单'+'<b>'+jobcode+'</b>'+'的支出')">新增</a>
-						<a href="#" id="editexpend" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="updateOld(record_urls(GD[1].recordName).GET,'expend','#fm2','#dlg2','修改运单'+'<b>'+jobcode+'</b>'+'的支出')">修改</a>
+						<a href="#" id="editexpend" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="updateOld(record_urls(GD['t_trucks_job_expend'].recordName).GET,'expend','#fm2','#dlg2','修改运单'+'<b>'+jobcode+'</b>'+'的支出')">修改</a>
 	        		</div>
 	        	</div>
 	        </div>
@@ -802,7 +614,7 @@ function batchImport() {
 					</td>
 				</tr>
 				<tr>
-					<td class="label">是否临时车:</td>
+					<td class="label">是否外请车:</td>
 					<td>
 						<input id="temp_car" name="temp_car" class="easyui-combobox" style="width: 180px">
 					</td>
@@ -902,7 +714,7 @@ function batchImport() {
 		</form>
 	</div>
 	<div id="dlg-buttons">
-		<a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveTable(GD[0].recordName,'#dg')">保存</a>
+		<a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveTable(GD['t_truck_job'].recordName,'#dg')">保存</a>
 		<a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="closeDlg('#dlg','#fm')">取消</a>
 	</div>
 	<div id="dlg2" class="easyui-dialog" style="width: 550px;height: 200px" closed=true buttons="#dlg-buttons2">
@@ -922,7 +734,7 @@ function batchImport() {
 					</td>
 				</tr>
 				<tr>
-					<td class="label">金额:</td>
+					<td class="label">应付金额:</td>
 					<td>
 						<input id="price" name="price" class="easyui-numberbox" style="width: 180px" required/>
 					</td>
@@ -936,12 +748,16 @@ function batchImport() {
 					<td>
 						<input id="ifpay" name="ifpay" class="easyui-combobox" style="width: 180px" required/>
 					</td>
+					<td class="label">实付金额:</td>
+					<td>
+						<input id="real_pay_price" name="real_pay_price" class="easyui-numberbox" style="width: 180px">
+					</td>
+				</tr>
+				<tr>
 					<td class="label">实付日期:</td>
 					<td>
 						<input id="real_pay_date" name="real_pay_date" class="easyui-datebox" style="width: 180px">
 					</td>
-				</tr>
-				<tr>
 					<td class="label">备注:</td>
 					<td>
 						<input id="remark" name="remark" class="easyui-textbox" style="width: 180px">
@@ -951,7 +767,7 @@ function batchImport() {
 		</form>
 	</div>
 	<div id="dlg-buttons2">
-		<a href="#" class="easyui-linkbutton" iconCls='icon-ok' onclick="saveRecord(GD[1].recordName,'#dg2')">保存</a>
+		<a href="#" class="easyui-linkbutton" iconCls='icon-ok' onclick="saveRecord(GD['t_trucks_job_expend'].recordName,'#dg2')">保存</a>
 		<a href="#" class="easyui-linkbutton" iconCls='icon-cancel' onclick="closeDlg('#dlg2','fm2')">取消</a>
 	</div>
 </body>
