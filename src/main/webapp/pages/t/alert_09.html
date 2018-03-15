@@ -1,0 +1,293 @@
+
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+	<meta charset="utf-8">
+	<title>提醒</title>
+	<meta name="author" content="吴玲；20180125"/>
+    <meta name="keywords" content="xxx"/>
+    <meta name="description" content="xxx"/>
+    <meta name="application" content="xxxx"/>
+    <meta name="datasource" content="xxxx"/>
+    <meta name="version" content="1.0 20180125"/>
+    <meta name="viewport" content="width=device-width"/>
+    <link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+    <link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+    <link rel="stylesheet" href="../../css/easyui.css">
+    <script src="../../tools/tssJS/tssJS.all.js"></script>
+    <script src="../../tools/easyui/jquery.min.js"></script>
+    <script src="../../tools/easyui/jquery.easyui.min.js"></script>
+    <script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+    <script src="../../tools/easyui/datagrid-filter.js"></script>
+    <script src="../../tools/easyui.js"></script>
+    <!-- // <script src="truck.js"></script> -->
+    <script src="../truck.js"></script>
+
+
+</head>
+<style type="text/css">
+
+.easyui-dialog table.l .label {
+    background-color: #eee;
+    width: 70px;
+    text-align: right;
+    box-sizing: content-box;
+}
+#dlg-buttons0, #dlg-buttons2{ text-align:center; }
+/*// todo readonly 背景颜色无法修改*/
+</style>
+
+<script type="text/javascript">
+
+var BASEURL = 'http://t.boubei.com',
+	GD = [
+	{id:0,recordId:147,recordName:'t_alert',baseurl:'/tss/auth/xdata/json/',type:'录入表',ChineseName:'提醒'},
+	{id:1,reportId:142,reportName:'142-提醒',baseurl:'/tss/data/json/',type:'报表'}
+	],
+	PHONE,
+	USER;
+var AUTH_PATH='http://t.boubei.com/tss/auth/'
+var	URL_DATA_CSV   = AUTH_PATH + "xdata/export/";
+var download_param={};
+var copy_data=[];
+var all_object=['行驶证年审','营运证年审','保险到期','客户合同到期'],
+    all_object_id=['xszns','yyzns','bxd1','khhtdq'],
+    all_object_id1=['xszns1','yyzns1','bxd11','khhtdq1'],
+    all_object_id2=['xszns2','yyzns2','bxd12','khhtdq2'],    
+    all_checkbox={'行驶证年审':true,'营运证年审':true,'保险到期':true,'客户合同到期':true},
+    t_bar=[],
+    t_name;
+
+$(function() {
+    for(var i=0;i<all_object.length;i++){
+		$("#"+all_object[i]).datagrid({
+			fit: true,
+			url: BASEURL+GD[1].baseurl+GD[1].reportId+'?noCache=true',//+'?noCache=true'
+			queryParams:{param1:all_object[i],param2:all_checkbox[all_object[i]]},//{param1:all_object[i],param2:all_checkbox[all_object[i]]},
+			toolbar:[
+				{ text: '<input type="checkbox" name="'+all_object[i]+'" checked>仅查看未处理',id:all_object_id2[i],handler:function(a){
+					var name=a.srcElement.name || a.srcElement.firstElementChild.name;
+					all_checkbox[name]=all_checkbox[name]==true ? false : true;
+					$("input[name='"+name+"']").prop("checked",all_checkbox[name]);
+					var ls;
+					for(var j=0;j<all_object_id.length;j++){
+						if(all_object_id2[j]==a.currentTarget.id){
+							ls=j;break;
+						}
+					};
+					$('#'+all_object[ls]).datagrid('options').queryParams = {param1:all_object[ls],param2:all_checkbox[name]};
+					$('#'+all_object[ls]).datagrid('reload');
+				}},
+				{ text:'批量已处理', iconCls: 'icon-more',id:all_object_id[i],handler:function(a){
+					var ls;
+					for(var j=0;j<all_object_id.length;j++){
+						if(all_object_id[j]==a.currentTarget.id){
+							ls=j;break;
+						}
+					}
+					batchUpdate(all_object[ls],'is_handle','是',GD[0].recordName)
+				}},
+				{ text:'修改', iconCls: 'icon-edit',id:all_object_id1[i],handler:function(a){
+					var ls;
+					for(var j=0;j<all_object_id1.length;j++){
+						if(all_object_id1[j]==a.currentTarget.id){
+							ls=j;break;
+						}
+					}
+					t_name=all_object[ls];
+					var row=$('#'+all_object[ls]).datagrid('getSelections');
+					if(!row.length){
+						$.messager.alert('提示','您没有选中任何行，请先点击选中需要操作的行。')
+					}
+					else if(row.length>1){
+						$.messager.alert('提示','您选中了多行，请选择单行进行操作。')
+					}
+					else{
+						$('#fm').form('load', row[0]);
+						openDialog('修改');
+						$('#'+all_object[ls]).datagrid('reload');
+					}					
+				}}		
+			],
+			rownumbers: true,
+			// title:'轮胎基础信息',
+	        singleSelect: false,
+			columns: [[
+				{field: 'ck', checkbox: true},
+				{field: 'type',title: '类型',align: 'center',width:'15%'},
+				{field: 'comment',title: '提醒内容',align: 'center',width:'40%',formatter:format},
+				{field: 'a_time',title: '提醒日期',align: 'center',width:'13%'},
+				{field: 'continued',title: '持续时长',align: 'center',width:'10%'},
+		        {field: 'is_handle',title: '是否处理',align: 'center',width:'10%'},
+				{field: 'remark',title: '备注',align: 'center',width:'10%',formatter:format},
+				{field: 'id',align: 'center',width:'10%',hidden:true},
+				]]
+		}).datagrid('enableFilter', [{field: 'type',type: 'textbox'},{field: 'comment',type: 'textbox'},{field: 'is_handle',type: 'textbox'},{field: 'remark',type: 'textbox'}]);
+	}
+	
+	$("#is_handle").combobox({
+		editable: false,
+        valueField: 'name',
+        textField: 'name',
+		data: [ 
+            {"name": "是"},
+            {"name": "否"}
+        ],
+		panelHeight: 'auto'
+	});
+
+});
+
+function batchUpdate(tid, field, value,recordId) {
+	var result=[];
+    var rows = $('#'+tid).datagrid('getSelections');
+
+    if(!rows) {
+        return alert("你没有选中任何记录，请勾选后再进行批量操作。");
+    }
+    else if(rows.length >= 1000) {
+        return alert("单次批量操作行数不能超过999行。")
+    }
+    else{
+    	result.push("id,"+field);
+	    for(var i=0; i<rows.length; i++){
+			result.push(rows[i].id+','+value)			
+		}  
+	    $.post( record_urls(recordId).CUD, {"csv": result.join("\n")}, function(data) {
+	        if(data.created || data.updated) {
+	            $.messager.show({
+	                title: '提示',
+	                msg: '批量处理成功！'
+	            });	 
+	            $('#'+tid).datagrid('reload');
+	        }
+	    });
+    }
+     
+}
+
+function saveTable(recordId,fm,dlg,dlgbtn) {
+    var id = $('#'+dlg+" input[name='id']").val();
+    var isCreate = !id;
+    var $saveBtn = $('#'+dlgbtn+'>a[onclick^="save"]');
+    $saveBtn.linkbutton("disable");
+    $('#'+fm).form('submit',{
+        url: BASE_RECORD_URL + recordId + (!isCreate ? "/"+id : ''),
+        onSubmit: function(){
+            var flag = $(this).form('validate');
+            if( !flag ) {
+                $saveBtn.linkbutton("enable");
+            }
+            return flag;
+        },
+        success: function(result){
+            $saveBtn.linkbutton("enable");
+            checkException(result, function() {
+                closeDialog();
+                $('#'+t_name).datagrid('reload');
+            	$.messager.show({
+					title:'提示',
+					msg:'保存成功！',
+					showType:'slide',
+					timeout:2000,
+					style:{
+						position:'fixed',
+						right:'',
+						bottom:0,
+						top:'',
+						left:0
+					}
+				});
+            });
+        }
+    });
+}
+
+function format(value){
+    if(value){
+    	return '<span title="'+value+'">'+value+'</span>'
+    }
+}
+
+</script>
+<body class="easyui-layout" fit="true">  
+    <div class="easyui-layout" fit="true" >
+        <div data-options="region:'west',split:false,collapsible:false" border="true" style="width:50%">
+            <div class="easyui-layout" fit="true" >
+                <div data-options="region:'center',split:false,collapsible:false" class="easyui-tabs" border="false" style="height:100%">
+                    <div title="行驶证年审" style="padding:10px">
+                    	<table id="行驶证年审" class="easyui-datagrid">
+		            	</table>
+                    </div>
+                    <div title="保险到期" style="padding:10px">                        
+                        <table id="保险到期" class="easyui-datagrid">
+		            	</table>
+                    </div>
+                </div>
+            </div>
+        </div>   
+        <div data-options="region:'center',split:false,collapsible:false" border="true" style="width:50%">
+            <div  class="easyui-layout" fit="true" >
+                <div data-options="region:'center',split:false,collapsible:false" class="easyui-tabs" border="false" style="height:100%">
+                    <div title="营运证年审" style="padding:10px">
+                    	<table id="营运证年审" class="easyui-datagrid">
+		            	</table>
+                    </div>
+                    <div title="客户合同到期" style="padding:10px">                        
+                        <table id="客户合同到期" class="easyui-datagrid">
+		            	</table>
+                    </div>
+                </div>
+            </div>
+        </div> 
+    </div>
+	<div id="dlg" class="easyui-dialog" style="width:550px;height: 270px;" closed=true buttons="#dlg-buttons">
+		<form id="fm" method="post" novalidate>
+			<input name="id" type="hidden"/>
+	        <input id="lockVersion" name="lockVersion" type="hidden"/>
+	        <input id="seqNo" name="seqNo" type="hidden" />
+	        <table class="l">
+	            <tr>
+	                <td class="label">类型:</td>
+	            	<td>
+	            		<input name="type" id="type" class="easyui-textbox" readonly/>
+	            	</td> 
+	            	<td class="label">提醒内容:</td>
+	                <td>
+	                    <input name="comment" id="comment" class="easyui-textbox" required/>
+	                </td>            
+	            </tr>
+	            <tr>
+	                <td class="label">提醒时间:</td>
+	            	<td>
+	            		<input name="a_time" id="a_time" class="easyui-textbox">
+	            	</td>	
+	            	<td class="label">持续:</td>
+	            	<td>
+	            		<input name="continued" id="continued" class="easyui-textbox" required/>
+	            	</td>            	           
+	            </tr>
+	            <tr>
+	            	<td class="label">是否处理:</td>
+	            	<td>
+	            		<input name="is_handle" id="is_handle"class="easyui-textbox" />
+	            	</td>
+	            	<td class="label">备注:</td>
+	            	<td>
+	            		<input name="remark" id="remark" class="easyui-textbox" >
+	            	</td>
+	            </tr>
+	        </table>
+        </form>
+	</div>
+	<div id="dlg-buttons">
+	    <a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveTable(GD[0].recordName,'fm','dlg','dlgbtn')">保 存</a>
+	    <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="closeDialog()">取 消</a>
+	</div>
+</body>
+
+</html>

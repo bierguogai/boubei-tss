@@ -1,0 +1,572 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+	<meta charset="utf-8">
+	<title>轮胎</title>
+	<eta name="author" content="吴玲；20180125"/>
+    <meta name="keywords" content="xxx"/>
+    <meta name="description" content="xxx"/>
+    <meta name="application" content="xxxx"/>
+    <meta name="datasource" content="xxxx"/>
+    <meta name="version" content="1.0 20180125"/>
+    <meta name="viewport" content="width=device-width"/>
+    <link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+    <link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+    <link rel="stylesheet" href="../../css/easyui.css">
+    <script src="../../tools/tssJS/tssJS.all.js"></script>
+    <script src="../../tools/easyui/jquery.min.js"></script>
+    <script src="../../tools/easyui/jquery.easyui.min.js"></script>
+    <script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+    <script src="../../tools/easyui/datagrid-filter.js"></script>
+    <script src="../../tools/easyui.js"></script>
+    <!-- // <script src="truck.js"></script> -->
+    <script src="../truck.js"></script>
+
+
+</head>
+<style type="text/css">
+
+.easyui-dialog table.l .label {
+    background-color: #eee;
+    width: 70px;
+    text-align: right;
+    box-sizing: content-box;
+}
+#dlg-buttons0, #dlg-buttons2{ text-align:center; }
+/*// todo readonly 背景颜色无法修改*/
+</style>
+
+<script type="text/javascript">
+
+var BASEURL = 'http://t.boubei.com',
+	GD = [
+	{id:0,recordId:60,recordName:'t_tyre',baseurl:'/tss/auth/xdata/json/',type:'录入表',ChineseName:'轮胎购入信息'},
+	{id:1,recordId:86,recordName:'t_items',baseurl:'/tss/auth/xdata/json/',type:'录入表',ChineseName:'项目类型维护'},
+	{id:2,recordId:139,recordName:'t_tyre_event',baseurl:'/tss/auth/xdata/json/',type:'录入表',ChineseName:'轮胎事件记录'},
+	{id:3,reportId:119,reportName:'轮胎综合信息',baseurl:'/tss/data/json/',type:'报表'},
+	{id:4,recordId:140,recordName:'t_tyre_buyevent',baseurl:'/tss/auth/xdata/json/',type:'录入表'},
+	],
+	PHONE,
+	USER;
+var AUTH_PATH='http://t.boubei.com/tss/auth/'
+var	URL_DATA_CSV   = AUTH_PATH + "xdata/export/";
+var download_param={};
+var copy_data=[];
+$(function() {
+	$('#lt').ready(function(){
+		 $('#lt').bind("contextmenu",function(e){
+		   return false;
+		 });
+		});
+	$("#dg").datagrid({
+		fit: true,
+		url: BASEURL+GD[3].baseurl+GD[3].reportId+'?noCache=true',//+'?noCache=true'
+		queryParams:{},
+		toolbar:[
+			{ text: '新增轮胎购买记录', iconCls: 'icon-add',handler:function(){createRow('fm0','dlg0','新增轮胎购买记录')}},
+			{ text: '修改轮胎购买记录', iconCls: 'icon-edit',handler:function(){updateRow('fm0','dlg0',GD[4].recordName,'id')}},
+			{ text: '新增轮胎数据', iconCls: 'icon-add',handler:function(){createRow('fm','dlg','新增轮胎数据')}},
+			{ text: '修改轮胎数据', iconCls: 'icon-edit',handler:function(){updateRow('fm','dlg',GD[0].recordName,'id2')}},
+			{ text: '批量导入轮胎数据', iconCls: 'icon-tss-up',handler:function(){
+				$.messager.confirm("操作提示", "请在批量导入前确认是否已新增轮胎购买记录？", function (data) {
+		            if (data) {
+		                addTab('rec', GD[0].ChineseName, GD[0].recordId, GD[0].ChineseName);
+		            }
+		        });
+				
+			}}			
+		],
+		rownumbers: true,
+		title:'轮胎基础信息',
+        singleSelect: true,
+        frozenColumns:[[
+	        {field: 'ck', checkbox: true},
+	        {field: 'billcode',title: '购入单据编号',align: 'center',width:'90px'},
+	        {field: 'vouchercode',title: '购入凭证号',align: 'center',width:'70px'},
+	        {field: 'inday',title: '购入日期',align: 'center',width:'80px'},
+	        {field: 'sum_money',title: '应付金额',align: 'center',width:'70px'},
+	        {field: 'count_num',title: '个数',align: 'center',width:'60px'},
+	        {field: 'code',title: '胎号',align: 'center',width:'145px'},
+			{field: 'status',title: '状态',align: 'center',width:'50px'},
+			]],
+		columns: [[
+			// {field: 'ck', checkbox: true},
+			// {field: 'code',title: '卡号',align: 'center',width:'140px'},
+			// {field: 'status',title: '状态',align: 'center',width:'70px'},
+			{field: 'license',title: '车牌/购买人',align: 'center',width:'70px'},
+			{field: 'brand',title: '厂牌',align: 'center',width:'130px'},
+			{field: 'type',title: '类型',align: 'center',width:'70px'},
+			{field: 'model',title: '型号',align: 'center',width:'90px'},
+			{field: 'buy_price',title: '购入单价',align: 'center',width:'70px'},
+			{field: 'remark2',title: '轮胎备注',align: 'center',width:'90px',formatter:format},
+			{field: 'supplier',title: '供应商',align: 'center',width:'145px'},
+			{field: 'buy_person',title: '购入责任人',align: 'center',width:'70px'},
+			{field: 'remark',title: '购入备注',align: 'center',width:'90px',formatter:format},
+			]],
+		onLoadSuccess:function(){
+			mergeCellsByField('dg','billcode','billcode,vouchercode,inday,supplier,sum_money,count_num,buy_person,remark')
+			beginQuery()
+		},
+		onClickRow:function(rowIndex,rowData){
+			beginQuery(record_urls(GD[2].recordName).QUERY,{code: rowData.code})
+		},
+		onRowContextMenu: function (e, rowIndex, rowData) {      
+		    copy_data=rowData;
+			$('#mm').menu('show', { left: e.pageX, top: e.pageY }); 
+		}
+	}).datagrid('enableFilter', [{field: 'billcode',type: 'textbox'},{field: 'vouchercode',type: 'textbox'},{field: 'inday',type: 'textbox'},{field: 'sum_money',type: 'textbox'},{field: 'count_num',type: 'textbox'},{field: 'code',type: 'textbox'},{field: 'status',type: 'textbox'},{field: 'license',type: 'textbox'},{field: 'brand',type: 'textbox'},{field: 'type',type: 'textbox'},{field: 'model',type: 'textbox'}, {field: 'buy_price',type: 'textbox'},{field: 'remark2',type: 'textbox'},{field: 'supplier',type: 'textbox'},{field: 'buy_person',type: 'textbox'},{field: 'remark',type: 'textbox'}]);
+
+	$("#event").combobox({
+		panelHeight: '150px',
+        width: '150px',
+        editable: false,
+        valueField: 'name',
+        textField: 'name',
+        data: [ 
+            {"name": "销出"}, 
+            {"name": "使用"},
+            {"name": "更换"}, 
+            {"name": "报废"},
+            {"name": "三包胎换胎"}
+        ],
+        onChange:function(value){
+        	if(value=='三包胎换胎'){
+        		$('#new_code').textbox({ required: true });
+	        	$('#new_code').textbox({ readonly: false })}
+        	else{$('#new_code').textbox({ required: false });
+			    $('#new_code').textbox({ readonly: true })}
+			if(value=='使用'||value=='更换'){$('#license').textbox({ required: true })}
+	            else{$('#license').textbox({ required: false })};
+	        if(value =='销出'){
+	        	$('#billcode2').textbox({ required: true });
+	        	$('#vouchercode2').textbox({ required: true });
+	        	$('#sale_price').textbox({ required: true });
+	        }
+            else{
+            	$('#billcode2').textbox({ required: false });
+	        	$('#vouchercode2').textbox({ required: false });
+	        	$('#sale_price').textbox({ required: false });
+	        };
+            
+        }
+	});
+    getBuyBillcode()
+	getType('轮胎类型','type');
+	getType('轮胎型号','model');
+	
+
+});
+function getBuyBillcode(){
+	$("#buy_billcode").combobox({
+		url: record_urls(GD[4].recordName).QUERY + '?noCache=true',
+		queryParams: {},
+		valueField: 'billcode',
+		textField: 'billcode',
+		panelHeight: 'auto'
+	})
+}
+function getType(param,id){
+	$("#"+id).combobox({
+		url: record_urls(GD[1].recordName).QUERY + '?noCache=true',
+		queryParams: {type:param},
+		loadFilter: function(data) {
+			var arr = [];
+			for (var i = 0; i <data.length; i++) {
+				arr.push({type:data[i].item_name})
+			}
+			return arr
+		},
+		valueField: 'type',
+		textField: 'type',
+		panelHeight: 'auto',
+		icons: [{
+			iconCls: 'icon-add',
+			handler: function(){
+				addTab('rec', GD[1].ChineseName, GD[1].recordId+'&user-defined1='+param, GD[1].ChineseName)
+			}
+		}, {
+			iconCls: 'icon-reload',
+			handler: function(){getType(param,id)}
+		}]
+	})
+}
+
+function beginQuery(url,param){
+	param = param || {code:'?'};
+	download_param=param;
+	$("#record").datagrid({
+		url:url,
+		queryParams:param,
+		fit: true,
+		singleSelect: true,
+		title: '轮胎' + param.code + '的记录',
+		toolbar: [
+			{text: '新增',iconCls: 'icon-add',handler: createRecord}, 
+			{text: '修改',iconCls: 'icon-edit',handler:updateRecordRow}
+		],
+		columns: [[
+			{field: 'ck',checkbox: true}, 
+			{field: 'event',title: '事件',align: 'center',width: '50px'}, 
+			{field: 'license',title: '车牌',align: 'center',width: '90px'}, 
+			{field: 'start_day',title: '发生时间',align: 'center',width: '90px'}, 
+			{field: 'billcode',title: '单据编号',align: 'center',width: '90px'}, 
+			{field: 'vouchercode',title: '凭证号',align: 'center',width: '60px'},
+			{field: 'sale_price',title: '销出单价',align: 'center',width: '80px'},
+			{field: 'needcoll_day',title: '应收款日期',align: 'center',width: '80px'},
+			{field: 'new_code',title: '新胎号',align: 'center',width: '145px'},
+			{field: 'remark',title: '备注',align: 'center',width: '90px',formatter:format}
+			]]
+	}).datagrid('enableFilter', [{field: 'event',type: 'textbox'},{field: 'license',type: 'textbox'},{field: 'start_day',type: 'textbox'},{field: 'billcode',type: 'textbox'}, {field: 'vouchercode',type: 'textbox'},{field: 'sale_price',type: 'textbox'},{field: 'needcoll_day',type: 'textbox'},{field: 'new_code',type: 'textbox'},{field: 'remark',type: 'textbox'}]);
+
+}
+
+if(location.search.replace('user-defined1')!=location.search){
+	var a=location.search.substring(1).split("&");
+    for(var i=0;i<a.length;i++){
+    	if(a[i].replace('user-defined1')!=a[i]){
+    		$('#code').value(a[i].split("=")[1]);
+    		break;
+    	}
+    }
+}
+
+function saveTable(recordId,tableid,fm,dlg,dlgbtn) {
+    var id = $('#'+dlg+" input[name='id']").val();
+    var isCreate = !id;
+    var $saveBtn = $('#'+dlgbtn+'>a[onclick^="save"]');
+    $saveBtn.linkbutton("disable");
+    $('#'+fm).form('submit',{
+        url: BASE_RECORD_URL + recordId + (!isCreate ? "/"+id : ''),
+        onSubmit: function(){
+            var flag = $(this).form('validate');
+            if( !flag ) {
+                $saveBtn.linkbutton("enable");
+            }
+            return flag;
+        },
+        success: function(result){
+            $saveBtn.linkbutton("enable");
+            checkException(result, function() {
+                closeDialog2(fm,dlg);
+                $(tableid).datagrid('reload');
+            	$.messager.show({
+					title:'提示',
+					msg:'保存成功！',
+					showType:'slide',
+					timeout:2000,
+					style:{
+						position:'fixed',
+						right:'',
+						bottom:0,
+						top:'',
+						left:0
+					}
+				});
+	            getBuyBillcode();
+            });
+        }
+    });
+}
+
+function createRow(fm,dlg,title) {
+	$("#"+fm).form('clear');
+	$('#code').textbox('readonly', false);
+	$('#'+dlg).dialog({
+		"modal": true
+	}).dialog('open').dialog('setTitle', title).dialog('center');
+	// $('#status').textbox('setValue', '可用')
+	$('#lockVersion').val('0'); // 給版本号设置默认值
+}
+
+function updateRow(fm,dlg,recordName,id_column) {	
+	var row = getSelectedRow('dg');
+	if (row) {
+		$.getJSON(record_urls(recordName).GET + row[id_column], {}, function(select_data) {
+			$('#'+fm).form('load', select_data);
+			$('#'+dlg).dialog({
+				"modal": true
+			}).dialog('open').dialog('setTitle', '修改').dialog('center');
+			$('#code').textbox('readonly', true);
+		}, "GET");
+	}
+}
+
+function createRecord(recordId,tableid){
+	var row = getSelectedRow('dg');
+	if(row){
+		// if(row.limit_license){$('#license').textbox('readonly', true);}
+		$("#fm2").form('clear');
+		$('#dlg2').dialog({
+			"modal": true
+		}).dialog('open').dialog('setTitle', '新增记录').dialog('center');
+		$("#code2").textbox('setValue',row.code);
+		$('#lockVersion').val('0'); // 給版本号设置默认值
+	}
+}
+
+function saveRecord(recordId){
+	var id = $("#dlg2 input[name='id']").val();
+    var isCreate = !id;
+    var $saveBtn = $('#dlg-buttons>a[onclick^="save"]');
+    $saveBtn.linkbutton("disable");
+    $('#fm2').form('submit',{
+        url: BASE_RECORD_URL + recordId + (!isCreate ? "/"+id : ''),
+        onSubmit: function(){
+            var flag = $(this).form('validate');
+            if( !flag ) {
+                $saveBtn.linkbutton("enable");
+            }
+            return flag;
+        },
+        success: function(result){
+            $saveBtn.linkbutton("enable");
+            $('#dlg2').dialog('close');
+			$('#fm2').form('clear');
+			$('#record').datagrid('reload');
+			$('#dg').datagrid('reload');
+			$.messager.show({
+					title:'提示',
+					msg:'保存成功！',
+					showType:'slide',
+					timeout:2000,
+					style:{
+						position:'fixed',
+						right:0,
+						bottom:0,
+						top:'',
+						left:''
+					}
+				});
+
+
+        }
+    });
+}
+
+function closeDialog2(fm,dlg){
+	$('#'+dlg).dialog('close');
+    $('#'+fm).form('clear');
+}
+
+function updateRecordRow() {
+	var row = getSelectedRow('record');
+	if (row) {
+		$.getJSON(record_urls(GD[2].recordName).GET + row.id, {}, function(select_data) {
+			$('#fm2').form('load', select_data);
+			$('#dlg2').dialog({
+				"modal": true
+			}).dialog('open').dialog('setTitle', '修改油卡记录').dialog('center');
+			$('#code').textbox('readonly', true);
+		}, "GET");
+	}
+}
+
+function format(value){
+    if(value){
+    	return '<span title="'+value+'">'+value+'</span>'
+    }
+}
+
+function copyTyre(){
+	$('#fm').form('load', copy_data);
+	$('#dlg').dialog({
+				"modal": true
+			}).dialog('open').dialog('setTitle', '新增').dialog('center');
+	$("#dlg input[name='id']").val('')
+}
+
+</script>
+<body class="easyui-layout">
+	<div id="main" style="width:100%;height:100%;" >
+	    <div class="easyui-layout" fit="true">
+	        <div id='lt' data-options="region:'west'" border="false" style="width:70%">
+        		<table id="dg" class="easyui-datagrid">
+            	</table>
+	        </div>
+	        <div data-options="region:'center'" border="false" style="width:30%">
+	        	<table id="record" class="easyui-datagrid"></table>
+	        </div>
+	    </div>
+	</div>
+		<div id="dlg0" class="easyui-dialog" style="width:550px;height: 270px;" closed=true buttons="#dlg-buttons0">
+		<form id="fm0" method="post" novalidate>
+			<input name="id" type="hidden"/>
+	        <input id="lockVersion" name="lockVersion" type="hidden"/>
+	        <input id="seqNo" name="seqNo" type="hidden" />
+	        <table class="l">
+	            <tr>
+	                <td class="label">购买日期:</td>
+	                <td>
+	                    <input name="inday" id="inday" class="easyui-datebox" required/>
+	                </td> 
+	                <td class="label">单据编号:</td>
+	            	<td>
+	            		<input name="billcode" id="billcode" class="easyui-textbox" required/>
+	            	</td>  
+	                          
+	            </tr>
+	            <tr>
+	                <td class="label">凭证号:</td>
+	            	<td>
+	            		<input name="vouchercode" id="vouchercode" class="easyui-textbox" required/>
+	            	</td>	
+	            	<td class="label">应付款日期:</td>
+	            	<td>
+	            		<input name="needpay_day" id="needpay_day" class="easyui-datebox">
+	            	</td>            	           
+	            </tr>
+	            <tr>
+	            	<td class="label">供应商:</td>
+	            	<td>
+	            		<input name="supplier" id="supplier" class="easyui-textbox" required/>
+	            	</td>
+	            	<td class="label">购入责任人:</td>
+	            	<td>
+	            		<input name="buy_person" id="buy_person" class="easyui-textbox" >
+	            	</td>
+	            </tr>
+	            <tr>
+	            	<td class="label">备 注:</td>
+	            	<td>
+	            		<input name="remark" id="remark0" class="easyui-textbox">
+	            	</td>
+	            	<td class="label"></td>
+	            	<td>
+	            		<!-- <input name="buy_price" id="buy_price" class="easyui-numberbox" data-options="precision:2" required/> -->
+	            	</td>
+	            </tr>
+	        </table>
+        </form>
+	</div>
+	<div id="dlg-buttons0">
+	    <a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveTable(GD[4].recordName,'#dg','fm0','dlg0','dlg-buttons0')">保 存</a>
+	    <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="closeDialog2('fm0','dlg0')">取 消</a>
+	</div>
+	<div id="dlg" class="easyui-dialog" style="width:550px;height: 270px;" closed=true buttons="#dlg-buttons">
+		<form id="fm" method="post" novalidate>
+			<input name="id" type="hidden"/>
+	        <input id="lockVersion" name="lockVersion" type="hidden"/>
+	        <input id="seqNo" name="seqNo" type="hidden" />
+	        <table class="l">
+	            <tr>
+	                <td class="label">胎 号:</td>
+	                <td>
+	                    <input name="code" id="code" class="easyui-textbox" required/>
+	                </td> 
+	                <td class="label">购入单据编号:</td>
+	            	<td>
+	            		<input name="buy_billcode" id="buy_billcode" class="easyui-combobox" required/>
+	            	</td>  
+	                          
+	            </tr>
+	            <tr>
+	                <td class="label">厂牌:</td>
+	            	<td>
+	            		<input name="brand" id="brand" class="easyui-textbox">
+	            	</td>	
+	            	<td class="label">类型:</td>
+	            	<td>
+	            		<input name="type" id="type" class="easyui-combobox" required/>
+	            	</td>            	           
+	            </tr>
+	            <tr>
+	            	<td class="label">型号:</td>
+	            	<td>
+	            		<input name="model" id="model" class="easyui-combobox" required/>
+	            	</td>
+	            	<td class="label">购入单价:</td>
+	            	<td>
+	            		<input name="buy_price" id="buy_price" class="easyui-numberbox" data-options="precision:2" required/>
+	            	</td>
+	            </tr>
+	            <tr>
+	            	<td class="label">备 注:</td>
+	            	<td>
+	            		<input name="remark" id="remark" class="easyui-textbox">
+	            	</td>
+	            	<td class="label"></td>
+	            	<td>
+	            		<!-- <input name="buy_price" id="buy_price" class="easyui-numberbox" data-options="precision:2" required/> -->
+	            	</td>
+	            </tr>
+	        </table>
+        </form>
+	</div>
+	<div id="dlg-buttons">
+	    <a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveTable(GD[0].recordName,'#dg','fm','dlg','dlg-buttons')">保 存</a>
+	    <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="closeDialog2('fm','dlg')">取 消</a>
+	</div>
+	<div id="dlg2" class="easyui-dialog" style="width: 500px;height: 290px;" closed=true buttons='#dlg-buttons2'>
+		<form id="fm2" method="post" novalidate>
+			<input name="id" type="hidden"/>
+	        <input id="lockVersion2" name="lockVersion" type="hidden"/>
+	        <input id="seqNo2" name="seqNo" type="hidden"/>
+	        <table class='l'>
+	        	<tr>
+	            	<td class="label">胎 号:</td>
+	            	<td>
+	            		<input name="code" id="code2" class="easyui-textbox" readonly/>
+	            	</td>
+	            	<td class="label">事 件:</td>
+	            	<td>
+	            		<input name="event" id="event" class="easyui-textbox" required/>
+	            	</td>
+	            </tr>
+	        	<tr>
+	            	<td class="label">事件发生时间:</td>
+	            	<td>
+	            		<input name="start_day" id="start_day2" class="easyui-datebox" required/>
+	            	</td>
+	            	<td class="label">车牌/使用人:</td>
+	            	<td>
+	            		<input name="license" id="license" class="easyui-textbox"/>
+	            	</td>
+	            </tr>
+	            <tr>
+	            	<td class="label">单据编号:</td>
+	            	<td>
+	            		<input name="billcode" id="billcode2" class="easyui-textbox" >
+	            	</td>
+	            	<td class="label">凭证号:</td>
+	            	<td>
+	            		<input name="vouchercode" id="vouchercode2" class="easyui-textbox" >
+	            	</td>
+	            </tr>
+	            <tr>
+	            	<td class="label">销出单价:</td>
+	            	<td>
+	            		<input name="sale_price" id="sale_price" class="easyui-numberbox" data-options="precision:2">
+	            	</td>
+	            	<td class="label">应收款日期:</td>
+	            	<td>
+	            		<input name="needcoll_day" id="needcoll_day" class="easyui-datebox">
+	            	</td>
+	            </tr>
+	            <tr>
+	            	<td class="label">新胎号:</td>
+	            	<td>
+	            		<input name="new_code" id="new_code" class="easyui-textbox" readonly/>
+	            	</td>
+	            	<td class="label">备 注:</td>
+	            	<td>
+	            		<input name="remark" id="remark2" class="easyui-textbox">
+	            	</td>
+	            	
+	            </tr>
+	        </table>
+		</form>
+	</div>
+	<div id="dlg-buttons2">
+	    <a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveRecord(GD[2].recordName)">保 存</a>
+	    <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="closeDialog2('fm2','dlg2')">取 消</a>
+	</div>
+	<iframe id="downloadFrame" style="display:none"></iframe>
+	<div id="mm" class="easyui-menu" style="width:100px;display: none">   
+      <div iconCls="icon-tss-copy" onclick="copyTyre()">复制轮胎信息</div>   
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,534 @@
+
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+	<meta charset="utf-8">
+	<title>油卡</title>
+	<eta name="author" content="吴玲；20180125"/>
+    <meta name="keywords" content="xxx"/>
+    <meta name="description" content="xxx"/>
+    <meta name="application" content="xxxx"/>
+    <meta name="datasource" content="xxxx"/>
+    <meta name="version" content="1.0 20180125"/>
+    <meta name="viewport" content="width=device-width"/>
+    <link rel="stylesheet" href="../../tools/easyui/themes/default/easyui.css">
+    <link rel="stylesheet" href="../../tools/easyui/themes/icon.css">
+    <link rel="stylesheet" href="../../css/easyui.css">
+    <script src="../../tools/tssJS/tssJS.all.js"></script>
+    <script src="../../tools/easyui/jquery.min.js"></script>
+    <script src="../../tools/easyui/jquery.easyui.min.js"></script>
+    <script src="../../tools/easyui/easyui-lang-zh_CN.js"></script>
+    <script src="../../tools/easyui/datagrid-filter.js"></script>
+    <script src="../../tools/easyui.js"></script>
+    <!-- // <script src="truck.js"></script> -->
+    <script src="../truck.js"></script>
+
+
+</head>
+<style type="text/css">
+
+.easyui-dialog table.l .label {
+    background-color: #eee;
+    width: 70px;
+    text-align: right;
+    box-sizing: content-box;
+}
+/*// todo readonly 背景颜色无法修改*/
+</style>
+
+<script type="text/javascript">
+
+var BASEURL = 'http://t.boubei.com',
+	GD = [
+	{id:0,recordId:65,recordName:'t_oil_card',baseurl:'/tss/auth/xdata/json/',type:'录入表'},
+	{id:1,recordId:86,recordName:'t_items',baseurl:'/tss/auth/xdata/json/',type:'录入表',ChineseName:'项目类型维护'},
+	{id:2,recordId:132,recordName:'t_oil_card_event',baseurl:'/tss/auth/xdata/json/',type:'录入表',ChineseName:'油卡事件记录'},
+	{id:3,reportId:111,reportName:'油卡综合信息',baseurl:'/tss/data/json/',type:'报表'},
+	],
+	PHONE,
+	USER;
+var AUTH_PATH='http://t.boubei.com/tss/auth/'
+var	URL_DATA_CSV   = AUTH_PATH + "xdata/export/";
+var download_param={};
+$(function() {
+	$("#dg").datagrid({
+		fit: true,
+		url: BASEURL+GD[3].baseurl+GD[3].reportId+'?noCache=true',//+'?noCache=true'
+		queryParams:{},
+		toolbar:[
+			{ text: '新增', iconCls: 'icon-add',handler:createRow},
+			{ text: '修改', iconCls: 'icon-edit',handler:updateRow}
+		],
+		rownumbers: true,
+		title:'油卡基础信息',
+        singleSelect: true,
+        frozenColumns:[[
+	        {field: 'ck', checkbox: true},
+			{field: 'code',title: '卡号',align: 'center',width:'145px'},
+			{field: 'status',title: '状态',align: 'center',width:'70px'},
+			{field: 'balance',title: '余额',align: 'center',width:'70px'},
+			]],
+		columns: [[
+			// {field: 'ck', checkbox: true},
+			// {field: 'code',title: '卡号',align: 'center',width:'140px'},
+			// {field: 'status',title: '状态',align: 'center',width:'70px'},
+			{field: 'owner_person',title: '持卡人',align: 'center',width:'80px'},
+			{field: 'expiry_date',title: '有效期',align: 'center',width:'90px'},
+			{field: 'is_main_card',title: '是否主卡',align: 'center',width:'70px'},
+			{field: 'main_card',title: '主卡号',align: 'center',width:'145px'},
+			{field: 'limit_license',title: '限制车牌',align: 'center',width:'70px'},
+			{field: 'owner_company',title: '所属公司',align: 'center',width:'130px'},
+			{field: 'type',title: '卡类别',align: 'center',width:'70px'},
+			{field: 'start_day',title: '启用日期',align: 'center',width:'90px'},
+			{field: 'op_person',title: '操作人',align: 'center',width:'70px'},			
+			{field: 'remark',title: '备注',align: 'center',width:'90px',formatter:format}
+			]],
+		onLoadSuccess:function(){
+			beginQuery()
+		},
+		onClickRow:function(rowIndex,rowData){
+			beginQuery(record_urls(GD[2].recordName).QUERY,{code: rowData.code})
+		}
+	}).datagrid('enableFilter', [{field: 'code',type: 'textbox'}, {field: 'status',type: 'textbox'},{field:'balance',type:'textbox'},{field: 'owner_person',type: 'textbox'}, {field: 'expiry_date',type: 'textbox'},{field:'is_main_card',type:'textbox'},{field:'main_card',type:'textbox'},{field: 'limit_license',type: 'textbox'}, {field: 'owner_company',type: 'textbox'},{field:'type',type:'textbox'},{field: 'start_day',type: 'textbox'}, {field: 'op_person',type: 'textbox'},{field:'remark',type:'textbox'}]);
+	$("#is_main_card").combobox({
+		panelHeight: '50px',
+        width: '150px',
+        editable: false,
+        valueField: 'name',
+        textField: 'name',
+        data: [ 
+            {"name": "是"}, 
+            {"name": "否"}
+        ],
+        onChange:function(value){
+        	if(value=='是'){
+        		$('#main_card').textbox({ readonly: true });
+	        	$('#main_card').textbox('setValue',$('#code').textbox('getValue'))
+	        }
+	        else{
+	        	$('#main_card').textbox({ readonly: false })
+	        }
+	        	
+        }
+	});
+	$("#event").combobox({
+		panelHeight: '180px',
+        width: '150px',
+        editable: false,
+        valueField: 'name',
+        textField: 'name',
+        data: [ 
+            {"name": "锁定"}, 
+            {"name": "解锁"},
+            {"name": "停用"}, 
+            {"name": "固定使用"},
+            {"name": "临时使用"},
+            {"name": "充值"},
+            {"name": "消费"},
+            {"name": "分配"}
+
+        ],
+        onChange:function(value){
+        	if(value=='停用'){$('#new_code').textbox({ required: true });
+        	$('#new_code').textbox({ readonly: false })}
+	        	else{$('#new_code').textbox({ required: false });
+			        $('#new_code').textbox({ readonly: true })}
+            if(value =='充值' || value=='消费'){$('#money').textbox({ required: true });}
+		        else{$('#money').textbox({ required: false });}
+	        if(value =='分配'){$('#user').textbox({ required: true });}
+	            else{$('#user').textbox({ required: false })};
+            if(value=='固定使用'){$('#license').textbox({ required: true })}
+	            else{$('#license').textbox({ required: false })};
+        }
+	});
+	$("#code").textbox({
+		onChange:function(value){
+			if($('#is_main_card').textbox('getValue')=='是'){
+				$('#main_card').textbox('setValue',$('#code').textbox('getValue'))
+			}
+		}
+	})
+	getType();
+	
+
+});
+
+function getType(){
+	$("#type").combobox({
+		url: record_urls(GD[1].recordName).QUERY + '?noCache=true',
+		queryParams: {type:'油卡类别'},
+		loadFilter: function(data) {
+			var arr = [];
+			for (var i = 0; i <data.length; i++) {
+				arr.push({type:data[i].item_name})
+			}
+			return arr
+		},
+		valueField: 'type',
+		textField: 'type',
+		panelHeight: 'auto',
+		icons: [{
+			iconCls: 'icon-add',
+			handler: function(){
+				addTab('rec', GD[1].ChineseName, GD[1].recordId+'&user-defined1=油卡类别', GD[1].ChineseName)
+			}
+		}, {
+			iconCls: 'icon-reload',
+			handler: getType
+		}]
+	})
+}
+
+function beginQuery(url,param){
+	param = param || {code:'?'};
+	download_param=param;
+	$("#record").datagrid({
+		url:url,
+		queryParams:param,
+		fit: true,
+		singleSelect: true,
+		title: '油卡' + param.code + '的记录',
+		toolbar: [
+			{text: '新增',iconCls: 'icon-add',handler: createRecord}, 
+			{text: '修改',iconCls: 'icon-edit',handler:updateRecordRow},
+			{text: '导出',iconCls: 'icon-save',handler:backup},
+			{text: '批量导入',iconCls: 'icon-tss-up',handler:function(){
+				addTab('rec', GD[2].ChineseName, GD[2].recordId, GD[2].ChineseName);
+
+			}}
+		],
+		columns: [[
+			{field: 'ck',checkbox: true}, 
+			{field: 'license',title: '车牌',align: 'center',width: '90px'},
+			{field: 'event',title: '事件',align: 'center',width: '50px'}, 
+			{field: 'start_day',title: '事件发生时间',align: 'center',width: '90px'}, 
+			{field: 'end_day',title: '结束时间',align: 'center',width: '90px'}, 
+			{field: 'money',title: '金额',align: 'center',width: '60px'},
+			{field: 'op_person',title: '操作人',align: 'center',width: '80px'},
+			{field: 'new_code',title: '新卡号',align: 'center',width: '145px'},
+			{field: 'user',title: '使用人',align: 'center',width: '80px'},
+			{field: 'remark',title: '备注',align: 'center',width: '90px',formatter:format}
+			]]
+	}).datagrid('enableFilter', [{field: 'license',type: 'textbox'}, {field: 'event',type: 'textbox'}, {field: 'start_day',type: 'textbox'},{field: 'end_day',type: 'textbox'},{field: 'money',type: 'textbox'}, {field: 'op_person',type: 'textbox'}, {field: 'new_code',type: 'textbox'},{field: 'user',type: 'textbox'},{field: 'remark',type: 'textbox'}]);
+
+}
+
+if(location.search.replace('user-defined1')!=location.search){
+	var a=location.search.substring(1).split("&");
+    for(var i=0;i<a.length;i++){
+    	if(a[i].replace('user-defined1')!=a[i]){
+    		$('#code').value(a[i].split("=")[1]);
+    		break;
+    	}
+    }
+}
+
+function saveTable(recordId,tableid) {
+    var id = $("input[name='id']").val();
+    var isCreate = !id;
+    var $saveBtn = $('#dlg-buttons>a[onclick^="save"]');
+    $saveBtn.linkbutton("disable");
+    $('#fm').form('submit',{
+        url: BASE_RECORD_URL + recordId + (!isCreate ? "/"+id : ''),
+        onSubmit: function(){
+            var flag = $(this).form('validate');
+            if( !flag ) {
+                $saveBtn.linkbutton("enable");
+            }
+            return flag;
+        },
+        success: function(result){
+            $saveBtn.linkbutton("enable");
+            checkException(result, function() {
+                closeDialog();
+                $(tableid).datagrid('reload');
+            	$.messager.show({
+					title:'提示',
+					msg:'保存成功！',
+					showType:'slide',
+					timeout:2000,
+					style:{
+						position:'fixed',
+						right:'',
+						bottom:0,
+						top:'',
+						left:0
+					}
+				});
+            });
+        }
+    });
+}
+
+function createRow() {
+	$("#fm").form('clear');
+	$('#code').textbox('readonly', false);
+	$('#dlg').dialog({
+		"modal": true
+	}).dialog('open').dialog('setTitle', '新增油卡').dialog('center');
+	// $('#status').textbox('setValue', '可用')
+	$('#lockVersion').val('0'); // 給版本号设置默认值
+}
+
+function updateRow() {
+	
+	var row = getSelectedRow('dg');
+	if (row) {
+		$.getJSON(record_urls(GD[0].recordName).GET + row.id, {}, function(select_data) {
+			$('#fm').form('load', select_data);
+			$('#dlg').dialog({
+				"modal": true
+			}).dialog('open').dialog('setTitle', '修改').dialog('center');
+			$('#code').textbox('readonly', true);
+		}, "GET");
+	}
+}
+
+function createRecord(recordId,tableid){
+	var row = getSelectedRow('dg');
+	if(row){
+		// if(row.limit_license){$('#license').textbox('readonly', true);}
+		$("#fm2").form('clear');
+		$('#dlg2').dialog({
+			"modal": true
+		}).dialog('open').dialog('setTitle', '新增记录').dialog('center');
+		$("#code2").textbox('setValue',row.code);
+		$('#lockVersion').val('0'); // 給版本号设置默认值
+	}
+}
+
+function saveRecord(recordId){
+	var id = $("#dlg2 input[name='id']").val();
+    var isCreate = !id;
+    var $saveBtn = $('#dlg-buttons>a[onclick^="save"]');
+    $saveBtn.linkbutton("disable");
+    $('#fm2').form('submit',{
+        url: BASE_RECORD_URL + recordId + (!isCreate ? "/"+id : ''),
+        onSubmit: function(){
+            var flag = $(this).form('validate');
+            if( !flag ) {
+                $saveBtn.linkbutton("enable");
+            }
+            return flag;
+        },
+        success: function(result){
+            $saveBtn.linkbutton("enable");
+            $('#dlg2').dialog('close');
+			$('#fm2').form('clear');
+			$('#record').datagrid('reload');
+			$('#dg').datagrid('reload');
+			$.messager.show({
+					title:'提示',
+					msg:'保存成功！',
+					showType:'slide',
+					timeout:2000,
+					style:{
+						position:'fixed',
+						right:0,
+						bottom:0,
+						top:'',
+						left:''
+					}
+				});
+
+
+        }
+    });
+}
+
+function closeRecordDialog(){
+	$('#dlg2').dialog('close');
+    $('#fm2').form('clear');
+}
+
+function updateRecordRow() {
+	var row = getSelectedRow('record');
+	if (row) {
+		$.getJSON(record_urls(GD[2].recordName).GET + row.id, {}, function(select_data) {
+			$('#fm2').form('load', select_data);
+			$('#dlg2').dialog({
+				"modal": true
+			}).dialog('open').dialog('setTitle', '修改油卡记录').dialog('center');
+			$('#code').textbox('readonly', true);
+		}, "GET");
+	}
+}
+
+function format(value){
+    if(value){
+    	return '<span title="'+value+'">'+value+'</span>'
+    }
+}
+
+function backup() {//复制自recorder.html
+   var _params=download_param;
+    var queryString = "?";
+    $.each(_params, function(key, value) {
+        if( queryString.length > 1 ) {
+            queryString += "&";
+        }
+        queryString += (key + "=" + value);
+    });
+
+    var url = encodeURI(URL_DATA_CSV + GD[2].recordId + queryString);
+    $("#downloadFrame").attr( "src", url);
+}
+
+</script>
+<body class="easyui-layout">
+	<div id="main" style="width:100%;height:100%;" >
+	    <div class="easyui-layout" fit="true">
+	        <div data-options="region:'west'" border="false" style="width:70%">
+        		<table id="dg" class="easyui-datagrid">
+            	</table>
+	        </div>
+	        <div data-options="region:'center'" border="false" style="width:30%">
+	        	<table id="record" class="easyui-datagrid"></table>
+	        </div>
+	    </div>
+	</div>
+	<div id="dlg" class="easyui-dialog" style="width:550px;height: 340px;" closed=true buttons="#dlg-buttons">
+		<form id="fm" method="post" novalidate>
+			<input name="id" type="hidden"/>
+	        <input id="lockVersion" name="lockVersion" type="hidden"/>
+	        <input id="seqNo" name="seqNo" type="hidden" />
+	        <table class="l">
+	            <tr>
+	                <td class="label">卡 号:</td>
+	                <td>
+	                    <input name="code" id="code" class="easyui-textbox" required/>
+	                </td>   
+	                <td class="label">持卡人:</td>
+	                <td>
+	                    <input name="owner_person" id="owner_person" class="easyui-textbox" required/>
+	                </td>            
+	            </tr>
+	            <tr>  
+	                <td class="label">有效期:</td>
+	                <td>
+	                    <input name="expiry_date" id="expiry_date" class="easyui-datebox" required/>
+	                </td>  
+	                <td class="label">是否主卡:</td>
+	                <td>
+	                	<input name="is_main_card" id="is_main_card" class="easyui-combobox" required/>
+	                </td>           
+	            </tr>
+	            <tr>
+	            	<td class="label">主卡号:</td>
+	            	<td>
+	            		<input name="main_card" id="main_card" class="easyui-textbox" required/>
+	            	</td>
+	            	<td class="label">限制车号:</td>
+	            	<td>
+	            		<input name="limit_license" id="limit_license" class="easyui-textbox">
+	            	</td>
+	            </tr>
+	            <tr>
+	            	<td class="label">所属公司:</td>
+	            	<td>
+	            		<input name="owner_company" id="owner_company" class="easyui-textbox">
+	            	</td>
+	            	<td class="label">卡类别:</td>
+	            	<td>
+	            		<input name="type" id="type" class="easyui-combobox" editable="false">
+	            	</td>
+	            </tr>
+	            <tr>
+	            	<td class="label">启用时间:</td>
+	            	<td>
+	            		<input name="start_day" id="start_day" class="easyui-datebox" required/>
+	            	</td>
+	            	<td class="label">操作人:</td>
+	            	<td>
+	            		<input name="op_person" id="op_person" class="easyui-textbox">
+	            	</td>
+	            </tr>
+	            <tr>
+	            	
+	            	<td class="label">备 注:</td>
+	            	<td>
+	            		<input name="remark" id="remark" class="easyui-textbox">
+	            	</td>
+	            	<td class="label"></td><!-- 状 态: -->
+	            	<td>
+	            		<!-- <input name="status" id="status" class="easyui-textbox" type="hidden"/> -->
+	            	</td>
+	            </tr>
+	        </table>
+        </form>
+	</div>
+	<div id="dlg-buttons">
+	    <a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveTable(GD[0].recordName,'#dg')">保 存</a>
+	    <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="closeDialog()">取 消</a>
+	</div>
+	<div id="dlg2" class="easyui-dialog" style="width: 500px;height: 290px;" closed=true buttons='#dlg-buttons2'>
+		<form id="fm2" method="post" novalidate>
+			<input name="id" type="hidden"/>
+	        <input id="lockVersion2" name="lockVersion" type="hidden"/>
+	        <input id="seqNo2" name="seqNo" type="hidden"/>
+	        <table class='l'>
+	        	<tr>
+	            	<td class="label">卡 号:</td>
+	            	<td>
+	            		<input name="code" id="code2" class="easyui-textbox" readonly/>
+	            	</td>
+	            	<td class="label">车 牌:</td>
+	            	<td>
+	            		<input name="license" id="license" class="easyui-textbox"/>
+	            	</td>
+	            </tr>
+	        	<tr>
+	            	<td class="label">事 件:</td>
+	            	<td>
+	            		<input name="event" id="event" class="easyui-textbox" required/>
+	            	</td>
+	            	<td class="label">事件发生时间:</td>
+	            	<td>
+	            		<input name="start_day" id="start_day2" class="easyui-datetimebox" required/>
+	            	</td>
+	            </tr>
+	            <tr>
+	            	<td class="label">停用时间:</td>
+	            	<td>
+	            		<input name="end_day" id="end_day" class="easyui-datetimebox">
+	            	</td>
+	            	<td class="label">金 额:</td>
+	            	<td>
+	            		<input name="money" id="money" class="easyui-numberbox" data-options="precision:2">
+	            	</td>
+	            </tr>
+	            <tr>
+	            	<td class="label">操作人:</td>
+	            	<td>
+	            		<input name="op_person" id="op_person2" class="easyui-textbox">
+	            	</td>
+	            	<td class="label">备 注:</td>
+	            	<td>
+	            		<input name="remark" id="remark2" class="easyui-textbox">
+	            	</td>
+	            </tr>
+	            <tr>
+	            	<td class="label">新卡号:</td>
+	            	<td>
+	            		<input name="new_code" id="new_code" class="easyui-textbox" readonly/>
+	            	</td>
+	            	<td class="label">使用人</td>
+	            	<td>
+	            		<input name="user" id="user" class="easyui-textbox">
+	            	</td>
+	            </tr>
+	        </table>
+		</form>
+	</div>
+	<div id="dlg-buttons2">
+	    <a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveRecord(GD[2].recordName)">保 存</a>
+	    <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="closeRecordDialog()">取 消</a>
+	</div>
+	<iframe id="downloadFrame" style="display:none"></iframe>
+</body>
+
+</html>
