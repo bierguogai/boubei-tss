@@ -67,10 +67,13 @@ public abstract class _Database {
 	public List<String> fieldAligns;
 	public List<String> fieldWidths;
 	public List<String> fieldRole2s;
+	public List<String> fieldValues;
 	
 	public Map<String, String> cnm = new HashMap<String, String>();
 	public Map<String, String> ctm = new HashMap<String, String>();
 	public Map<String, String> crm = new HashMap<String, String>();
+	public Map<String, String> cpm = new HashMap<String, String>();
+	public Map<String, String> cvm = new HashMap<String, String>();
 	
 	public String toString() {
 		return "【" + this.datasource + "." + this.recordName + "】";
@@ -99,22 +102,37 @@ public abstract class _Database {
 		this.fieldAligns = new ArrayList<String>();
 		this.fieldWidths = new ArrayList<String>();
 		this.fieldRole2s = new ArrayList<String>();
+		this.fieldValues = new ArrayList<String>();
+		
 		for(Map<Object, Object> fDefs : this.fields) {
 			String code = (String) fDefs.get("code");
 			this.fieldCodes.add(code);
+			
 			String label = (String) fDefs.get("label");
 			this.fieldNames.add(label);
+			cnm.put(code, label);
+			
 			String type = (String) fDefs.get("type");
 			this.fieldTypes.add(type);
-			this.fieldPatterns.add( (String) fDefs.get("pattern") ); 
+			ctm.put(code, type);
+			
+			String pattern = (String) fDefs.get("pattern");
+			if( _Field.TYPE_NUMBER.equalsIgnoreCase(type) ) {
+				pattern = (String) EasyUtils.checkNull(pattern, "##,###.00");  //  类GridNode会对数据进行格式化
+            }
+			this.fieldPatterns.add( pattern ); 
+			cpm.put(code, pattern);
+			
+			String defaultVal = (String) fDefs.get("defaultValue");
+			this.fieldValues.add(defaultVal);
+			cvm.put(code, defaultVal);
+			
 			String role2 = (String) fDefs.get("role2");
 			this.fieldRole2s.add(role2);
+			crm.put(code, role2);
+			
 			this.fieldAligns.add( (String)EasyUtils.checkNull(fDefs.get("calign"), "") ); // 列对齐方式
 			this.fieldWidths.add( (String)EasyUtils.checkNull(fDefs.get("cwidth"), "") ); // 列宽度
-			
-			cnm.put(code, label);
-			ctm.put(code, type);
-			crm.put(code, role2);
 		}
 	}
 	
@@ -133,7 +151,7 @@ public abstract class _Database {
    	        	int index = i + 1;
    	        	
    				String code = (String) fDefs.get("code");
-   				code = (EasyUtils.isNullOrEmpty(code) ? _Filed.COLUMN + index : code).toLowerCase().trim();
+   				code = (EasyUtils.isNullOrEmpty(code) ? _Field.COLUMN + index : code).toLowerCase().trim();
    				fDefs.put("code", code);
    			}
    			return list;
@@ -145,24 +163,24 @@ public abstract class _Database {
 	
 	protected Map<String, String> getDBFiledTypes(int length) {
 		Map<String, String> m = new HashMap<String, String>();
-		m.put(_Filed.TYPE_NUMBER, "float");
-		m.put(_Filed.TYPE_INT, "int");
-		m.put(_Filed.TYPE_DATETIME, "datetime");
-		m.put(_Filed.TYPE_DATE, "date");
-		m.put(_Filed.TYPE_STRING, "varchar(" + length + ")");
-		m.put(_Filed.TYPE_FILE, "varchar(100)");
+		m.put(_Field.TYPE_NUMBER, "float");
+		m.put(_Field.TYPE_INT, "int");
+		m.put(_Field.TYPE_DATETIME, "datetime");
+		m.put(_Field.TYPE_DATE, "date");
+		m.put(_Field.TYPE_STRING, "varchar(" + length + ")");
+		m.put(_Field.TYPE_FILE, "varchar(100)");
 		
 		return m;
 	}
 	
 	protected String getFiledDef(Map<Object, Object> fDef, boolean ignoreNullable) {
 		
-		Map<String, String> dbFieldTypes = getDBFiledTypes( _Filed.getVarcharLength(fDef) );
-		dbFieldTypes.put(_Filed.TYPE_HIDDEN, "varchar(255)");
+		Map<String, String> dbFieldTypes = getDBFiledTypes( _Field.getVarcharLength(fDef) );
+		dbFieldTypes.put(_Field.TYPE_HIDDEN, "varchar(255)");
 		
 		String def = "" + fDef.get("code") + " ";
 		String tssFieldType = (String) fDef.get("type"); // string/number/int/date/datetime/hidden
-		tssFieldType = (String) EasyUtils.checkNull(tssFieldType, _Filed.TYPE_STRING);
+		tssFieldType = (String) EasyUtils.checkNull(tssFieldType, _Field.TYPE_STRING);
 		
 		String fieldType = dbFieldTypes.get( tssFieldType );
 		def += " " +fieldType+ " "; 
@@ -702,12 +720,9 @@ public abstract class _Database {
             String fieldRole2 = fieldRole2s.get(index);
             String fieldType  = fieldTypes.get(index);
             String fieldPattern = fieldPatterns.get(index);
-            if( _Filed.TYPE_DATE.equalsIgnoreCase(fieldType) ) { // GridNode里转换异常（date类型要求值也为date）
+            if( _Field.TYPE_DATE.equalsIgnoreCase(fieldType) ) { // GridNode里转换异常（date类型要求值也为date）
             	fieldType = "string";  
             } 
-            else if( _Filed.TYPE_NUMBER.equalsIgnoreCase(fieldType) ) {
-            	fieldPattern = (String) EasyUtils.checkNull(fieldPattern, "##,###.00");
-            }
             
             if(EasyUtils.isNullOrEmpty(fieldWidth)) {
             	fieldWidth = "";
@@ -722,8 +737,8 @@ public abstract class _Database {
             boolean isHidden = "hidden".equals( fieldTypes.get(index) );
             if( PermissionHelper.checkRole(fieldRole2) && !isHidden ) {
             	
-            	sb.append("<column name=\"" + fieldCode + "\" mode=\"" + fieldType + "\" pattern=\"" + fieldPattern + "\" caption=\"" + fieldName 
-					+ "\" align=\"" + fieldAlign + "\" " + fieldWidth + " />").append("\n");
+            	sb.append("<column name=\"" + fieldCode + "\" mode=\"" + fieldType + "\" pattern=\"" + fieldPattern 
+            			+ "\" caption=\"" + fieldName + "\" align=\"" + fieldAlign + "\" " + fieldWidth + " />").append("\n");
             }
             index++;
         }

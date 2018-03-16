@@ -89,15 +89,18 @@ public class GridNode {
 		String pattern = column.getPattern();
 		String mode = column.getMode();
 		
-        if (GridColumn.GRID_COLUMN_MODE_DATE.equals(mode)) {
-			return DateUtil.format((Date) values[index], pattern);
+        Object value = values[index];
+		if (GridColumn.GRID_COLUMN_MODE_DATE.equals(mode) && value instanceof Date 
+				&& pattern != null && !"null".equals(pattern)) {
+			
+			return DateUtil.format((Date) value, pattern);
 		}
         
 		if (GridColumn.GRID_COLUMN_MODE_NUMBER.equals(mode)) {
-		    return MathUtil.formatNumber(values[index], pattern);
+		    return MathUtil.formatNumber(value, pattern);
 		}
 		
-		return XmlUtil.toFormXml(values[index]);
+		return XmlUtil.toFormXml(value);
 	}
 
 	/**

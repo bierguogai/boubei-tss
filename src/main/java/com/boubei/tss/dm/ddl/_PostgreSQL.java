@@ -23,9 +23,9 @@ public class _PostgreSQL extends _Database {
 	
 	protected Map<String, String> getDBFiledTypes(int length) {
 		Map<String, String> m = super.getDBFiledTypes(length);
-		m.put(_Filed.TYPE_NUMBER, "numeric(19,3)");
-		m.put(_Filed.TYPE_INT, "integer");
-		m.put(_Filed.TYPE_DATETIME, "timestamp");
+		m.put(_Field.TYPE_NUMBER, "numeric(19,3)");
+		m.put(_Field.TYPE_INT, "integer");
+		m.put(_Field.TYPE_DATETIME, "timestamp");
 		
 		return m;
 	}

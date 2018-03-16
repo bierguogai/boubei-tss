@@ -11,6 +11,7 @@
 	<entity class="com.boubei.tss.modules.timer.JobDef"/>
 	<entity class="com.boubei.tss.modules.cloud.ModuleDef"/>
 	<entity class="com.boubei.tss.modules.cloud.ModuleUser"/>
+	<entity class="com.boubei.tss.modules.sn.SerialNO"/>
  
 	<!-- um -->	
 	<entity class="com.boubei.tss.um.sso.online.DBOnlineUser"/>

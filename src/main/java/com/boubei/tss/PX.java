@@ -11,6 +11,12 @@ package com.boubei.tss;
 
 /**
  *  系统可注册的参数配置（application.properties文件和component_param表）
+ * report_export_url = http://www.boubei.com:8082  导出数据分流机器, 前台页面报表导出时用到
+ * sysTitle = TSS BI   登陆页大标题
+ * subTitle = Be your own data hero  登录页小标题
+ * regable = false     关闭注册
+ * regableDev = false  关闭开发者注册
+ * index_logo = logo-scm.png   LOGO路径
  */
 public interface PX {
 	
@@ -63,7 +69,6 @@ public interface PX {
     static String SSO_INDEX_PAGE = "sso.index.page";
     
     // ParamManager: component_param
-    /* report_export_url = http://www.boubei.com:8082  导出数据分流机器, 前台页面报表导出时用到 */
     
     /** 读取最新、最热门、最近访问报表时，选取的日志天数，日志量大的，不宜取太多天。默认3天 */
     static String TOP_REPORT_LOG_DAYS = "TOP_REPORT_LOG_DAYS";

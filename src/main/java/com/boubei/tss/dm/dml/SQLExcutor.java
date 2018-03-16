@@ -35,6 +35,7 @@ import com.boubei.tss.cache.Cacheable;
 import com.boubei.tss.cache.JCache;
 import com.boubei.tss.cache.Pool;
 import com.boubei.tss.dm.ddl._Database;
+import com.boubei.tss.dm.ddl._Field;
 import com.boubei.tss.dm.ext.query.AbstractSO;
 import com.boubei.tss.dm.ext.query.SOUtil;
 import com.boubei.tss.framework.exception.BusinessException;
@@ -56,16 +57,20 @@ public class SQLExcutor {
     }
     
     public Document getGridTemplate() {
-    	return getGridTemplate(new HashMap<String, String>());
+    	HashMap<String, String> m = new HashMap<String, String>();
+		return getGridTemplate(m, m, m);
     }
     
-    public Document getGridTemplate(Map<String, String> m) {
+    public Document getGridTemplate(Map<String, String> cnm, Map<String, String> ctm, Map<String, String> cpm) {
     	StringBuffer sb = new StringBuffer();
         sb.append("<grid><declare sequence=\"true\">");
         if(selectFields.size() > 0) {
             for(String field : selectFields) {
-            	Object caption = EasyUtils.checkNull( m.get(field), field);
-                sb.append("<column name=\"" + field + "\" mode=\"string\" caption=\"" + caption + "\" />");
+            	Object caption = EasyUtils.checkNull( cnm.get(field), field);
+                String type = ctm.get(field);
+                String align = _Field.TYPE_NUMBER.equals(type) ? "right" : "";
+				sb.append("<column name=\"" + field + "\" mode=\"" + type + "\" pattern=\"" + cpm.get(field) 
+            			+ "\" caption=\"" + caption + "\" align=\"" + align + "\" />").append("\n");
             }
         }
         else {

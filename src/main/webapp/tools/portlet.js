@@ -5,6 +5,18 @@ CONTEXTPATH = APPLICATION + "/";
 
 var notice_channel = 2;  // 顶部通知跑马灯 boubei.com = 2
 
+// 获取系统参数模块的配置信息
+function getParam(key, callback) {
+    $.getJSON("/tss/param/json/simple/" + key, {}, 
+        function(result) {
+            var val;
+            if( result && result.length  && result[0] ) {
+                val = result[0];
+            }
+            callback && callback(val);
+        }, "GET", false);
+}
+
 function initUserInfo(callback) {
 	$.ajax({
 		url : "/tss/auth/user/operatorInfo",

@@ -38,7 +38,7 @@ import com.boubei.tss.dm.DMConstants;
 import com.boubei.tss.dm.DMUtil;
 import com.boubei.tss.dm.DataExport;
 import com.boubei.tss.dm.ddl._Database;
-import com.boubei.tss.dm.ddl._Filed;
+import com.boubei.tss.dm.ddl._Field;
 import com.boubei.tss.dm.dml.SQLExcutor;
 import com.boubei.tss.dm.record.file.RecordAttach;
 import com.boubei.tss.dm.record.permission.RecordPermission;
@@ -176,7 +176,7 @@ public class _Recorder extends BaseActionSupport {
             temp.add(gridNode);
         }
 		
-        Document gridTemplate = pointed ? ex.getGridTemplate(_db.cnm) : _db.getGridTemplate();
+        Document gridTemplate = pointed ? ex.getGridTemplate(_db.cnm, _db.ctm, _db.cpm) : _db.getGridTemplate();
 		GridDataEncoder gEncoder = new GridDataEncoder(temp, gridTemplate);
         
         PageInfo pageInfo = new PageInfo();
@@ -207,7 +207,7 @@ public class _Recorder extends BaseActionSupport {
 			// 把附件字段替换为链接
             int index = 0;
     		for(String field : _db.fieldCodes) {
-    			boolean isFileField = _Filed.TYPE_FILE.equals(_db.fieldTypes.get(index++));
+    			boolean isFileField = _Field.TYPE_FILE.equals(_db.fieldTypes.get(index++));
     			if( isFileField ) {
     				String[] values = EasyUtils.obj2String(item.get(field)).split(",");
     				String urls = "";

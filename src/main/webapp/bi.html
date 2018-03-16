@@ -86,6 +86,10 @@ $(function(){
 
         dbsx();
         getBIMenu();
+
+        getParam("index_logo", function(result) {
+            result && $(".top .logo").css("background", "url(" +result+ ") no-repeat center");
+        });
     });
 });
 

@@ -128,7 +128,7 @@ public class LoginService implements ILoginService {
 
 	public String[] getLoginInfoByLoginName(String loginName) {
 		User user = getUserByLoginName(loginName);
-		return new String[] { user.getUserName(), user.getAuthMethod() };
+		return new String[] { user.getUserName(), user.getAuthMethod(), user.getAuthToken() };
 	}
 	
 	private User getUserByLoginName(String loginName) {
@@ -428,9 +428,10 @@ public class LoginService implements ILoginService {
 		List<String> tokens = (List<String>) userDao.getEntities(hql, uName, resource, type, now );
 		tokens.addAll( (List<String>) userDao.getEntities(hql, Anonymous._CODE, resource, type, now ) );
 		
-		// 把用户的MD5密码也作为令牌，如果和uToken对的上，给予通过（适用用户开放数据表链接给第三方用户录入，此时不宜逐个给用户发放令牌）
+		// 把用户的MD5密码也作为令牌，如果和uToken对的上，给予通过（适用于开放数据表链接给第三方用户录入，此时不宜逐个给用户发放令牌）
 		OperatorDTO user = getOperatorDTOByLoginName(uName);
-		tokens.add( (String) user.getAttribute("password") );
+		Object uToken = EasyUtils.checkNull(user.getAttribute("uToken"), user.getAttribute("password"));
+		tokens.add( (String) uToken );
 		
 		return tokens;
 	}

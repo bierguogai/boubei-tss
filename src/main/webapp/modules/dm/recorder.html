@@ -364,6 +364,16 @@ function loadDetailData(rowID, version) {
             f.role1 && forbid(f.code, f.role1);
             f.role2 && !checkRole(f.role2) && hideFiled(f.code);
 
+            // 自动取号
+            if( isCreateRow && (f.defaultValue||'').indexOf("yyMMddxxxx") > 0 ) {
+                var precode = f.defaultValue.replace("yyMMddxxxx", "");
+                tssJS.getJSON("/tss/serialno/" +precode+ "/1", function(result) {
+                    var sn = result[0];
+                    updateField(f.code, sn);
+                    forbid(f.code);
+                });
+            }
+
             // 为附件字段添加附件列表
             if(f.type == 'file') {
                 // 选择框后面，增加一个上传按钮

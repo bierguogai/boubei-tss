@@ -28,6 +28,7 @@ import com.boubei.tss.dm.record.RecordService;
 import com.boubei.tss.framework.Global;
 import com.boubei.tss.framework.exception.BusinessException;
 import com.boubei.tss.framework.web.servlet.AfterUpload;
+import com.boubei.tss.modules.sn.SerialNOer;
 import com.boubei.tss.util.EasyUtils;
 import com.boubei.tss.util.FileHelper;
 
@@ -50,10 +51,11 @@ public class ImportCSV implements AfterUpload {
 
 		// 解析附件数据
 		File targetFile = new File(filepath);
-		String dataStr = FileHelper.readFile(targetFile, DataExport.CSV_CHAR_SET);
+		String dataStr = FileHelper.readFile(targetFile, DataExport.CSV_CHAR_SET); // "UTF-8"
 		dataStr = dataStr.replaceAll(";", ","); // mac os 下excel另存为csv是用分号;分隔的
 		String[] rows = EasyUtils.split(dataStr, "\n");
 		
+		List<String> snList = null;
 		List<Map<String, String>> valuesMaps = new ArrayList<Map<String, String>>();
 		String[] fields = rows[0].split(",");
 		for(int index = 1; index < rows.length; index++) { // 第一行为表头，不要
@@ -69,8 +71,18 @@ public class ImportCSV implements AfterUpload {
 			for(int j = 0; j < fieldVals.length; j++) {
     			String value = fieldVals[j].trim();
     			value = value.replaceAll("，", ","); // 导出时英文逗号替换成了中文逗号，导入时替换回来
+    			sb += value;
+    			
+    			String defaultVal = _db.fieldValues.get(j);
+    			if( defaultVal != null && defaultVal.endsWith("yyMMddxxxx")) {
+    				String preCode = defaultVal.replaceFirst("yyMMddxxxx", "");
+    				if(snList == null) {
+    					snList = new SerialNOer().create(preCode, rows.length);
+    				}
+    				value = snList.get(index - 1);
+    			}
+    			
 				valuesMap.put(_db.fieldCodes.get(j), value);
-				sb += value;
         	}
 			if( EasyUtils.isNullOrEmpty(sb) ) { // 判断是否每个字段都没有数据，是的话为空行
 				continue;

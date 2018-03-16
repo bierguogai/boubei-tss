@@ -1,4 +1,4 @@
-package com.boubei.tssx.serialno;
+package com.boubei.tss.modules.sn;
 
 import java.io.Serializable;
 import java.util.Date;

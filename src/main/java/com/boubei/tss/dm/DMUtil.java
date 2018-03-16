@@ -30,7 +30,7 @@ import com.boubei.tss.PX;
 import com.boubei.tss.cache.Cacheable;
 import com.boubei.tss.cache.Pool;
 import com.boubei.tss.cache.extension.CacheHelper;
-import com.boubei.tss.dm.ddl._Filed;
+import com.boubei.tss.dm.ddl._Field;
 import com.boubei.tss.dm.record.Record;
 import com.boubei.tss.dm.record.permission.RecordPermission;
 import com.boubei.tss.dm.record.permission.RecordResource;
@@ -186,7 +186,7 @@ public class DMUtil {
   		}
   		
   		type = type.toString().toLowerCase();
-  		if(_Filed.TYPE_NUMBER.equals(type) || _Filed.TYPE_INT.equals(type)) {
+  		if(_Field.TYPE_NUMBER.equals(type) || _Field.TYPE_INT.equals(type)) {
   			try {
   				if(value.indexOf(".") > 0) {
   	  				return EasyUtils.obj2Double(value);
@@ -196,7 +196,7 @@ public class DMUtil {
 				return null; // 如果输入的是空字符串等，会有异常
 			}
   		}
-  		else if(_Filed.TYPE_DATE.equals(type) || _Filed.TYPE_DATETIME.equals(type)) {
+  		else if(_Field.TYPE_DATE.equals(type) || _Field.TYPE_DATETIME.equals(type)) {
   			if( EasyUtils.isNullOrEmpty(value) ) return null;
   			
   			Date dateObj = DateUtil.parse(value);
